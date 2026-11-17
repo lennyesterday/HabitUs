@@ -1,16 +1,30 @@
 import SwiftUI
+import HabitCore
 
 // Rank, points, complete rounds, streak (R24). Area C.
-// STUB: shows a placeholder until the screen is built.
 
 struct LeaderboardView: View {
-    let groupId: UUID
+    let rows: [LeaderboardRow]
+    let target: Int
 
     var body: some View {
-        Text("LeaderboardView: not built yet")
+        List(Array(rows.enumerated()), id: \.element.id) { index, row in
+            HStack {
+                Text("#\(index + 1)")
+                    .font(.headline)
+                    .frame(width: 36, alignment: .leading)
+                VStack(alignment: .leading) {
+                    Text("\(row.avatar) \(row.displayName)")
+                        .font(.headline)
+                    Text("\(row.completeRounds) complete rounds · streak \(row.streak) 🔥 · \(row.pauses) pauses")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+                Text("\(row.points) pts")
+                    .font(.headline)
+            }
+        }
+        .navigationTitle("Leaderboard")
     }
-}
-
-#Preview {
-    LeaderboardView(groupId: UUID())
 }

@@ -17,7 +17,12 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
 
 ## Supabase setup (once per project)
 
-Run `supabase/migrations/001_schema.sql` in the SQL editor of a fresh Supabase project. It creates the tables, the access rules (RLS), the private `proofs` photo bucket and the `join_by_code` function.
+1. Run the files in `supabase/migrations/` in order in the SQL editor of a fresh Supabase project:
+   - `001_schema.sql`: tables, access rules (RLS), the private `proofs` photo bucket, `join_by_code`
+   - `002_profiles_and_join_preview.sql`: creates the profile for every new account, contract preview by invite code
+2. Turn off email confirmation: Authentication → Sign In / Providers → Email → "Confirm email" off. We have no email verification (SPEC section 11, known limits).
+
+The simulator has no camera. There the camera sheet offers a generated test photo, only in simulator builds.
 
 ## Tests
 

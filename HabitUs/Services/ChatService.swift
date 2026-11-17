@@ -3,7 +3,6 @@ import HabitCore
 import Supabase
 
 // Text messages in the group chat (R26). Area B.
-// STUBS: replace each body with the real Supabase call.
 
 /// A text message (table `messages`).
 struct Message: Identifiable {
@@ -14,9 +13,19 @@ struct Message: Identifiable {
     var createdAt: Date
 }
 
+private struct NewMessage: Encodable {
+    let group_id: UUID
+    let text: String
+}
+
 enum ChatService {
     /// R26: 1 to 500 characters, checked with HabitCore before sending.
     static func post(groupId: UUID, text: String) async throws {
-        throw notBuiltYet
+        try validateMessage(text)
+        try await readable {
+            try await supabase.from("messages")
+                .insert(NewMessage(group_id: groupId, text: text.trimmingCharacters(in: .whitespacesAndNewlines)))
+                .execute()
+        }
     }
 }

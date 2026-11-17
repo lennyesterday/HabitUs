@@ -1,16 +1,103 @@
 import SwiftUI
+import HabitCore
 
 // Members, requests, Start Session (R6, R7). Area A.
-// STUB: shows a placeholder until the screen is built.
 
 struct LobbyView: View {
-    let groupId: UUID
+    let data: GroupData
+    let reload: () async -> Void
+
+    @State private var errorMessage: String?
+    @State private var isWorking = false
 
     var body: some View {
-        Text("LobbyView: not built yet")
-    }
-}
+        List {
+            Section("Invite code") {
+                HStack {
+                    Text(data.group.inviteCode)
+                        .font(.title.monospaced().bold())
+                        .textSelection(.enabled)
+                    Spacer()
+                    ShareLink(item: "Join my HabitUs game with the code \(data.group.inviteCode)") {
+                        Image(systemName: "square.and.arrow.up")
+                    }
+                }
+            }
 
-#Preview {
-    LobbyView(groupId: UUID())
+            Section("Members · \(data.accepted.count) of at least 3") {
+                ForEach(data.accepted) { member in
+                    HStack {
+                        Text("\(member.avatar) \(member.displayName)")
+                        Spacer()
+                        if member.userId == data.group.ownerId {
+                            Text("👑")
+                        }
+                    }
+                }
+            }
+
+            if data.isOwner {
+                Section("Requests") {
+                    if data.pending.isEmpty {
+                        Text("No open requests.")
+                            .foregroundStyle(.secondary)
+                    }
+                    ForEach(data.pending) { member in
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("\(member.avatar) \(member.displayName)")
+                            Text("Signed: \(member.signature)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            HStack {
+                                Button("Accept") { act { try await GroupService.decide(membershipId: member.id, accept: true) } }
+                                    .buttonStyle(.borderedProminent)
+                                Button("Decline", role: .destructive) { act { try await GroupService.decide(membershipId: member.id, accept: false) } }
+                                    .buttonStyle(.bordered)
+                            }
+                            .disabled(isWorking)
+                        }
+                    }
+                }
+            }
+
+            Section {
+                if data.isOwner {
+                    Button {
+                        act { try await GroupService.start(groupId: data.group.id) }
+                    } label: {
+                        Text("Start Session").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.large)
+                    .disabled(isWorking || data.accepted.count < 3)
+                } else {
+                    Label("Waiting for the owner to start.", systemImage: "hourglass")
+                        .foregroundStyle(.secondary)
+                }
+            } footer: {
+                Text("The session starts today. Open requests are declined and the code stops working.")
+            }
+
+            if errorMessage != nil {
+                ErrorText(message: errorMessage)
+            }
+        }
+        .navigationTitle(data.group.name)
+        .refreshable { await reload() }
+    }
+
+    /// Runs an owner action, shows its error, then loads the lobby again.
+    private func act(_ action: @escaping () async throws -> Void) {
+        Task {
+            isWorking = true
+            do {
+                try await action()
+                errorMessage = nil
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            await reload()
+            isWorking = false
+        }
+    }
 }
