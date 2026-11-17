@@ -1,0 +1,7 @@
+// Gemeinsame Einstellungen für alle.
+// Persönliche Werte (Apple-Team, Bundle-ID-Kürzel) stehen in Local.xcconfig.
+// Die Datei ist in .gitignore und landet nie im Git.
+DEVELOPMENT_TEAM =
+BUNDLE_ID_SUFFIX =
+
+#include? "Local.xcconfig"
