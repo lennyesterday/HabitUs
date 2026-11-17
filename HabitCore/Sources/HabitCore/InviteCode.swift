@@ -8,7 +8,10 @@ public enum InviteCode {
 
     /// A new 6 character code from `SystemRandomNumberGenerator`.
     public static func generate() -> String {
-        // TODO(Area A): R4, S9
-        return ""
+        var generator = SystemRandomNumberGenerator()
+        let characters = (0..<6).map { _ in
+            alphabet[Int.random(in: 0..<alphabet.count, using: &generator)]
+        }
+        return String(characters)
     }
 }
