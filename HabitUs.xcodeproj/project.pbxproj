@@ -6,10 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A10000000000000000000020 /* HabitCore in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000022 /* HabitCore */; };
+		A10000000000000000000021 /* Supabase in Frameworks */ = {isa = PBXBuildFile; productRef = A10000000000000000000023 /* Supabase */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		A10000000000000000000001 /* HabitUs.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HabitUs.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A10000000000000000000002 /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Base.xcconfig; sourceTree = "<group>"; };
 		A1000000000000000000000E /* Local.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Local.example.xcconfig; sourceTree = "<group>"; };
+		A10000000000000000000026 /* Secrets.example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.example.xcconfig; sourceTree = "<group>"; };
+		A10000000000000000000027 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -25,6 +32,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A10000000000000000000020 /* HabitCore in Frameworks */,
+				A10000000000000000000021 /* Supabase in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +54,8 @@
 			children = (
 				A10000000000000000000002 /* Base.xcconfig */,
 				A1000000000000000000000E /* Local.example.xcconfig */,
+				A10000000000000000000026 /* Secrets.example.xcconfig */,
+				A10000000000000000000027 /* Info.plist */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -77,6 +88,8 @@
 			);
 			name = HabitUs;
 			packageProductDependencies = (
+				A10000000000000000000022 /* HabitCore */,
+				A10000000000000000000023 /* Supabase */,
 			);
 			productName = HabitUs;
 			productReference = A10000000000000000000001 /* HabitUs.app */;
@@ -106,6 +119,10 @@
 			);
 			mainGroup = A10000000000000000000005;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				A10000000000000000000024 /* XCLocalSwiftPackageReference "HabitCore" */,
+				A10000000000000000000025 /* XCRemoteSwiftPackageReference "supabase-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = A10000000000000000000007 /* Products */;
 			projectDirPath = "";
@@ -272,6 +289,37 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		A10000000000000000000024 /* XCLocalSwiftPackageReference "HabitCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = HabitCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		A10000000000000000000025 /* XCRemoteSwiftPackageReference "supabase-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/supabase/supabase-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 2.55.7;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A10000000000000000000022 /* HabitCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000024 /* XCLocalSwiftPackageReference "HabitCore" */;
+			productName = HabitCore;
+		};
+		A10000000000000000000023 /* Supabase */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A10000000000000000000025 /* XCRemoteSwiftPackageReference "supabase-swift" */;
+			productName = Supabase;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = A1000000000000000000000C /* Project object */;
 }

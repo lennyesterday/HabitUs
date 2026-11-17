@@ -4,4 +4,11 @@
 DEVELOPMENT_TEAM =
 BUNDLE_ID_SUFFIX =
 
+// Supabase-Zugang, kommt aus Secrets.xcconfig (auch in .gitignore).
+// Info.plist reicht die Werte an die App weiter, SupabaseClient.swift liest sie dort.
+SUPABASE_URL =
+SUPABASE_ANON_KEY =
+INFOPLIST_FILE = Config/Info.plist
+
 #include? "Local.xcconfig"
+#include? "Secrets.xcconfig"

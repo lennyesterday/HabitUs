@@ -10,7 +10,28 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
    - Copy `Config/Local.example.xcconfig` to `Config/Local.xcconfig` (this file is ignored by Git).
    - Set `BUNDLE_ID_SUFFIX` to your name, e.g. `.vincent`.
    - Set `DEVELOPMENT_TEAM` to your team ID. Easiest way: in Xcode under Target → Signing & Capabilities pick your Apple ID as team, then run `git diff` and copy the `DEVELOPMENT_TEAM = XXXXXXXXXX` value into `Local.xcconfig`. Afterwards undo the project change with `git checkout HabitUs.xcodeproj`.
-4. Pick an iPhone simulator next to the play button and press ▶.
+4. Supabase access:
+   - Copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (also ignored by Git).
+   - Fill in the project URL and the **anon** key from the Supabase dashboard (Project Settings → API). Never the service role key.
+5. Pick an iPhone simulator next to the play button and press ▶.
+
+## Supabase setup (once per project)
+
+Run `supabase/migrations/001_schema.sql` in the SQL editor of a fresh Supabase project. It creates the tables, the access rules (RLS), the private `proofs` photo bucket and the `join_by_code` function.
+
+## Tests
+
+The game rules live in the `HabitCore` package and run without phone or internet:
+
+```
+cd HabitCore && swift test
+```
+
+## Where things are
+
+- `HabitUs/Views/` screens, `HabitUs/Services/` the only code that talks to Supabase
+- `HabitCore/` the rules from SPEC section 3, `HabitCore/Tests/` their tests
+- `supabase/migrations/` the database structure
 
 ## How we work
 
