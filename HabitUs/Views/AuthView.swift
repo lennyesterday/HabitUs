@@ -15,6 +15,11 @@ struct AuthView: View {
     @State private var acceptedTerms = false
     @State private var errorMessage: String?
     @State private var isWorking = false
+    @FocusState private var focused: Field?
+
+    private enum Field {
+        case email, password, name
+    }
 
     var body: some View {
         ZStack {
@@ -46,20 +51,20 @@ struct AuthView: View {
                         }
                         .pickerStyle(.segmented)
 
-                        field {
+                        field(.email) {
                             TextField("Email", text: $email)
                                 .textContentType(.emailAddress)
                                 .keyboardType(.emailAddress)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
                         }
-                        field {
+                        field(.password) {
                             SecureField(mode == .signUp ? "Password (at least 8 characters)" : "Password",
                                         text: $password)
                                 .textContentType(mode == .signUp ? .newPassword : .password)
                         }
                         if mode == .signUp {
-                            field {
+                            field(.name) {
                                 TextField("Display name (2 to 20 characters)", text: $displayName)
                                     .textContentType(.nickname)
                             }
@@ -95,12 +100,16 @@ struct AuthView: View {
         .onChange(of: mode) { errorMessage = nil }
     }
 
-    /// A soft grey rounded box around a text field.
-    private func field(@ViewBuilder _ content: () -> some View) -> some View {
+    /// A soft grey rounded box around a text field. Tapping anywhere in the box puts the
+    /// cursor into the field, not only on the thin line of text in the middle.
+    private func field(_ which: Field, @ViewBuilder _ content: () -> some View) -> some View {
         content()
+            .focused($focused, equals: which)
             .padding(.horizontal, 14)
             .frame(minHeight: 50)
             .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
+            .contentShape(RoundedRectangle(cornerRadius: 14))
+            .onTapGesture { focused = which }
     }
 
     private func submit() async {
