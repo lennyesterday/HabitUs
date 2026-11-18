@@ -9,6 +9,7 @@ struct GroupView: View {
     let reload: () async -> Void
 
     @State private var showCamera = false
+    @State private var showGifPicker = false
     @State private var isUploading = false
     @State private var showFinishConfirmation = false
     @State private var messageText = ""
@@ -52,6 +53,16 @@ struct GroupView: View {
         }
         .safeAreaInset(edge: .bottom) {
             HStack {
+                Button {
+                    showGifPicker = true
+                } label: {
+                    Text("GIF")
+                        .font(.caption.bold())
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 4)
+                        .overlay(RoundedRectangle(cornerRadius: 6).stroke(lineWidth: 1.5))
+                }
+                .accessibilityLabel("Send a GIF")
                 TextField("Message…", text: $messageText, axis: .vertical)
                     .lineLimit(1...4)
                     .textFieldStyle(.roundedBorder)
@@ -93,6 +104,12 @@ struct GroupView: View {
                 Task { await checkIn(image) }
             }
             .ignoresSafeArea()
+        }
+        .sheet(isPresented: $showGifPicker) {
+            GifPicker { gif in
+                showGifPicker = false
+                Task { await run { try await ChatService.postGif(groupId: data.group.id, gif: gif) } }
+            }
         }
         .refreshable { await reload() }
         .task {

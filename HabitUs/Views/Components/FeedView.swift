@@ -16,8 +16,17 @@ struct FeedView: View {
             ForEach(items) { item in
                 switch item {
                 case .message(let message):
-                    let author = data.member(message.userId)
-                    Text("**\(author?.displayName ?? "Someone"):** \(message.text)")
+                    let author = data.member(message.userId)?.displayName ?? "Someone"
+                    if let gifURL = message.gifURL {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("**\(author):** \(message.text)")
+                            AnimatedGif(url: gifURL)
+                                .frame(width: 200, height: 150)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                    } else {
+                        Text("**\(author):** \(message.text)")
+                    }
                 case .checkin(let checkin, _):
                     CheckinFeedRow(data: data, checkin: checkin)
                 }

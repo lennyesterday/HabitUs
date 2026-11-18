@@ -108,6 +108,23 @@ final class ValidationTests: XCTestCase {
         XCTAssertThrowsError(try validateMessage(String(repeating: "a", count: 501)))
     }
 
+    // MARK: R26 GIFs in the chat
+
+    func testR26GifMustComeFromGiphy() {
+        XCTAssertNoThrow(try validateGifURL("https://media2.giphy.com/media/abc123/200w.gif?cid=x&rid=200w.gif"))
+        XCTAssertNoThrow(try validateGifURL("https://media.giphy.com/media/abc123/giphy.gif"))
+        XCTAssertNoThrow(try validateGifURL("https://i.giphy.com/abc123.gif"))
+    }
+
+    func testR26GifFromAnywhereElseIsRefused() {
+        XCTAssertThrowsError(try validateGifURL("http://media.giphy.com/media/abc/200w.gif"), "no plain http")
+        XCTAssertThrowsError(try validateGifURL("https://evil.com/media.giphy.com/x.gif"))
+        XCTAssertThrowsError(try validateGifURL("https://media.giphy.com.evil.com/x.gif"))
+        XCTAssertThrowsError(try validateGifURL("https://giphy.com/gifs/abc"), "a web page, not a GIF")
+        XCTAssertThrowsError(try validateGifURL("not a url"))
+        XCTAssertThrowsError(try validateGifURL("https://media.giphy.com/" + String(repeating: "a", count: 500)))
+    }
+
     // MARK: R18 pause reason
 
     func testR18PauseReasonOneToTwoHundredCharacters() {

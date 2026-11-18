@@ -10,12 +10,14 @@ struct Message: Identifiable {
     var groupId: UUID
     var userId: UUID
     var text: String
+    var gifURL: URL?
     var createdAt: Date
 }
 
 private struct NewMessage: Encodable {
     let group_id: UUID
     let text: String
+    var gif_url: String? = nil
 }
 
 enum ChatService {
@@ -25,6 +27,16 @@ enum ChatService {
         try await readable {
             try await supabase.from("messages")
                 .insert(NewMessage(group_id: groupId, text: text.trimmingCharacters(in: .whitespacesAndNewlines)))
+                .execute()
+        }
+    }
+
+    /// R26: a GIF from GIPHY, checked with HabitCore before sending.
+    static func postGif(groupId: UUID, gif: Gif) async throws {
+        try validateGifURL(gif.url.absoluteString)
+        try await readable {
+            try await supabase.from("messages")
+                .insert(NewMessage(group_id: groupId, text: "", gif_url: gif.url.absoluteString))
                 .execute()
         }
     }

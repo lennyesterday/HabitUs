@@ -140,16 +140,19 @@ struct MessageRow: Decodable {
     let groupId: UUID
     let userId: UUID
     let text: String
+    let gifUrl: String?
     let createdAt: Date
 
     enum CodingKeys: String, CodingKey {
         case id, text
         case groupId = "group_id"
         case userId = "user_id"
+        case gifUrl = "gif_url"
         case createdAt = "created_at"
     }
 
     var model: Message {
-        Message(id: id, groupId: groupId, userId: userId, text: text, createdAt: createdAt)
+        Message(id: id, groupId: groupId, userId: userId, text: text,
+                gifURL: gifUrl.flatMap(URL.init(string:)), createdAt: createdAt)
     }
 }

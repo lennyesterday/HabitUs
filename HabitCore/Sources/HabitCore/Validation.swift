@@ -66,3 +66,16 @@ public func validatePauseReason(_ reason: String) throws {
         throw RuleError("Please give a reason with up to 200 characters.")
     }
 }
+
+/// R26: a GIF in the chat must be a .gif file on GIPHY's media servers, over https.
+/// So nobody can post links to other websites that every member's phone would then load.
+public func validateGifURL(_ text: String) throws {
+    guard text.count <= 500,
+          let url = URL(string: text),
+          url.scheme == "https",
+          let host = url.host,
+          host == "i.giphy.com" || host.range(of: #"^media[0-9]*\.giphy\.com$"#, options: .regularExpression) != nil,
+          url.path.hasSuffix(".gif") else {
+        throw RuleError("Only GIFs from GIPHY can be sent.")
+    }
+}

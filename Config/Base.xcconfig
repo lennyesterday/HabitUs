@@ -8,6 +8,8 @@ BUNDLE_ID_SUFFIX =
 // Info.plist reicht die Werte an die App weiter, SupabaseClient.swift liest sie dort.
 SUPABASE_URL =
 SUPABASE_ANON_KEY =
+// Für die GIF-Suche im Chat (developers.giphy.com), auch aus Secrets.xcconfig.
+GIPHY_API_KEY =
 INFOPLIST_FILE = Config/Info.plist
 
 #include? "Local.xcconfig"

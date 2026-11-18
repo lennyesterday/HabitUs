@@ -13,6 +13,7 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
 4. Supabase access:
    - Copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (also ignored by Git).
    - Fill in the project URL and the **anon** key from the Supabase dashboard (Project Settings → API). Never the service role key.
+   - Optional, for GIFs in the chat: create a free app on developers.giphy.com and put its API key into `GIPHY_API_KEY`.
 5. Pick an iPhone simulator next to the play button and press ▶.
 
 ## Supabase setup (once per project)
@@ -20,6 +21,7 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
 1. Run the files in `supabase/migrations/` in order in the SQL editor of a fresh Supabase project:
    - `001_schema.sql`: tables, access rules (RLS), the private `proofs` photo bucket, `join_by_code`
    - `002_profiles_and_join_preview.sql`: creates the profile for every new account, contract preview by invite code
+   - `003_chat_gifs.sql`: GIFs from GIPHY in the chat
 2. Turn off email confirmation: Authentication → Sign In / Providers → Email → "Confirm email" off. We have no email verification (SPEC section 11, known limits).
 
 The simulator has no camera. There the camera sheet offers a generated test photo, only in simulator builds.
