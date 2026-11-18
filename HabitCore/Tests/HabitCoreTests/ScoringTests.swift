@@ -29,6 +29,24 @@ final class ScoringTests: XCTestCase {
         XCTAssertEqual(points, [25, 26, 27, 28, 29, 30, 30, 30])
     }
 
+    func testR22BonusPercentForAStreak() {
+        XCTAssertEqual(roundBonusPercent(completeRoundsInARow: 0), 0)
+        XCTAssertEqual(roundBonusPercent(completeRoundsInARow: 1), 25)
+        XCTAssertEqual(roundBonusPercent(completeRoundsInARow: 2), 30)
+        XCTAssertEqual(roundBonusPercent(completeRoundsInARow: 6), 50)
+        XCTAssertEqual(roundBonusPercent(completeRoundsInARow: 20), 50)
+    }
+
+    func testR20PointsPerRoundForTheChart() {
+        // Round 1 complete (3 of 3), round 2 two of three: 75 and 40, like the worked example.
+        let checkins = [0, 1, 2, 7, 8].map { makeCheckin(owner, on: addDays($0, to: start)) }
+        let rows = leaderboard(group: makeGroup(target: 3), members: members, checkins: checkins,
+                               reactions: [], now: time(2026, 1, 14, 12))
+        let me = rows.first { $0.userId == owner }
+        XCTAssertEqual(me?.pointsPerRound, [75, 40])
+        XCTAssertEqual(me?.points, 115)
+    }
+
     func testR23MissedTasksGiveZeroNeverNegative() {
         XCTAssertEqual(scoreRounds(donePerRound: [0, 0], target: 3), [0, 0])
     }

@@ -3,6 +3,13 @@ import Foundation
 // Points, bonuses and leaderboard (R20 to R24). Area C.
 // Points are always computed from check-ins, never stored (SPEC section 2).
 
+/// The bonus in percent for a complete round, after this many complete rounds in a row
+/// including this one (R21, R22): 0, 25, 30, 35, 40, 45, then 50 at most.
+public func roundBonusPercent(completeRoundsInARow: Int) -> Int {
+    guard completeRoundsInARow > 0 else { return 0 }
+    return 25 + 5 * min(completeRoundsInARow - 1, 5)
+}
+
 /// Points per round, given the number of done tasks per round (R20 to R23).
 public func scoreRounds(donePerRound: [Int], target: Int) -> [Int] {
     var streak = 0
@@ -13,7 +20,7 @@ public func scoreRounds(donePerRound: [Int], target: Int) -> [Int] {
             return base
         }
         streak += 1
-        let bonus = 25 + 5 * min(streak - 1, 5)            // R21 +25 %, R22 +5 % more each, max +50 %
+        let bonus = roundBonusPercent(completeRoundsInARow: streak)   // R21 +25 %, R22 +5 % more each
         return base * (100 + bonus) / 100
     }
 }
@@ -51,7 +58,8 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
                 donePerRound[r - 1] += 1
             }
         }
-        let points = scoreRounds(donePerRound: donePerRound, target: group.target).reduce(0, +)
+        let roundPoints = scoreRounds(donePerRound: donePerRound, target: group.target)
+        let points = roundPoints.reduce(0, +)
         let complete = donePerRound.map { $0 >= group.target }
 
         // The streak counts complete rounds in a row up to now. A running round that is
@@ -64,7 +72,8 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
 
         return LeaderboardRow(userId: member.userId, displayName: member.displayName, photoPath: member.photoPath,
                               points: points, completeRounds: complete.filter { $0 }.count, streak: streak,
-                              pauses: mine.filter { $0.kind == .pause }.count)
+                              pauses: mine.filter { $0.kind == .pause }.count,
+                              pointsPerRound: roundPoints)
     }
 
     return rows.sorted { a, b in

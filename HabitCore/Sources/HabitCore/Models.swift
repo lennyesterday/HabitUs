@@ -154,11 +154,13 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
     public var completeRounds: Int
     public var streak: Int
     public var pauses: Int
+    /// Points of each round so far, for the chart on the leaderboard.
+    public var pointsPerRound: [Int]
 
     public var id: UUID { userId }
 
     public init(userId: UUID, displayName: String, photoPath: String?, points: Int,
-                completeRounds: Int, streak: Int, pauses: Int) {
+                completeRounds: Int, streak: Int, pauses: Int, pointsPerRound: [Int] = []) {
         self.userId = userId
         self.displayName = displayName
         self.photoPath = photoPath
@@ -166,6 +168,7 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
         self.completeRounds = completeRounds
         self.streak = streak
         self.pauses = pauses
+        self.pointsPerRound = pointsPerRound
     }
 }
 
