@@ -25,8 +25,12 @@ struct RootView: View {
                 .task {
                     // Updates every time someone logs in or out. The session stays in the Keychain.
                     for await id in AuthService.userChanges() {
-                        if id == nil {
-                            hasSeenOnboarding = false
+                        // Supabase repeats its last state now and then (for example when the app
+                        // comes back after the password suggestions). Only react to real changes,
+                        // otherwise the log in screen is rebuilt and loses what was typed.
+                        guard !checked || id != userId else { continue }
+                        if checked && id == nil {
+                            hasSeenOnboarding = false   // just logged out: show the onboarding again
                         }
                         userId = id
                         checked = true

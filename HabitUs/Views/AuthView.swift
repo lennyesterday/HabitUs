@@ -46,10 +46,7 @@ struct AuthView: View {
                     .padding(.top, 40)
 
                     VStack(spacing: 14) {
-                        Picker("Mode", selection: $mode) {
-                            ForEach(Mode.allCases, id: \.self) { Text($0.rawValue) }
-                        }
-                        .pickerStyle(.segmented)
+                        modeSwitch
 
                         field(.email) {
                             TextField("Email", text: $email)
@@ -98,6 +95,34 @@ struct AuthView: View {
             .scrollDismissesKeyboard(.interactively)
         }
         .onChange(of: mode) { errorMessage = nil }
+    }
+
+    /// Two buttons to switch between log in and sign up. A plain segmented Picker changed its
+    /// value by itself when the simulator used the Mac keyboard, so this one only reacts to taps.
+    private var modeSwitch: some View {
+        HStack(spacing: 4) {
+            ForEach(Mode.allCases, id: \.self) { option in
+                Button {
+                    withAnimation(.snappy) { mode = option }
+                } label: {
+                    Text(option.rawValue)
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundStyle(mode == option ? Color.primary : Color.secondary)
+                        .frame(maxWidth: .infinity, minHeight: 36)
+                        .background {
+                            if mode == option {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .fill(Color(.systemBackground))
+                                    .shadow(color: .black.opacity(0.12), radius: 3, y: 1)
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(mode == option ? .isSelected : [])
+            }
+        }
+        .padding(4)
+        .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 13))
     }
 
     /// A soft grey rounded box around a text field. Tapping anywhere in the box puts the
