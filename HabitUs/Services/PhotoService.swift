@@ -32,6 +32,22 @@ enum PhotoService {
         return path
     }
 
+    /// Deletes every photo of a group (owner only, checked by the storage policy).
+    static func deleteAll(groupId: UUID) async throws {
+        let folder = groupId.uuidString.lowercased()
+        try await readable {
+            while true {
+                let files = try await supabase.storage.from("proofs")
+                    .list(path: folder, options: SearchOptions(limit: 100))
+                guard !files.isEmpty else { break }
+                let removed = try await supabase.storage.from("proofs")
+                    .remove(paths: files.map { "\(folder)/\($0.name)" })
+                // Stop if nothing could be deleted, instead of trying forever.
+                if removed.isEmpty { break }
+            }
+        }
+    }
+
     /// Loads a photo with the logged-in session. There are no public links (S8).
     static func load(path: String) async throws -> UIImage {
         if let cached = cache.object(forKey: path as NSString) {

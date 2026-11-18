@@ -16,7 +16,7 @@ struct FeedView: View {
             ForEach(items) { item in
                 switch item {
                 case .message(let message):
-                    let author = data.member(message.userId)?.displayName ?? "Someone"
+                    let author = data.member(message.userId)?.displayName ?? "Former member"
                     if let gifURL = message.gifURL {
                         VStack(alignment: .leading, spacing: 6) {
                             Text("**\(author):** \(message.text)")
@@ -42,7 +42,7 @@ private struct CheckinFeedRow: View {
     let checkin: Checkin
 
     var body: some View {
-        let author = data.member(checkin.userId)?.displayName ?? "Someone"
+        let author = data.member(checkin.userId)?.displayName ?? "Former member"
         let valid = data.isValid(checkin)
 
         VStack(alignment: .leading, spacing: 6) {

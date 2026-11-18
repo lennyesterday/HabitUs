@@ -46,10 +46,14 @@ public func validateGroup(name: String, habit: String, target: Int, period: Peri
     }
 }
 
-/// R4, R5: the typed name under the contract.
-public func validateSignature(_ signature: String) throws {
-    guard (1...40).contains(trimmed(signature).count) else {
-        throw RuleError("Please sign with your name.")
+/// R4, R5: the signature under the contract, drawn by hand and saved as a PNG of at most 40 KB.
+public func validateSignatureImage(_ png: Data) throws {
+    let pngHeader = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+    guard !png.isEmpty else {
+        throw RuleError("Please sign the contract with your finger.")
+    }
+    guard png.starts(with: pngHeader), png.count < 40_000 else {
+        throw RuleError("The signature could not be saved. Please clear it and sign again.")
     }
 }
 

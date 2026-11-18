@@ -22,6 +22,7 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
    - `001_schema.sql`: tables, access rules (RLS), the private `proofs` photo bucket, `join_by_code`
    - `002_profiles_and_join_preview.sql`: creates the profile for every new account, contract preview by invite code
    - `003_chat_gifs.sql`: GIFs from GIPHY in the chat
+   - `004_leave_delete_signature.sql`: leave and delete groups, hand-drawn signatures
 2. Turn off email confirmation: Authentication → Sign In / Providers → Email → "Confirm email" off. We have no email verification (SPEC section 11, known limits).
 
 The simulator has no camera. There the camera sheet offers a generated test photo, only in simulator builds.

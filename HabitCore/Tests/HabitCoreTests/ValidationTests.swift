@@ -91,11 +91,25 @@ final class ValidationTests: XCTestCase {
         XCTAssertNoThrow(try validGroup(endOn: nil))
     }
 
-    // MARK: Signature
+    // MARK: Signature (drawn by hand, stored as a small PNG)
+
+    let pngHeader = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+
+    func testR4DrawnSignatureIsAccepted() {
+        XCTAssertNoThrow(try validateSignatureImage(pngHeader + Data(repeating: 1, count: 2_000)))
+    }
 
     func testR4SignatureIsRequired() {
-        XCTAssertThrowsError(try validateSignature("  "))
-        XCTAssertNoThrow(try validateSignature("Lenny"))
+        XCTAssertThrowsError(try validateSignatureImage(Data()))
+    }
+
+    func testR4SignatureMustBeAPNG() {
+        XCTAssertThrowsError(try validateSignatureImage(Data("Lenny".utf8)))
+    }
+
+    func testR4SignatureHasASizeLimit() {
+        XCTAssertNoThrow(try validateSignatureImage(pngHeader + Data(repeating: 1, count: 39_000)))
+        XCTAssertThrowsError(try validateSignatureImage(pngHeader + Data(repeating: 1, count: 40_000)))
     }
 
     // MARK: R26 messages

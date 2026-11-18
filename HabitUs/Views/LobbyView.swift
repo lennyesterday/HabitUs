@@ -45,9 +45,12 @@ struct LobbyView: View {
                     ForEach(data.pending) { member in
                         VStack(alignment: .leading, spacing: 8) {
                             Text("\(member.avatar) \(member.displayName)")
-                            Text("Signed: \(member.signature)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            HStack(alignment: .center) {
+                                Text("Signed:")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                SignatureImage(signature: member.signature)
+                            }
                             HStack {
                                 Button("Accept") { act { try await GroupService.decide(membershipId: member.id, accept: true) } }
                                     .buttonStyle(.borderedProminent)

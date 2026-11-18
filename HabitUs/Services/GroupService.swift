@@ -118,13 +118,28 @@ private struct MyMembershipRow: Decodable {
     let groups: GroupRow
 }
 
+/// The hand-drawn signature is saved as text: "data:image/png;base64,...".
+enum SignatureFormat {
+    private static let prefix = "data:image/png;base64,"
+
+    static func text(from png: Data) -> String {
+        prefix + png.base64EncodedString()
+    }
+
+    /// The PNG behind a saved signature, or nil for old typed signatures.
+    static func png(from text: String) -> Data? {
+        guard text.hasPrefix(prefix) else { return nil }
+        return Data(base64Encoded: String(text.dropFirst(prefix.count)))
+    }
+}
+
 enum GroupService {
     /// R4: the creator becomes owner, signs the contract and gets an invite code.
     static func createGroup(name: String, habit: String, target: Int, period: Period, endOn: Date?,
-                            rulesText: String, signature: String) async throws -> HabitGroup {
+                            rulesText: String, signature: Data) async throws -> HabitGroup {
         try validateGroup(name: name, habit: habit, target: target, period: period,
                           endOn: endOn, today: localDay(Date()))
-        try validateSignature(signature)
+        try validateSignatureImage(signature)
         return try await readable {
             let new = NewGroup(
                 name: name.trimmingCharacters(in: .whitespaces),
@@ -143,7 +158,7 @@ enum GroupService {
                 .value
             try await supabase.from("memberships")
                 .insert(NewMembership(group_id: row.id, status: "accepted",
-                                      signature: signature.trimmingCharacters(in: .whitespaces)))
+                                      signature: SignatureFormat.text(from: signature)))
                 .execute()
             return row.model
         }
@@ -170,13 +185,13 @@ enum GroupService {
     }
 
     /// R5: calls the database function join_by_code, which creates a pending request.
-    static func requestToJoin(code: String, signature: String) async throws {
-        try validateSignature(signature)
+    static func requestToJoin(code: String, signature: Data) async throws {
+        try validateSignatureImage(signature)
         try await readable {
             try await supabase
                 .rpc("join_by_code", params: [
                     "code": code.trimmingCharacters(in: .whitespaces).uppercased(),
-                    "signature": signature.trimmingCharacters(in: .whitespaces),
+                    "signature": SignatureFormat.text(from: signature),
                 ])
                 .execute()
         }
@@ -227,6 +242,32 @@ enum GroupService {
                 .update(["ended_early_at": ISO8601DateFormatter().string(from: Date())])
                 .eq("id", value: groupId)
                 .execute()
+        }
+    }
+
+    /// Leave a group at any time. Also withdraws a pending request or removes a declined one.
+    /// If the owner leaves, the member who joined first becomes owner. If nobody is left,
+    /// the database deletes the group, so its photos are deleted here first.
+    static func leave(groupId: UUID) async throws {
+        let data = try await load(groupId: groupId)
+        let othersLeft = data.accepted.contains { $0.userId != data.me }
+        if data.isOwner && !othersLeft {
+            try await PhotoService.deleteAll(groupId: groupId)
+        }
+        try await readable {
+            try await supabase.rpc("leave_group", params: ["gid": groupId]).execute()
+        }
+    }
+
+    /// Owner only: deletes the group for everyone, with all photos, check-ins and messages.
+    static func delete(groupId: UUID) async throws {
+        let data = try await load(groupId: groupId)
+        guard data.isOwner else {
+            throw RuleError("Only the owner can delete the group.")
+        }
+        try await PhotoService.deleteAll(groupId: groupId)
+        try await readable {
+            try await supabase.from("groups").delete().eq("id", value: groupId).execute()
         }
     }
 

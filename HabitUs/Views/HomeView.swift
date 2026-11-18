@@ -39,14 +39,10 @@ struct HomeView: View {
                             .foregroundStyle(.secondary)
                     }
                     ForEach(cards) { card in
-                        if card.myStatus == .declined {
+                        NavigationLink {
+                            GameScreen(groupId: card.id)
+                        } label: {
                             GameCardRow(card: card)
-                        } else {
-                            NavigationLink {
-                                GameScreen(groupId: card.id)
-                            } label: {
-                                GameCardRow(card: card)
-                            }
                         }
                     }
                 }

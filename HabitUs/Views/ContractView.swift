@@ -1,16 +1,17 @@
 import SwiftUI
+import PencilKit
 import HabitCore
 
-// The rules as a contract and the typed signature (R4, R5, R8). Area A.
+// The rules as a contract and the hand-drawn signature (R4, R5, R8). Area A.
 // Used when creating, when joining, and read only while a request is pending.
 
 struct ContractView: View {
     let contract: Contract
-    /// Called with the typed name. nil shows the contract read only.
-    var sign: ((String) async throws -> Void)?
+    /// Called with the signature as PNG. nil shows the contract read only.
+    var sign: ((Data) async throws -> Void)?
     var statusText: String?
 
-    @State private var signature = ""
+    @State private var drawing = PKDrawing()
     @State private var errorMessage: String?
     @State private var isWorking = false
 
@@ -30,6 +31,7 @@ struct ContractView: View {
                     Text("If more than half of the other members press **X**, a photo or pause does not count.")
                     Text("20 points per task, bonus for complete rounds and streaks.")
                     Text("The rules cannot change after the start.")
+                    Text("You can leave the group at any time.")
                     if !contract.rulesText.isEmpty {
                         Text("Our rules")
                             .font(.headline)
@@ -47,17 +49,16 @@ struct ContractView: View {
                 }
 
                 if let sign {
-                    TextField("Type your name to sign", text: $signature)
-                        .textFieldStyle(.roundedBorder)
-                        .textContentType(.name)
+                    SignaturePad(drawing: $drawing)
                     ErrorText(message: errorMessage)
                     Button {
                         Task {
                             isWorking = true
                             errorMessage = nil
                             do {
-                                try validateSignature(signature)
-                                try await sign(signature)
+                                let png = SignaturePad.png(from: drawing) ?? Data()
+                                try validateSignatureImage(png)
+                                try await sign(png)
                             } catch {
                                 errorMessage = error.localizedDescription
                             }
