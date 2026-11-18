@@ -99,9 +99,11 @@ enum AuthService {
             try await supabase.from("profiles")
                 .insert(NewProfile(id: me, display_name: name, avatar: "🙂"))
                 .execute()
-        } catch {
-            // The account itself is gone (for example deleted in the dashboard), only the old login is left.
-            throw RuleError("Your account could not be found. Please log out and sign up again.")
+        } catch let error as PostgrestError where error.code == "23503" {
+            // 23503 = the account itself is gone (for example deleted in the dashboard),
+            // only the old login is left on this phone. Log out, so the person can sign up again.
+            try? await supabase.auth.signOut()
+            throw RuleError("This account does not exist any more. Please sign up again.")
         }
         return Profile(displayName: name, photoPath: nil)
     }
