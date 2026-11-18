@@ -22,7 +22,7 @@ struct ProfilePicture: View {
                     .font(.system(size: size * 0.45, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.accentColor.gradient)
+                    .background(Theme.avatarColor(name).gradient)
             }
         }
         .frame(width: size, height: size)

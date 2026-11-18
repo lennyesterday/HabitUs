@@ -72,6 +72,8 @@ struct CreateGroupView: View {
                     ErrorText(message: errorMessage)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(PaperBackground())
             .navigationTitle("New Game")
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: period) { target = min(target, period.maxTarget) }

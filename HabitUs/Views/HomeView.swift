@@ -2,70 +2,76 @@ import SwiftUI
 import HabitCore
 
 // My games, New Game, Join Game (SPEC section 4, Home). Area A.
+// Blue background with one big card per game: picture or icon on top, members, name, points and rank.
 
 struct HomeView: View {
     @State private var cards: [GameCard] = []
     @State private var profile: Profile?
     @State private var errorMessage: String?
+    @State private var isLoading = true
     @State private var showCreate = false
     @State private var showJoin = false
     @State private var showProfile = false
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    HStack {
-                        Button {
-                            showCreate = true
-                        } label: {
-                            Label("New Game", systemImage: "plus").frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        Button {
-                            showJoin = true
-                        } label: {
-                            Label("Join Game", systemImage: "person.badge.plus").frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(.bordered)
-                    }
-                    .controlSize(.large)
-                    .listRowBackground(Color.clear)
-                    .listRowInsets(EdgeInsets())
-                }
+            ZStack {
+                BrandBackground()
 
-                Section("My games") {
-                    if cards.isEmpty {
-                        Text("No games yet. Start one or join with a code from a friend.")
-                            .foregroundStyle(.secondary)
-                    }
-                    ForEach(cards) { card in
-                        NavigationLink {
-                            GameScreen(groupId: card.id)
-                        } label: {
-                            GameCardRow(card: card)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        header
+
+                        HStack(spacing: 12) {
+                            Button {
+                                showCreate = true
+                            } label: {
+                                Label("New Game", systemImage: "plus")
+                            }
+                            .buttonStyle(ChunkyButtonStyle())
+
+                            Button {
+                                showJoin = true
+                            } label: {
+                                Label("Join", systemImage: "person.badge.plus")
+                            }
+                            .buttonStyle(ChunkyButtonStyle(color: .white,
+                                                           ledgeColor: Color(white: 0.75),
+                                                           textColor: Theme.brand))
+                        }
+
+                        if let errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote.bold())
+                                .foregroundStyle(.white)
+                                .padding(12)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.red.opacity(0.75), in: RoundedRectangle(cornerRadius: 14))
+                        }
+
+                        if cards.isEmpty && !isLoading {
+                            emptyState
+                        }
+
+                        ForEach(cards) { card in
+                            NavigationLink {
+                                GameScreen(groupId: card.id)
+                            } label: {
+                                GameCardView(card: card)
+                            }
+                            .buttonStyle(PressableCardStyle())
                         }
                     }
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 30)
                 }
-
-                if let errorMessage {
-                    ErrorText(message: errorMessage)
-                }
+                .refreshable { await load() }
             }
-            .navigationTitle(profile.map { "Hi \($0.displayName) 👋" } ?? "HabitUs")
-            .toolbar {
-                Button {
-                    showProfile = true
-                } label: {
-                    ProfilePicture(name: profile?.displayName ?? "?", path: profile?.photoPath, size: 32)
-                }
-                .accessibilityLabel("Profile")
-            }
+            .toolbar(.hidden, for: .navigationBar)
+            .onAppear { Task { await load() } }
             .sheet(isPresented: $showProfile) {
                 ProfileView(profile: $profile)
             }
-            .refreshable { await load() }
-            .onAppear { Task { await load() } }
             .sheet(isPresented: $showCreate, onDismiss: { Task { await load() } }) {
                 CreateGroupView()
             }
@@ -73,6 +79,54 @@ struct HomeView: View {
                 JoinView()
             }
         }
+    }
+
+    private var header: some View {
+        HStack(alignment: .center) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("HabitUs")
+                    .font(Theme.title(34))
+                    .foregroundStyle(.white)
+                    .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
+                Text(profile.map { "Hi \($0.displayName) 👋" } ?? " ")
+                    .font(.system(.headline, design: .rounded))
+                    .foregroundStyle(.white.opacity(0.85))
+            }
+            Spacer()
+            Button {
+                showProfile = true
+            } label: {
+                ZStack(alignment: .bottomTrailing) {
+                    ProfilePicture(name: profile?.displayName ?? "?", path: profile?.photoPath, size: 46)
+                        .overlay(Circle().stroke(.white, lineWidth: 3))
+                    Image(systemName: "gearshape.fill")
+                        .font(.caption.bold())
+                        .foregroundStyle(Theme.brand)
+                        .padding(4)
+                        .background(.white, in: Circle())
+                        .offset(x: 4, y: 4)
+                }
+            }
+            .accessibilityLabel("Profile and settings")
+        }
+        .padding(.top, 12)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 10) {
+            Text("🌱")
+                .font(.system(size: 56))
+            Text("No games yet")
+                .font(Theme.title(24))
+                .foregroundStyle(Theme.ink)
+            Text("Start a habit with your friends, or join with a code from one of them.")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(28)
+        .frame(maxWidth: .infinity)
+        .ledgeCard(.white, ledge: Color(white: 0.8))
     }
 
     private func load() async {
@@ -85,32 +139,83 @@ struct HomeView: View {
         } catch {
             errorMessage = error.localizedDescription
         }
+        isLoading = false
     }
 }
 
-/// One game on Home. The role and the status are visible on the card.
-struct GameCardRow: View {
+/// Cards sink in a little when pressed.
+struct PressableCardStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .animation(.spring(duration: 0.2), value: configuration.isPressed)
+    }
+}
+
+/// One game on Home: picture or icon, members, name, status, points and rank.
+struct GameCardView: View {
     let card: GameCard
 
     var body: some View {
-        HStack(spacing: 12) {
-            GroupBadge(group: card.group, size: 44)
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(card.group.name)
-                        .font(.headline)
-                    Spacer()
+        VStack(alignment: .leading, spacing: 0) {
+            GroupBanner(group: card.group, height: 140)
+                .overlay(alignment: .bottomLeading) {
+                    memberStack
+                        .offset(x: 12, y: 22)
+                }
+                .overlay(alignment: .topTrailing) {
                     if card.isOwner {
-                        Text("👑 Owner")
-                            .font(.caption)
+                        Pill(text: "Owner", emoji: "👑", dark: false)
+                            .padding(10)
                     }
                 }
-                Text(statusText)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(card.group.name)
+                        .font(Theme.title(24))
+                        .foregroundStyle(Theme.ink)
+                        .lineLimit(1)
+                    Text(statusText)
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                Spacer()
+                VStack(alignment: .trailing, spacing: 6) {
+                    if let points = card.myPoints {
+                        Pill(text: "\(points)", emoji: "🔥")
+                    }
+                    if let rank = card.myRank {
+                        Pill(text: "#\(rank)", emoji: "🏆")
+                    }
+                }
+            }
+            .padding(.horizontal, 10)
+            .padding(.top, card.members.isEmpty ? 12 : 30)
+            .padding(.bottom, 8)
+        }
+        .padding(8)
+        .ledgeCard(.white, ledge: Color(white: 0.78), radius: 30)
+        .contentShape(Rectangle())
+    }
+
+    /// Profile pictures of the members, overlapping, on the edge of the picture.
+    private var memberStack: some View {
+        HStack(spacing: -12) {
+            ForEach(card.members.prefix(6)) { member in
+                ProfilePicture(name: member.displayName, path: member.photoPath, size: 44)
+                    .overlay(Circle().stroke(.white, lineWidth: 3))
+            }
+            if card.members.count > 6 {
+                Text("+\(card.members.count - 6)")
+                    .font(.system(.caption, design: .rounded).bold())
+                    .foregroundStyle(.white)
+                    .frame(width: 44, height: 44)
+                    .background(Theme.ink, in: Circle())
+                    .overlay(Circle().stroke(.white, lineWidth: 3))
             }
         }
-        .padding(.vertical, 4)
     }
 
     private var statusText: String {
@@ -123,20 +228,74 @@ struct GameCardRow: View {
         case .accepted:
             switch phase(of: group, now: Date()) {
             case .lobby:
-                let requests = card.openRequests == 1 ? "1 open request" : "\(card.openRequests) open requests"
+                let requests = card.openRequests == 1 ? "1 request" : "\(card.openRequests) requests"
                 return card.isOwner
                     ? "Lobby · \(card.acceptedCount) of 3 · \(requests)"
                     : "Waiting for start · \(card.acceptedCount) of 3"
             case .active:
-                let round = "Active · Round \(currentRound(of: group, now: Date()))"
-                return group.endOn.map { "\(round) · ends \(Theme.dayText($0))" } ?? round
+                let round = "\(group.habit) · Round \(currentRound(of: group, now: Date()))"
+                if let done = card.myDone {
+                    return "\(round) · \(done)/\(group.target) done"
+                }
+                return round
             case .ended:
-                return "Ended"
+                return "\(group.habit) · Ended"
             }
         }
     }
 }
 
-#Preview {
-    HomeView()
+/// The wide picture on top of a group card: the group picture, or the icon on a colored panel.
+struct GroupBanner: View {
+    let group: HabitGroup
+    var height: CGFloat = 140
+
+    @State private var image: UIImage?
+
+    var body: some View {
+        let color = Theme.groupColor(group.id)
+        ZStack {
+            LinearGradient(colors: [color.opacity(0.75), color], startPoint: .topLeading, endPoint: .bottomTrailing)
+            if let image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                // Soft rays behind the emoji, so the panel does not look empty.
+                ForEach(0..<8) { index in
+                    Capsule()
+                        .fill(.white.opacity(0.10))
+                        .frame(width: 14, height: height * 1.6)
+                        .rotationEffect(.degrees(Double(index) * 22.5))
+                }
+                Text(group.icon)
+                    .font(.system(size: height * 0.5))
+                    .shadow(color: .black.opacity(0.2), radius: 8, y: 6)
+            }
+        }
+        .frame(height: height)
+        .frame(maxWidth: .infinity)
+        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .task(id: group.photoPath) {
+            image = nil
+            if let path = group.photoPath {
+                image = try? await PictureService.load(path: path)
+            }
+        }
+    }
+}
+
+#Preview("Card") {
+    let group = HabitGroup(id: UUID(), name: "Gym Crew", habit: "Gym", icon: "🏋️", photoPath: nil, target: 3,
+                           period: .week, endOn: nil, rulesText: "", inviteCode: "ABC234", ownerId: UUID(),
+                           startedOn: Date(), endedEarlyAt: nil)
+    let members = ["Lenny", "Bene", "Vincent"].map {
+        Member(id: UUID(), userId: UUID(), displayName: $0, photoPath: nil, status: .accepted, signature: "")
+    }
+    return ZStack {
+        BrandBackground()
+        GameCardView(card: GameCard(group: group, myStatus: .accepted, isOwner: true, acceptedCount: 3,
+                                    openRequests: 0, members: members, myPoints: 136, myRank: 2, myDone: 2))
+            .padding()
+    }
 }

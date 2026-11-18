@@ -11,6 +11,12 @@ struct GameCard: Identifiable {
     var isOwner: Bool
     var acceptedCount: Int
     var openRequests: Int
+    /// Accepted members with name and picture (only visible once I am accepted, RLS).
+    var members: [Member] = []
+    /// Only for running games: my points, my place and my done tasks this round.
+    var myPoints: Int?
+    var myRank: Int?
+    var myDone: Int?
 
     var id: UUID { group.id }
 }
@@ -129,9 +135,18 @@ private struct GroupLook: Encodable {
     }
 }
 
-private struct MembershipStatusRow: Decodable {
+/// A membership with name and picture, without the (large) signature, for the Home cards.
+private struct CardMemberRow: Decodable {
+    let id: UUID
     let group_id: UUID
+    let user_id: UUID
     let status: String
+    let profiles: ProfileRow
+
+    var model: Member {
+        Member(id: id, userId: user_id, displayName: profiles.displayName, photoPath: profiles.photoPath,
+               status: MembershipStatus(rawValue: status) ?? .pending, signature: "")
+    }
 }
 
 private struct MyMembershipRow: Decodable {
@@ -328,19 +343,48 @@ enum GroupService {
                 .value
             let ids = mine.map(\.groups.id)
             // RLS only shows the other members of groups where I am accepted.
-            let all: [MembershipStatusRow] = ids.isEmpty ? [] : try await supabase.from("memberships")
-                .select("group_id, status")
+            let all: [CardMemberRow] = ids.isEmpty ? [] : try await supabase.from("memberships")
+                .select("id, group_id, user_id, status, profiles(display_name, photo_path)")
                 .in("group_id", values: ids)
+                .order("signed_at")
                 .execute()
                 .value
+            // Check-ins of the running games where I am accepted, to compute points and rank.
+            let now = Date()
+            let runningIds = mine
+                .filter { $0.status == "accepted" && phase(of: $0.groups.model, now: now) != .lobby }
+                .map(\.groups.id)
+            let checkinRows: [CheckinRow] = runningIds.isEmpty ? [] : try await supabase.from("checkins")
+                .select("*, reactions(*)")
+                .in("group_id", values: runningIds)
+                .execute()
+                .value
+            let checkins = checkinRows.map(\.model)
+            let reactions = checkinRows.flatMap { $0.reactions.compactMap(\.model) }
+
             return mine.map { row in
                 let group = row.groups.model
                 let ofGroup = all.filter { $0.group_id == group.id }
-                return GameCard(group: group,
-                                myStatus: MembershipStatus(rawValue: row.status) ?? .pending,
-                                isOwner: group.ownerId == me,
-                                acceptedCount: ofGroup.filter { $0.status == "accepted" }.count,
-                                openRequests: ofGroup.filter { $0.status == "pending" }.count)
+                let members = ofGroup.map(\.model)
+                var card = GameCard(group: group,
+                                    myStatus: MembershipStatus(rawValue: row.status) ?? .pending,
+                                    isOwner: group.ownerId == me,
+                                    acceptedCount: ofGroup.filter { $0.status == "accepted" }.count,
+                                    openRequests: ofGroup.filter { $0.status == "pending" }.count,
+                                    members: members.filter { $0.status == .accepted })
+                if runningIds.contains(group.id) {
+                    let mineHere = checkins.filter { $0.groupId == group.id }
+                    let ranking = HabitCore.leaderboard(group: group, members: members, checkins: mineHere,
+                                                        reactions: reactions, now: now)
+                    if let index = ranking.firstIndex(where: { $0.userId == me }) {
+                        card.myPoints = ranking[index].points
+                        card.myRank = index + 1
+                    }
+                    card.myDone = HabitCore.taskStatus(user: me, group: group, checkins: mineHere,
+                                                       reactions: reactions,
+                                                       memberCount: card.acceptedCount, now: now).done
+                }
+                return card
             }
         }
     }

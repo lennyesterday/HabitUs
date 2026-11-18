@@ -31,6 +31,8 @@ struct JoinView: View {
                     ErrorText(message: errorMessage)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(PaperBackground())
             .navigationTitle("Join Game")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

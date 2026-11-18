@@ -11,22 +11,14 @@ struct FeedView: View {
         LazyVStack(alignment: .leading, spacing: 14) {
             if items.isEmpty {
                 Text("Nothing here yet. Do your first task or say hi 👋")
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity)
             }
             ForEach(items) { item in
                 switch item {
                 case .message(let message):
-                    let author = data.member(message.userId)?.displayName ?? "Former member"
-                    if let gifURL = message.gifURL {
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("**\(author):** \(message.text)")
-                            AnimatedGif(url: gifURL)
-                                .frame(width: 200, height: 150)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                        }
-                    } else {
-                        Text("**\(author):** \(message.text)")
-                    }
+                    MessageBubble(data: data, message: message)
                 case .checkin(let checkin, _):
                     CheckinFeedRow(data: data, checkin: checkin)
                 }
@@ -36,34 +28,85 @@ struct FeedView: View {
     }
 }
 
-/// One photo or pause in the feed, with "valid" or "invalid" (R17, R18).
+/// A chat bubble: mine on the right in blue, the others on the left in white with their picture.
+private struct MessageBubble: View {
+    let data: GroupData
+    let message: Message
+
+    var body: some View {
+        let mine = message.userId == data.me
+        let author = data.member(message.userId)
+        HStack(alignment: .bottom, spacing: 8) {
+            if mine { Spacer(minLength: 50) } else {
+                ProfilePicture(name: author?.displayName ?? "?", path: author?.photoPath, size: 30)
+            }
+            VStack(alignment: mine ? .trailing : .leading, spacing: 4) {
+                if !mine {
+                    Text(author?.displayName ?? "Former member")
+                        .font(.system(.caption, design: .rounded).weight(.heavy))
+                        .foregroundStyle(.secondary)
+                }
+                if let gifURL = message.gifURL {
+                    AnimatedGif(url: gifURL)
+                        .frame(width: 200, height: 150)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                }
+                if !message.text.isEmpty {
+                    Text(message.text)
+                        .font(.system(.body, design: .rounded))
+                        .foregroundStyle(mine ? .white : Theme.ink)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 9)
+                        .background(mine ? Theme.brand : .white, in: RoundedRectangle(cornerRadius: 20))
+                        .shadow(color: .black.opacity(0.06), radius: 3, y: 2)
+                }
+            }
+            if !mine { Spacer(minLength: 50) }
+        }
+    }
+}
+
+/// One photo or pause in the feed as a white card, with "valid" or "invalid" (R17, R18).
 private struct CheckinFeedRow: View {
     let data: GroupData
     let checkin: Checkin
 
     var body: some View {
-        let author = data.member(checkin.userId)?.displayName ?? "Former member"
+        let author = data.member(checkin.userId)
         let valid = data.isValid(checkin)
 
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                if checkin.kind == .photo {
-                    Text("**\(author):** 📷 \(data.group.habit.uppercased()) · \(Theme.timeText(checkin.createdAt))")
-                } else {
-                    Text("**\(author):** ⏸ \(checkin.text)")
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                ProfilePicture(name: author?.displayName ?? "?", path: author?.photoPath, size: 36)
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(author?.displayName ?? "Former member")
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                    Text(checkin.kind == .photo
+                         ? "📸 \(data.group.habit) · \(Theme.timeText(checkin.createdAt))"
+                         : "⏸ Pause · \(Theme.timeText(checkin.createdAt))")
+                        .font(.system(.caption, design: .rounded).weight(.bold))
+                        .foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text(valid ? (checkin.kind == .photo ? "valid" : "accepted") : (checkin.kind == .photo ? "invalid" : "rejected"))
-                    .font(.caption)
-                    .foregroundStyle(valid ? Color.green : Color.red)
+                Text(valid ? (checkin.kind == .photo ? "VALID" : "ACCEPTED")
+                           : (checkin.kind == .photo ? "INVALID" : "REJECTED"))
+                    .font(.system(.caption2, design: .rounded).weight(.heavy))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(valid ? Theme.rankColor(1) : Theme.rankColor(0), in: Capsule())
             }
             if let path = checkin.photoPath {
                 ProofImage(path: path)
             }
-            if !checkin.text.isEmpty && checkin.kind == .photo {
-                Text(checkin.text).font(.callout)
+            if !checkin.text.isEmpty {
+                Text(checkin.text)
+                    .font(.system(.callout, design: .rounded))
             }
         }
+        .padding(12)
+        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
     }
 }
 
@@ -88,8 +131,8 @@ private struct ProofImage: View {
                     .frame(maxWidth: .infinity, minHeight: 120)
             }
         }
-        .frame(maxHeight: 280)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .frame(maxWidth: .infinity, maxHeight: 320)
+        .clipShape(RoundedRectangle(cornerRadius: 18))
         .task(id: path) {
             do {
                 image = try await PhotoService.load(path: path)

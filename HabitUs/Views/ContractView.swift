@@ -19,7 +19,8 @@ struct ContractView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Contract")
-                    .font(.largeTitle.bold())
+                    .font(Theme.title(40))
+                    .foregroundStyle(Theme.ink)
                 Text("\(contract.icon) \(contract.name)")
                     .font(.title2)
 
@@ -41,7 +42,8 @@ struct ContractView: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 12))
+                .background(.white, in: RoundedRectangle(cornerRadius: 24))
+                .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
 
                 if let statusText {
                     Label(statusText, systemImage: "hourglass")
@@ -66,17 +68,16 @@ struct ContractView: View {
                         }
                     } label: {
                         Group {
-                            if isWorking { ProgressView() } else { Text("Sign") }
+                            if isWorking { ProgressView().tint(.black) } else { Text("Sign") }
                         }
-                        .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(ChunkyButtonStyle())
                     .disabled(isWorking)
                 }
             }
             .padding()
         }
+        .background(PaperBackground())
     }
 }
 

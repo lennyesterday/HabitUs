@@ -72,11 +72,13 @@ struct LobbyView: View {
                     Button {
                         act { try await GroupService.start(groupId: data.group.id) }
                     } label: {
-                        Text("Start Session").frame(maxWidth: .infinity)
+                        Text("Start Session")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
+                    .buttonStyle(ChunkyButtonStyle())
                     .disabled(isWorking || data.accepted.count < 3)
+                    .opacity(data.accepted.count < 3 ? 0.5 : 1)
+                    .listRowBackground(Color.clear)
+                    .listRowInsets(EdgeInsets())
                 } else {
                     Label("Waiting for the owner to start.", systemImage: "hourglass")
                         .foregroundStyle(.secondary)
@@ -89,7 +91,9 @@ struct LobbyView: View {
                 ErrorText(message: errorMessage)
             }
         }
-        .navigationTitle(data.group.name)
+        .scrollContentBackground(.hidden)
+        .background(PaperBackground())
+        .navigationTitle("\(data.group.icon) \(data.group.name)")
         .refreshable { await reload() }
     }
 
