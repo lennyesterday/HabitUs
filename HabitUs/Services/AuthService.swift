@@ -11,6 +11,12 @@ struct Profile {
     var photoPath: String?
 }
 
+private struct NewProfile: Encodable {
+    let id: UUID
+    let display_name: String
+    let avatar: String
+}
+
 enum AuthService {
     /// R1: checks the input with HabitCore, then creates the account. The database trigger
     /// from 002_profiles_and_join_preview.sql creates the profile row from the name.
@@ -68,14 +74,36 @@ enum AuthService {
     static func myProfile() async throws -> Profile {
         let me = try requireUser()
         return try await readable {
-            let row: ProfileRow = try await supabase.from("profiles")
+            let rows: [ProfileRow] = try await supabase.from("profiles")
                 .select("display_name, photo_path")
                 .eq("id", value: me)
-                .single()
+                .limit(1)
                 .execute()
                 .value
-            return Profile(displayName: row.displayName, photoPath: row.photoPath)
+            if let row = rows.first {
+                return Profile(displayName: row.displayName, photoPath: row.photoPath)
+            }
+            return try await createMissingProfile(for: me)
         }
+    }
+
+    /// Accounts made before the sign up trigger existed (002) have no profile row.
+    /// Creates it with the name from sign up, so the account works normally (RLS allows only your own row).
+    private static func createMissingProfile(for me: UUID) async throws -> Profile {
+        var name = "Player"
+        if case .string(let text)? = supabase.auth.currentUser?.userMetadata["display_name"],
+           (2...20).contains(text.trimmingCharacters(in: .whitespaces).count) {
+            name = text.trimmingCharacters(in: .whitespaces)
+        }
+        do {
+            try await supabase.from("profiles")
+                .insert(NewProfile(id: me, display_name: name, avatar: "🙂"))
+                .execute()
+        } catch {
+            // The account itself is gone (for example deleted in the dashboard), only the old login is left.
+            throw RuleError("Your account could not be found. Please log out and sign up again.")
+        }
+        return Profile(displayName: name, photoPath: nil)
     }
 
     /// Sets a new profile picture (or removes it with nil) and deletes the old one.
