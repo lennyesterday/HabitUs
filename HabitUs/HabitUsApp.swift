@@ -13,7 +13,9 @@ struct HabitUsApp: App {
 struct RootView: View {
     @State private var userId: UUID?
     @State private var checked = false
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    /// Not saved on purpose: everyone who is not logged in sees the onboarding first,
+    /// on every start of the app and after every log out.
+    @State private var hasSeenOnboarding = false
 
     var body: some View {
         if !Backend.isConfigured {
@@ -23,6 +25,9 @@ struct RootView: View {
                 .task {
                     // Updates every time someone logs in or out. The session stays in the Keychain.
                     for await id in AuthService.userChanges() {
+                        if id == nil {
+                            hasSeenOnboarding = false
+                        }
                         userId = id
                         checked = true
                     }
