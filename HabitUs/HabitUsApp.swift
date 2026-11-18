@@ -13,6 +13,7 @@ struct HabitUsApp: App {
 struct RootView: View {
     @State private var userId: UUID?
     @State private var checked = false
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
 
     var body: some View {
         if !Backend.isConfigured {
@@ -33,8 +34,11 @@ struct RootView: View {
     private var content: some View {
         if !checked {
             ProgressView()
+        } else if userId == nil && !hasSeenOnboarding {
+            OnboardingView { withAnimation { hasSeenOnboarding = true } }
         } else if userId == nil {
             AuthView()
+                .transition(.opacity)
         } else {
             HomeView()
                 .id(userId)

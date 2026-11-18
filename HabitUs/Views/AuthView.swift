@@ -17,64 +17,90 @@ struct AuthView: View {
     @State private var isWorking = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("HabitUs")
-                        .font(.largeTitle.bold())
-                    Label("Pick a habit with your friends and sign the contract.", systemImage: "signature")
-                    Label("Prove every task with a live photo.", systemImage: "camera")
-                    Label("The group checks, the leaderboard shows who delivers.", systemImage: "trophy")
-                }
-                .font(.subheadline)
+        ZStack {
+            BrandBackground()
 
-                Picker("Mode", selection: $mode) {
-                    ForEach(Mode.allCases, id: \.self) { Text($0.rawValue) }
-                }
-                .pickerStyle(.segmented)
-
-                VStack(spacing: 12) {
-                    TextField("Email", text: $email)
-                        .textContentType(.emailAddress)
-                        .keyboardType(.emailAddress)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled()
-                    SecureField(mode == .signUp ? "Password (at least 8 characters)" : "Password", text: $password)
-                        .textContentType(mode == .signUp ? .newPassword : .password)
-                    if mode == .signUp {
-                        TextField("Display name (2 to 20 characters)", text: $displayName)
-                            .textContentType(.nickname)
+            ScrollView {
+                VStack(spacing: 24) {
+                    VStack(spacing: 10) {
+                        Image("Logo")
+                            .resizable()
+                            .frame(width: 88, height: 88)
+                            .clipShape(RoundedRectangle(cornerRadius: 22))
+                            .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
+                        Text("HabitUs")
+                            .font(Theme.title(40))
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
+                        Text(mode == .logIn ? "Welcome back! Your group is waiting."
+                                            : "Create your account and start a streak.")
+                            .font(.system(.body, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
+                            .multilineTextAlignment(.center)
                     }
-                }
-                .textFieldStyle(.roundedBorder)
+                    .padding(.top, 40)
 
-                if mode == .signUp {
-                    Toggle("I agree that my proof photos are visible to the members of my groups.",
-                           isOn: $acceptedTerms)
-                        .font(.footnote)
-                }
-
-                ErrorText(message: errorMessage)
-
-                Button {
-                    Task { await submit() }
-                } label: {
-                    Group {
-                        if isWorking {
-                            ProgressView()
-                        } else {
-                            Text(mode.rawValue)
+                    VStack(spacing: 14) {
+                        Picker("Mode", selection: $mode) {
+                            ForEach(Mode.allCases, id: \.self) { Text($0.rawValue) }
                         }
+                        .pickerStyle(.segmented)
+
+                        field {
+                            TextField("Email", text: $email)
+                                .textContentType(.emailAddress)
+                                .keyboardType(.emailAddress)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
+                        }
+                        field {
+                            SecureField(mode == .signUp ? "Password (at least 8 characters)" : "Password",
+                                        text: $password)
+                                .textContentType(mode == .signUp ? .newPassword : .password)
+                        }
+                        if mode == .signUp {
+                            field {
+                                TextField("Display name (2 to 20 characters)", text: $displayName)
+                                    .textContentType(.nickname)
+                            }
+                            Toggle("I agree that my proof photos are visible to the members of my groups.",
+                                   isOn: $acceptedTerms)
+                                .font(.footnote)
+                                .tint(Theme.brand)
+                        }
+
+                        ErrorText(message: errorMessage)
+
+                        Button {
+                            Task { await submit() }
+                        } label: {
+                            if isWorking {
+                                ProgressView().tint(.black)
+                            } else {
+                                Text(mode.rawValue)
+                            }
+                        }
+                        .buttonStyle(ChunkyButtonStyle())
+                        .disabled(isWorking)
                     }
-                    .frame(maxWidth: .infinity)
+                    .padding(20)
+                    .background(.background, in: RoundedRectangle(cornerRadius: 28))
+                    .shadow(color: .black.opacity(0.15), radius: 20, y: 10)
                 }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .disabled(isWorking)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 30)
             }
-            .padding()
+            .scrollDismissesKeyboard(.interactively)
         }
         .onChange(of: mode) { errorMessage = nil }
+    }
+
+    /// A soft grey rounded box around a text field.
+    private func field(@ViewBuilder _ content: () -> some View) -> some View {
+        content()
+            .padding(.horizontal, 14)
+            .frame(minHeight: 50)
+            .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
     }
 
     private func submit() async {
