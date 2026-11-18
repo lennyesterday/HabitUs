@@ -4,9 +4,6 @@ import HabitCore
 // Colors, texts and small helpers shared by all screens. Area A.
 
 enum Theme {
-    /// Avatars to pick from when signing up (R1).
-    static let avatars = ["🏋️", "🏃", "🚴", "🧘", "📚", "🥗", "💧", "😴", "🎸", "🧠", "🦊", "🐼"]
-
     static let cardBackground = Color(.secondarySystemBackground)
 
     /// "14 Feb", always the Lisbon calendar day the database means.

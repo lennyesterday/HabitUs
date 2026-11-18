@@ -24,6 +24,8 @@ public struct HabitGroup: Sendable, Equatable, Identifiable {
     public var id: UUID
     public var name: String
     public var habit: String
+    public var icon: String          // one emoji, shown when there is no group picture
+    public var photoPath: String?    // group picture in the "pictures" bucket
     public var target: Int
     public var period: Period
     public var endOn: Date?          // nil = open end
@@ -33,12 +35,14 @@ public struct HabitGroup: Sendable, Equatable, Identifiable {
     public var startedOn: Date?      // nil while in the lobby
     public var endedEarlyAt: Date?   // set when the owner presses Finish challenge
 
-    public init(id: UUID, name: String, habit: String, target: Int, period: Period,
-                endOn: Date?, rulesText: String, inviteCode: String, ownerId: UUID,
+    public init(id: UUID, name: String, habit: String, icon: String, photoPath: String?, target: Int,
+                period: Period, endOn: Date?, rulesText: String, inviteCode: String, ownerId: UUID,
                 startedOn: Date?, endedEarlyAt: Date?) {
         self.id = id
         self.name = name
         self.habit = habit
+        self.icon = icon
+        self.photoPath = photoPath
         self.target = target
         self.period = period
         self.endOn = endOn
@@ -54,21 +58,21 @@ public enum MembershipStatus: String, Sendable {
     case pending, accepted, declined
 }
 
-/// A person in a group: their membership row plus name and avatar from `profiles`.
+/// A person in a group: their membership row plus name and profile picture from `profiles`.
 public struct Member: Sendable, Equatable, Identifiable {
     public var id: UUID              // membership id
     public var userId: UUID
     public var displayName: String
-    public var avatar: String
+    public var photoPath: String?    // profile picture in the "pictures" bucket
     public var status: MembershipStatus
     public var signature: String
 
-    public init(id: UUID, userId: UUID, displayName: String, avatar: String,
+    public init(id: UUID, userId: UUID, displayName: String, photoPath: String?,
                 status: MembershipStatus, signature: String) {
         self.id = id
         self.userId = userId
         self.displayName = displayName
-        self.avatar = avatar
+        self.photoPath = photoPath
         self.status = status
         self.signature = signature
     }
@@ -145,7 +149,7 @@ public struct TaskStatus: Sendable, Equatable {
 public struct LeaderboardRow: Sendable, Equatable, Identifiable {
     public var userId: UUID
     public var displayName: String
-    public var avatar: String
+    public var photoPath: String?
     public var points: Int
     public var completeRounds: Int
     public var streak: Int
@@ -153,11 +157,11 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
 
     public var id: UUID { userId }
 
-    public init(userId: UUID, displayName: String, avatar: String, points: Int,
+    public init(userId: UUID, displayName: String, photoPath: String?, points: Int,
                 completeRounds: Int, streak: Int, pauses: Int) {
         self.userId = userId
         self.displayName = displayName
-        self.avatar = avatar
+        self.photoPath = photoPath
         self.points = points
         self.completeRounds = completeRounds
         self.streak = streak

@@ -30,8 +30,8 @@ let carol = UUID()
 
 func makeGroup(target: Int = 3, period: Period = .week, startedOn: Date? = day(2026, 1, 5),
                endOn: Date? = nil, endedEarlyAt: Date? = nil) -> HabitGroup {
-    HabitGroup(id: UUID(), name: "Gym Crew", habit: "Gym", target: target, period: period,
-               endOn: endOn, rulesText: "", inviteCode: "ABC234", ownerId: owner,
+    HabitGroup(id: UUID(), name: "Gym Crew", habit: "Gym", icon: "🏋️", photoPath: nil, target: target,
+               period: period, endOn: endOn, rulesText: "", inviteCode: "ABC234", ownerId: owner,
                startedOn: startedOn, endedEarlyAt: endedEarlyAt)
 }
 
@@ -42,7 +42,7 @@ func makeCheckin(_ user: UUID, on date: Date, kind: CheckinKind = .photo) -> Che
 }
 
 func makeMember(_ user: UUID, _ name: String, status: MembershipStatus = .accepted) -> Member {
-    Member(id: UUID(), userId: user, displayName: name, avatar: "🙂", status: status, signature: name)
+    Member(id: UUID(), userId: user, displayName: name, photoPath: nil, status: status, signature: name)
 }
 
 func xs(on checkin: Checkin, by users: [UUID]) -> [Reaction] {

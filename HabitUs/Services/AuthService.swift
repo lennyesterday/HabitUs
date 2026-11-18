@@ -1,31 +1,28 @@
-import Foundation
+import UIKit
 import HabitCore
 import Supabase
 
 // Sign up, log in, log out (R1 to R3). Area A.
 // Passwords go only to Supabase Auth, which stores a bcrypt hash (R2, S1).
 
-/// Name and avatar of the logged-in user, for "Hi Lenny 👋".
+/// Name and profile picture of the logged-in user, for "Hi Lenny 👋".
 struct Profile {
     var displayName: String
-    var avatar: String
+    var photoPath: String?
 }
 
 enum AuthService {
     /// R1: checks the input with HabitCore, then creates the account. The database trigger
-    /// from 002_profiles_and_join_preview.sql creates the profile row from name and avatar.
-    static func signUp(email: String, password: String, displayName: String, avatar: String,
+    /// from 002_profiles_and_join_preview.sql creates the profile row from the name.
+    static func signUp(email: String, password: String, displayName: String,
                        acceptedTerms: Bool) async throws {
         try validateSignUp(email: email, password: password, displayName: displayName,
-                           avatar: avatar, acceptedTerms: acceptedTerms)
+                           acceptedTerms: acceptedTerms)
         try await readable {
             let response = try await supabase.auth.signUp(
                 email: email.trimmingCharacters(in: .whitespaces),
                 password: password,
-                data: [
-                    "display_name": .string(displayName.trimmingCharacters(in: .whitespaces)),
-                    "avatar": .string(avatar),
-                ]
+                data: ["display_name": .string(displayName.trimmingCharacters(in: .whitespaces))]
             )
             if response.session == nil {
                 throw RuleError("Account created, but email confirmation is turned on in Supabase. Turn it off (Authentication → Sign In / Providers → Email) or confirm the email, then log in.")
@@ -72,12 +69,31 @@ enum AuthService {
         let me = try requireUser()
         return try await readable {
             let row: ProfileRow = try await supabase.from("profiles")
-                .select("display_name, avatar")
+                .select("display_name, photo_path")
                 .eq("id", value: me)
                 .single()
                 .execute()
                 .value
-            return Profile(displayName: row.displayName, avatar: row.avatar)
+            return Profile(displayName: row.displayName, photoPath: row.photoPath)
         }
+    }
+
+    /// Sets a new profile picture (or removes it with nil) and deletes the old one.
+    static func setProfilePicture(_ image: UIImage?) async throws -> Profile {
+        let me = try requireUser()
+        let old = try await myProfile()
+        var path: String?
+        if let image {
+            path = try await PictureService.upload(image, folder: "users/\(me.uuidString.lowercased())")
+        }
+        let newPath = path
+        try await readable {
+            try await supabase.from("profiles")
+                .update(["photo_path": newPath])
+                .eq("id", value: me)
+                .execute()
+        }
+        await PictureService.deleteQuietly(path: old.photoPath)
+        return Profile(displayName: old.displayName, photoPath: path)
     }
 }

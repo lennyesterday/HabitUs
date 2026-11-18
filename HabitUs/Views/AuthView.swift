@@ -12,7 +12,6 @@ struct AuthView: View {
     @State private var email = ""
     @State private var password = ""
     @State private var displayName = ""
-    @State private var avatar = Theme.avatars[0]
     @State private var acceptedTerms = false
     @State private var errorMessage: String?
     @State private var isWorking = false
@@ -50,21 +49,6 @@ struct AuthView: View {
                 .textFieldStyle(.roundedBorder)
 
                 if mode == .signUp {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Avatar")
-                            .font(.subheadline.bold())
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack {
-                                ForEach(Theme.avatars, id: \.self) { emoji in
-                                    Button(emoji) { avatar = emoji }
-                                        .font(.largeTitle)
-                                        .padding(4)
-                                        .background(avatar == emoji ? Color.accentColor.opacity(0.25) : .clear,
-                                                    in: RoundedRectangle(cornerRadius: 10))
-                                }
-                            }
-                        }
-                    }
                     Toggle("I agree that my proof photos are visible to the members of my groups.",
                            isOn: $acceptedTerms)
                         .font(.footnote)
@@ -99,7 +83,7 @@ struct AuthView: View {
         do {
             if mode == .signUp {
                 try await AuthService.signUp(email: email, password: password, displayName: displayName,
-                                             avatar: avatar, acceptedTerms: acceptedTerms)
+                                             acceptedTerms: acceptedTerms)
             } else {
                 try await AuthService.logIn(email: email, password: password)
             }

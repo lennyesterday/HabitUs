@@ -13,6 +13,8 @@ struct CreateGroupView: View {
     @State private var path: [Step] = []
     @State private var name = ""
     @State private var habit = ""
+    @State private var icon = "🎯"
+    @State private var showEmojiPicker = false
     @State private var period = Period.week
     @State private var target = 3
     @State private var hasEndDate = false
@@ -26,6 +28,15 @@ struct CreateGroupView: View {
                 Section("Group") {
                     TextField("Name, for example Gym Crew", text: $name)
                     TextField("Habit, for example Gym", text: $habit)
+                    Button {
+                        showEmojiPicker = true
+                    } label: {
+                        HStack {
+                            Text("Icon")
+                            Spacer()
+                            Text(icon).font(.title)
+                        }
+                    }
                 }
 
                 Section("How often") {
@@ -64,6 +75,9 @@ struct CreateGroupView: View {
             .navigationTitle("New Game")
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: period) { target = min(target, period.maxTarget) }
+            .sheet(isPresented: $showEmojiPicker) {
+                EmojiPicker { icon = $0 }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
@@ -77,7 +91,7 @@ struct CreateGroupView: View {
                 case .contract:
                     ContractView(contract: contract) { signature in
                         let group = try await GroupService.createGroup(
-                            name: name, habit: habit, target: target, period: period,
+                            name: name, habit: habit, icon: icon, target: target, period: period,
                             endOn: endOn, rulesText: rulesText, signature: signature)
                         path.append(.created(code: group.inviteCode))
                     }
@@ -93,7 +107,8 @@ struct CreateGroupView: View {
     }
 
     private var contract: Contract {
-        Contract(name: name, habit: habit, target: target, period: period, endOn: endOn, rulesText: rulesText)
+        Contract(name: name, habit: habit, icon: icon, target: target, period: period, endOn: endOn,
+                 rulesText: rulesText)
     }
 
     private func shortcut(_ title: String, days: Int = 0, months: Int = 0) -> some View {
@@ -108,7 +123,7 @@ struct CreateGroupView: View {
 
     private func next() {
         do {
-            try validateGroup(name: name, habit: habit, target: target, period: period,
+            try validateGroup(name: name, habit: habit, icon: icon, target: target, period: period,
                               endOn: endOn, today: localDay(Date()))
             errorMessage = nil
             path.append(.contract)

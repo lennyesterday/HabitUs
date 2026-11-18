@@ -18,7 +18,12 @@ struct Podium: View {
     private func place(_ index: Int, medal: String) -> some View {
         if rows.indices.contains(index) {
             VStack(spacing: 2) {
-                Text(medal).font(index == 0 ? .largeTitle : .title)
+                ZStack(alignment: .bottomTrailing) {
+                    ProfilePicture(name: rows[index].displayName, path: rows[index].photoPath,
+                                   size: index == 0 ? 56 : 44)
+                    Text(medal).font(index == 0 ? .title2 : .title3)
+                        .offset(x: 6, y: 6)
+                }
                 Text(rows[index].displayName).font(.subheadline.bold()).lineLimit(1)
                 Text("\(rows[index].points) pts").font(.caption).foregroundStyle(.secondary)
             }

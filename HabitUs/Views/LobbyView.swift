@@ -27,7 +27,8 @@ struct LobbyView: View {
             Section("Members · \(data.accepted.count) of at least 3") {
                 ForEach(data.accepted) { member in
                     HStack {
-                        Text("\(member.avatar) \(member.displayName)")
+                        ProfilePicture(name: member.displayName, path: member.photoPath)
+                        Text(member.displayName)
                         Spacer()
                         if member.userId == data.group.ownerId {
                             Text("👑")
@@ -44,7 +45,10 @@ struct LobbyView: View {
                     }
                     ForEach(data.pending) { member in
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("\(member.avatar) \(member.displayName)")
+                            HStack {
+                                ProfilePicture(name: member.displayName, path: member.photoPath)
+                                Text(member.displayName)
+                            }
                             HStack(alignment: .center) {
                                 Text("Signed:")
                                     .font(.caption)

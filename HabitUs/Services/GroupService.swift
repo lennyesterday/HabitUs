@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 import HabitCore
 import Supabase
 
@@ -19,14 +19,17 @@ struct GameCard: Identifiable {
 struct Contract: Hashable {
     var name: String
     var habit: String
+    var icon: String
     var target: Int
     var period: Period
     var endOn: Date?
     var rulesText: String
 
-    init(name: String, habit: String, target: Int, period: Period, endOn: Date?, rulesText: String) {
+    init(name: String, habit: String, icon: String, target: Int, period: Period, endOn: Date?,
+         rulesText: String) {
         self.name = name
         self.habit = habit
+        self.icon = icon
         self.target = target
         self.period = period
         self.endOn = endOn
@@ -34,8 +37,8 @@ struct Contract: Hashable {
     }
 
     init(_ group: HabitGroup) {
-        self.init(name: group.name, habit: group.habit, target: group.target, period: group.period,
-                  endOn: group.endOn, rulesText: group.rulesText)
+        self.init(name: group.name, habit: group.habit, icon: group.icon, target: group.target,
+                  period: group.period, endOn: group.endOn, rulesText: group.rulesText)
     }
 }
 
@@ -86,6 +89,7 @@ struct GroupData {
 private struct NewGroup: Encodable {
     let name: String
     let habit: String
+    let icon: String
     let target: Int
     let period_days: Int
     let end_on: String?
@@ -102,10 +106,27 @@ private struct NewMembership: Encodable {
 private struct PreviewRow: Decodable {
     let name: String
     let habit: String
+    let icon: String
     let target: Int
     let period_days: Int
     let end_on: String?
     let rules_text: String
+}
+
+/// Both columns are always sent, so removing the picture writes NULL.
+private struct GroupLook: Encodable {
+    let icon: String
+    let photo_path: String?
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(icon, forKey: .icon)
+        try container.encode(photo_path, forKey: .photo_path)
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case icon, photo_path
+    }
 }
 
 private struct MembershipStatusRow: Decodable {
@@ -135,15 +156,16 @@ enum SignatureFormat {
 
 enum GroupService {
     /// R4: the creator becomes owner, signs the contract and gets an invite code.
-    static func createGroup(name: String, habit: String, target: Int, period: Period, endOn: Date?,
-                            rulesText: String, signature: Data) async throws -> HabitGroup {
-        try validateGroup(name: name, habit: habit, target: target, period: period,
+    static func createGroup(name: String, habit: String, icon: String, target: Int, period: Period,
+                            endOn: Date?, rulesText: String, signature: Data) async throws -> HabitGroup {
+        try validateGroup(name: name, habit: habit, icon: icon, target: target, period: period,
                           endOn: endOn, today: localDay(Date()))
         try validateSignatureImage(signature)
         return try await readable {
             let new = NewGroup(
                 name: name.trimmingCharacters(in: .whitespaces),
                 habit: habit.trimmingCharacters(in: .whitespaces),
+                icon: icon,
                 target: target,
                 period_days: period.rawValue,
                 end_on: endOn.map(DayFormat.string),
@@ -178,7 +200,7 @@ enum GroupService {
             guard let row = rows.first else {
                 throw RuleError("This invite code is not valid, or the game has already started.")
             }
-            return Contract(name: row.name, habit: row.habit, target: row.target,
+            return Contract(name: row.name, habit: row.habit, icon: row.icon, target: row.target,
                             period: Period(rawValue: row.period_days) ?? .week,
                             endOn: row.end_on.flatMap(DayFormat.date), rulesText: row.rules_text)
         }
@@ -253,6 +275,7 @@ enum GroupService {
         let othersLeft = data.accepted.contains { $0.userId != data.me }
         if data.isOwner && !othersLeft {
             try await PhotoService.deleteAll(groupId: groupId)
+            await PictureService.deleteAll(groupId: groupId)
         }
         try await readable {
             try await supabase.rpc("leave_group", params: ["gid": groupId]).execute()
@@ -266,8 +289,30 @@ enum GroupService {
             throw RuleError("Only the owner can delete the group.")
         }
         try await PhotoService.deleteAll(groupId: groupId)
+        await PictureService.deleteAll(groupId: groupId)
         try await readable {
             try await supabase.from("groups").delete().eq("id", value: groupId).execute()
+        }
+    }
+
+    /// Owner only (RLS): change the group icon and picture. A picture replaces the icon on screen.
+    /// `picture` nil keeps the current picture, `removePicture` deletes it.
+    static func updateLook(of group: HabitGroup, icon: String, picture: UIImage?,
+                           removePicture: Bool) async throws {
+        try validateGroupIcon(icon)
+        var path = removePicture ? nil : group.photoPath
+        if let picture {
+            path = try await PictureService.upload(picture, folder: "groups/\(group.id.uuidString.lowercased())")
+        }
+        let newPath = path
+        try await readable {
+            try await supabase.from("groups")
+                .update(GroupLook(icon: icon, photo_path: newPath))
+                .eq("id", value: group.id)
+                .execute()
+        }
+        if group.photoPath != path {
+            await PictureService.deleteQuietly(path: group.photoPath)
         }
     }
 
@@ -303,7 +348,7 @@ enum GroupService {
     static func members(groupId: UUID) async throws -> [Member] {
         try await readable {
             let rows: [MemberRow] = try await supabase.from("memberships")
-                .select("id, user_id, status, signature, profiles(display_name, avatar)")
+                .select("id, user_id, status, signature, profiles(display_name, photo_path)")
                 .eq("group_id", value: groupId)
                 .order("signed_at")
                 .execute()

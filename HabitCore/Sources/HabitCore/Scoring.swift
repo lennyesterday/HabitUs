@@ -62,7 +62,7 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
         }
         let streak = streakRounds.reversed().prefix { $0 }.count
 
-        return LeaderboardRow(userId: member.userId, displayName: member.displayName, avatar: member.avatar,
+        return LeaderboardRow(userId: member.userId, displayName: member.displayName, photoPath: member.photoPath,
                               points: points, completeRounds: complete.filter { $0 }.count, streak: streak,
                               pauses: mine.filter { $0.kind == .pause }.count)
     }

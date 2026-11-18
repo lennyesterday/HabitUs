@@ -25,8 +25,12 @@ struct GroupView: View {
             ScrollView {
                 VStack(spacing: 16) {
                     VStack(spacing: 4) {
-                        Text(data.accepted.map(\.avatar).joined(separator: " "))
-                            .font(.title2)
+                        HStack(spacing: -8) {
+                            ForEach(data.accepted) { member in
+                                ProfilePicture(name: member.displayName, path: member.photoPath, size: 36)
+                                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 2))
+                            }
+                        }
                         Text("\(myPoints) pts · #\(myRank) 🏆")
                             .font(.headline)
                     }
@@ -76,7 +80,7 @@ struct GroupView: View {
             .padding()
             .background(.bar)
         }
-        .navigationTitle(data.group.name)
+        .navigationTitle("\(data.group.icon) \(data.group.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {

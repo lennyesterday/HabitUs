@@ -13,8 +13,9 @@ struct LeaderboardView: View {
                 Text("#\(index + 1)")
                     .font(.headline)
                     .frame(width: 36, alignment: .leading)
+                ProfilePicture(name: row.displayName, path: row.photoPath, size: 36)
                 VStack(alignment: .leading) {
-                    Text("\(row.avatar) \(row.displayName)")
+                    Text(row.displayName)
                         .font(.headline)
                     Text("\(row.completeRounds) complete rounds · streak \(row.streak) 🔥 · \(row.pauses) pauses")
                         .font(.caption)

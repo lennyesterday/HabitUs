@@ -6,9 +6,9 @@ private func trimmed(_ text: String) -> String {
     text.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
-/// R1: email, password of at least 8 characters, name of 2 to 20 characters, avatar, terms ticked.
+/// R1: email, password of at least 8 characters, name of 2 to 20 characters, terms ticked.
 public func validateSignUp(email: String, password: String, displayName: String,
-                           avatar: String, acceptedTerms: Bool) throws {
+                           acceptedTerms: Bool) throws {
     let email = trimmed(email)
     let parts = email.split(separator: "@", omittingEmptySubsequences: false)
     guard parts.count == 2, !parts[0].isEmpty, parts[1].contains("."), !parts[1].hasSuffix(".") else {
@@ -20,17 +20,14 @@ public func validateSignUp(email: String, password: String, displayName: String,
     guard (2...20).contains(trimmed(displayName).count) else {
         throw RuleError("Your name needs 2 to 20 characters.")
     }
-    guard !trimmed(avatar).isEmpty else {
-        throw RuleError("Please pick an avatar.")
-    }
     guard acceptedTerms else {
         throw RuleError("Please accept the terms.")
     }
 }
 
-/// R4: name (1 to 40), habit (1 to 20), how often (1 up to `period.maxTarget`),
+/// R4: name (1 to 40), habit (1 to 20), one emoji as icon, how often (1 up to `period.maxTarget`),
 /// and an end date that leaves room for at least one full round from today.
-public func validateGroup(name: String, habit: String, target: Int, period: Period,
+public func validateGroup(name: String, habit: String, icon: String, target: Int, period: Period,
                           endOn: Date?, today: Date) throws {
     guard (1...40).contains(trimmed(name).count) else {
         throw RuleError("The group name needs 1 to 40 characters.")
@@ -38,11 +35,26 @@ public func validateGroup(name: String, habit: String, target: Int, period: Peri
     guard (1...20).contains(trimmed(habit).count) else {
         throw RuleError("The habit needs 1 to 20 characters, for example \"Gym\".")
     }
+    try validateGroupIcon(icon)
     guard (1...period.maxTarget).contains(target) else {
         throw RuleError("How often must be between 1 and \(period.maxTarget).")
     }
     if let endOn, daysBetween(today, endOn) + 1 < period.rawValue {
         throw RuleError("The end date is too early. At least one full round has to fit.")
+    }
+}
+
+/// R4: the group icon is exactly one emoji, also emojis made of several parts (👩‍👩‍👧, 🇵🇹, 🏋️).
+/// Digits and # count as "emoji" in Unicode, so they only pass with the emoji style marker.
+public func validateGroupIcon(_ icon: String) throws {
+    guard icon.count == 1, let character = icon.first else {
+        throw RuleError("Please pick one emoji as the group icon.")
+    }
+    let scalars = character.unicodeScalars
+    let emojiStyle = scalars.contains { $0.value == 0xFE0F }
+    guard scalars.contains(where: { $0.properties.isEmojiPresentation })
+            || (emojiStyle && scalars.contains { $0.properties.isEmoji }) else {
+        throw RuleError("Please pick one emoji as the group icon.")
     }
 }
 

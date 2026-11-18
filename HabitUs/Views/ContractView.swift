@@ -20,7 +20,7 @@ struct ContractView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Contract")
                     .font(.largeTitle.bold())
-                Text(contract.name)
+                Text("\(contract.icon) \(contract.name)")
                     .font(.title2)
 
                 VStack(alignment: .leading, spacing: 10) {
@@ -81,7 +81,7 @@ struct ContractView: View {
 }
 
 #Preview {
-    ContractView(contract: Contract(name: "Gym Crew", habit: "Gym", target: 3, period: .week,
+    ContractView(contract: Contract(name: "Gym Crew", habit: "Gym", icon: "🏋️", target: 3, period: .week,
                                     endOn: nil, rulesText: "Photo must show the gym."),
                  sign: { _ in })
 }

@@ -8,8 +8,8 @@ final class ValidationTests: XCTestCase {
     // MARK: R1 sign up
 
     func validSignUp(email: String = "lenny@example.com", password: String = "secret123",
-                     name: String = "Lenny", avatar: String = "🏋️", terms: Bool = true) throws {
-        try validateSignUp(email: email, password: password, displayName: name, avatar: avatar, acceptedTerms: terms)
+                     name: String = "Lenny", terms: Bool = true) throws {
+        try validateSignUp(email: email, password: password, displayName: name, acceptedTerms: terms)
     }
 
     func testR1ValidSignUpIsAccepted() {
@@ -35,10 +35,6 @@ final class ValidationTests: XCTestCase {
         XCTAssertThrowsError(try validSignUp(name: String(repeating: "a", count: 21)))
     }
 
-    func testR1AvatarIsRequired() {
-        XCTAssertThrowsError(try validSignUp(avatar: ""))
-    }
-
     func testR1TermsMustBeTicked() {
         XCTAssertThrowsError(try validSignUp(terms: false))
     }
@@ -53,9 +49,10 @@ final class ValidationTests: XCTestCase {
 
     let today = day(2026, 1, 5)
 
-    func validGroup(name: String = "Gym Crew", habit: String = "Gym", target: Int = 3,
+    func validGroup(name: String = "Gym Crew", habit: String = "Gym", icon: String = "🏋️", target: Int = 3,
                     period: Period = .week, endOn: Date? = nil) throws {
-        try validateGroup(name: name, habit: habit, target: target, period: period, endOn: endOn, today: today)
+        try validateGroup(name: name, habit: habit, icon: icon, target: target, period: period,
+                          endOn: endOn, today: today)
     }
 
     func testR4ValidGroupIsAccepted() {
@@ -85,6 +82,17 @@ final class ValidationTests: XCTestCase {
         XCTAssertThrowsError(try validGroup(period: .week, endOn: addDays(5, to: today)))
         XCTAssertThrowsError(try validGroup(period: .day, endOn: addDays(-1, to: today)))
         XCTAssertNoThrow(try validGroup(target: 1, period: .day, endOn: today))
+    }
+
+    func testR4GroupIconIsExactlyOneEmoji() {
+        XCTAssertNoThrow(try validGroup(icon: "📚"))
+        XCTAssertNoThrow(try validGroup(icon: "🏋️"), "emoji with variation selector")
+        XCTAssertNoThrow(try validGroup(icon: "👩‍👩‍👧"), "family emoji made of several parts")
+        XCTAssertNoThrow(try validGroup(icon: "🇵🇹"), "flag")
+        XCTAssertThrowsError(try validGroup(icon: ""))
+        XCTAssertThrowsError(try validGroup(icon: "📚📚"), "two emojis")
+        XCTAssertThrowsError(try validGroup(icon: "A"), "a letter")
+        XCTAssertThrowsError(try validGroup(icon: "1"), "a digit")
     }
 
     func testR4OpenEndIsAccepted() {

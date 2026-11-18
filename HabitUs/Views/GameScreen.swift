@@ -12,6 +12,7 @@ struct GameScreen: View {
     @State private var errorMessage: String?
     @State private var confirmLeave = false
     @State private var confirmDelete = false
+    @State private var showLook = false
     @State private var actionError: String?
 
     var body: some View {
@@ -22,6 +23,13 @@ struct GameScreen: View {
                     ToolbarItem(placement: .secondaryAction) {
                         Button(leaveTitle(data), systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
                             confirmLeave = true
+                        }
+                    }
+                    if data.isOwner, data.myMembership?.status == .accepted {
+                        ToolbarItem(placement: .secondaryAction) {
+                            Button("Change icon & picture", systemImage: "photo") {
+                                showLook = true
+                            }
                         }
                     }
                     if data.isOwner {
@@ -48,6 +56,11 @@ struct GameScreen: View {
                 }
             } message: {
                 Text("All members, photos, points and messages are deleted. This cannot be undone.")
+            }
+            .sheet(isPresented: $showLook) {
+                if let group = data?.group {
+                    GroupLookView(group: group, saved: load)
+                }
             }
             .alert("That did not work", isPresented: Binding(get: { actionError != nil },
                                                              set: { if !$0 { actionError = nil } })) {

@@ -9,6 +9,7 @@ struct HomeView: View {
     @State private var errorMessage: String?
     @State private var showCreate = false
     @State private var showJoin = false
+    @State private var showProfile = false
 
     var body: some View {
         NavigationStack {
@@ -51,11 +52,17 @@ struct HomeView: View {
                     ErrorText(message: errorMessage)
                 }
             }
-            .navigationTitle(profile.map { "Hi \($0.displayName) \($0.avatar)" } ?? "HabitUs")
+            .navigationTitle(profile.map { "Hi \($0.displayName) 👋" } ?? "HabitUs")
             .toolbar {
-                Button("Log out") {
-                    Task { try? await AuthService.logOut() }
+                Button {
+                    showProfile = true
+                } label: {
+                    ProfilePicture(name: profile?.displayName ?? "?", path: profile?.photoPath, size: 32)
                 }
+                .accessibilityLabel("Profile")
+            }
+            .sheet(isPresented: $showProfile) {
+                ProfileView(profile: $profile)
             }
             .refreshable { await load() }
             .onAppear { Task { await load() } }
@@ -86,19 +93,22 @@ struct GameCardRow: View {
     let card: GameCard
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack {
-                Text(card.group.name)
-                    .font(.headline)
-                Spacer()
-                if card.isOwner {
-                    Text("👑 Owner")
-                        .font(.caption)
+        HStack(spacing: 12) {
+            GroupBadge(group: card.group, size: 44)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(card.group.name)
+                        .font(.headline)
+                    Spacer()
+                    if card.isOwner {
+                        Text("👑 Owner")
+                            .font(.caption)
+                    }
                 }
+                Text(statusText)
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
             }
-            Text(statusText)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
         }
         .padding(.vertical, 4)
     }

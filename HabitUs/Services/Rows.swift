@@ -38,6 +38,8 @@ struct GroupRow: Decodable {
     let id: UUID
     let name: String
     let habit: String
+    let icon: String?
+    let photoPath: String?
     let target: Int
     let periodDays: Int
     let endOn: String?
@@ -48,7 +50,8 @@ struct GroupRow: Decodable {
     let endedEarlyAt: Date?
 
     enum CodingKeys: String, CodingKey {
-        case id, name, habit, target
+        case id, name, habit, icon, target
+        case photoPath = "photo_path"
         case periodDays = "period_days"
         case endOn = "end_on"
         case rulesText = "rules_text"
@@ -59,7 +62,7 @@ struct GroupRow: Decodable {
     }
 
     var model: HabitGroup {
-        HabitGroup(id: id, name: name, habit: habit, target: target,
+        HabitGroup(id: id, name: name, habit: habit, icon: icon ?? "🎯", photoPath: photoPath, target: target,
                    period: Period(rawValue: periodDays) ?? .week,
                    endOn: endOn.flatMap(DayFormat.date), rulesText: rulesText, inviteCode: inviteCode,
                    ownerId: ownerId, startedOn: startedOn.flatMap(DayFormat.date), endedEarlyAt: endedEarlyAt)
@@ -68,11 +71,11 @@ struct GroupRow: Decodable {
 
 struct ProfileRow: Decodable {
     let displayName: String
-    let avatar: String
+    let photoPath: String?
 
     enum CodingKeys: String, CodingKey {
         case displayName = "display_name"
-        case avatar
+        case photoPath = "photo_path"
     }
 }
 
@@ -89,7 +92,7 @@ struct MemberRow: Decodable {
     }
 
     var model: Member {
-        Member(id: id, userId: userId, displayName: profiles.displayName, avatar: profiles.avatar,
+        Member(id: id, userId: userId, displayName: profiles.displayName, photoPath: profiles.photoPath,
                status: MembershipStatus(rawValue: status) ?? .pending, signature: signature)
     }
 }
