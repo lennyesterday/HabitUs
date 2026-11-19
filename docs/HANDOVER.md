@@ -286,3 +286,84 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 | Bucket | a folder in Supabase Storage (`proofs`, `pictures`) |
 | PR (pull request) | proposal to merge a branch into `main`, reviewed by a teammate |
 | Squash and merge | merge a PR as one single commit |
+
+---
+
+## 14. Step-by-step log
+
+Every change gets one entry here, newest at the bottom. Format: **what** was done, **why**, the
+**files** it touched, and **how to check** it. This is the story you tell in the walkthrough.
+
+### Day 1: Tue 17 Nov
+
+**Step 1: Project skeleton** (branch `c/setup`, PR #1)
+- What: Xcode project, the `HabitCore` package with the data models and an empty stub for every function from SPEC §6, the database schema with RLS on every table, stub services and screens, `supabase-swift` pinned to 2.55.7.
+- Why: SPEC §8 plan for day 1, so everyone can call everyone else's functions before they are finished.
+- Files: `HabitCore/`, `supabase/migrations/001_schema.sql`, `HabitUs/Services/`, `HabitUs/Views/`, `Config/`.
+- Decision: the group model is called `HabitGroup`, because SwiftUI already has a type called `Group`.
+
+**Step 2: First working prototype** (branch `c/prototype`, PR #2)
+- What: all rules R1 to R26 in `HabitCore`, written **tests first** (61 tests). Real services for log in, groups, check-ins, photos and chat. All screens from sign up to the photo check-in.
+- Why: Milestone 1 (SPEC §8): the happy path with three accounts.
+- Files: `HabitCore/Sources/*`, `HabitCore/Tests/*`, `HabitUs/Services/*`, `HabitUs/Views/*`, `supabase/migrations/002_profiles_and_join_preview.sql`.
+- Decision: migration 002 creates the profile automatically at sign up, and lets a joiner read the contract before signing.
+- Decision: the simulator has no camera, so it offers a generated test photo, only in simulator builds.
+
+### Day 2: Wed 18 Nov
+
+**Step 3: Supabase project connected**
+- What: Supabase project "HabitUs App" created, migrations 001 and 002 run in the SQL editor, email confirmation turned off, URL and publishable key in `Config/Secrets.xcconfig` (not in git).
+- Why: the app needs a real database to work on several phones.
+- How to check: the app shows the log in screen instead of "Supabase is not set up".
+
+**Step 4: GIFs in the chat** (branch `b/gif-chat`, PR #3)
+- What: GIF button in the chat, GIPHY search (rating G, "Powered by GIPHY"), animated GIFs in the feed.
+- Why: makes the chat more fun.
+- Files: `GifService.swift`, `GifPicker.swift`, `ChatService.swift`, `FeedView.swift`, `003_chat_gifs.sql`, new rule `validateGifURL` with 2 tests.
+- Security: the database only accepts https links to `.gif` files on GIPHY's servers, and `HabitCore` checks the same rule.
+
+**Step 5: Leave and delete groups, signature by hand** (branch `a/leave-delete-signature`, PR #4)
+- What: everyone can leave at any time. When the owner leaves, the member who joined first becomes owner, and the last one out deletes the group. The owner can delete the group for everyone. The contract is signed with the finger (PencilKit).
+- Why: Lenny's decision. The contract is a fun element, and people must be able to leave.
+- Files: `GroupService.swift` (`leave`, `delete`), `GameScreen.swift` (menu), `SignaturePad.swift`, `ContractView.swift`, `004_leave_delete_signature.sql`, rule `validateSignatureImage` (replaces the typed-name rule on purpose).
+
+**Step 6: App icon** (branch `a/app-icon`, PR #5)
+- What: icon with two figures and a check mark. The black corners of the original were cropped away, because iOS rounds the corners itself.
+
+**Step 7: Group icons and pictures** (branch `a/no-avatar`, PR #6)
+- What: the avatar emoji at sign up was removed. Groups get one emoji as icon, picked from all emojis with search. There are now profile pictures and group pictures (owner).
+- Files: `EmojiPicker.swift`, `Pictures.swift`, `ProfileView.swift`, `GroupLookView.swift`, `PictureService.swift`, `005_icons_and_pictures.sql` (private bucket `pictures`), rule `validateGroupIcon`.
+
+**Step 8: Onboarding and new log in look** (branch `a/onboarding`, PR #7)
+- What: five onboarding pages with Next/Skip, shown whenever nobody is logged in. The log in screen got the brand blue, the logo and the chunky yellow button. The accent color is now the icon blue.
+- Files: `OnboardingView.swift`, `AuthView.swift`, `Theme.swift`, `HabitUsApp.swift`.
+
+**Step 9: Bug fixes found while testing**
+- A profile was missing for an old account: the app now creates it, or logs out if the account was deleted in the dashboard (`AuthService.myProfile`).
+- Only a thin line in the middle of each text field reacted to taps: the whole grey box works now (`AuthView.field`).
+- The log in form lost what was typed and switched tabs by itself: the segmented Picker was replaced by two buttons, and repeated auth events are ignored (`AuthView.modeSwitch`, `HabitUsApp.swift`).
+- How we found them: the simulator was driven step by step, together with debug logs.
+
+**Step 10: GIPHY key added**
+- The key is in `Config/Secrets.xcconfig` (not in git). Ask Lenny for it.
+
+**Step 11: Redesign inspired by PlayUs** (branch `a/redesign`, PR #9)
+- What: Home with big game cards (picture or emoji, member pictures, points and rank). New group screen with a colored task card, bonus card, podium, ranking rows, chat bubbles and a floating message bar. Leaderboard with a points chart (Swift Charts). Settings as section cards.
+- Why: fun, but still a habit app.
+- HabitCore: `roundBonusPercent` and `LeaderboardRow.pointsPerRound`, with 2 new tests (68 in total).
+- Files: `HomeView.swift`, `GroupView.swift`, `TaskCard.swift`, `BonusCard.swift`, `Podium.swift`, `FeedView.swift`, `LeaderboardView.swift`, `ResultsView.swift`, `ProfileView.swift`, `Theme.swift`, `GroupService.myGames`.
+
+### Day 3: Thu 19 Nov
+
+**Step 12: Handover document and the PR for Vincent**
+- What: this document. PRs #1 to #9 were bundled into one PR to `main`.
+- What went wrong: #10 was merged by Lenny's account by mistake and reverted in #11.
+- Now: **PR #12** has the same content, and Vincent reviews and merges it.
+
+<!-- New entries go below. Template:
+**Step N: Title** (branch `x/name`, PR #N)
+- What:
+- Why:
+- Files:
+- How to check:
+-->
