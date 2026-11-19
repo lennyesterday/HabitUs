@@ -377,6 +377,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Not renamed on purpose: internal code names like `GameCard`, `GameScreen` and `myGames`. Nobody sees them, and renaming them would touch many files.
 - How to check: the previews of `GroupView` and `HomeView` (Card). Onboarding and log in were not changed and still use the blue look.
 
+**Step 15: "Join Habit" button with a group icon** (branch `a/habit-wording`, PR #13)
+- What: the second button on Home says "Join Habit" and shows a group symbol (three people, `person.3.fill`) instead of "Join" with a single person.
+- Why: Lenny wanted it clearer that you join a group habit.
+- Files: `HomeView.swift`.
+- How to check: run the app and log in. The button is next to "New Habit" on Home. It builds, but it was not checked on screen yet.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

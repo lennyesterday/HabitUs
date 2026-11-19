@@ -35,7 +35,7 @@ struct HomeView: View {
                             Button {
                                 showJoin = true
                             } label: {
-                                Label("Join", systemImage: "person.badge.plus")
+                                Label("Join Habit", systemImage: "person.3.fill")
                             }
                             .buttonStyle(ChunkyButtonStyle(color: .white,
                                                            ledgeColor: Color(white: 0.82),
