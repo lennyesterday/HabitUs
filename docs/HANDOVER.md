@@ -360,6 +360,11 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - What went wrong: #10 was merged by Lenny's account by mistake and reverted in #11.
 - Now: **PR #12** has the same content, and Vincent reviews and merges it.
 
+**Step 13: Rule for keeping this log** (branch `a/redesign`, PR #12)
+- What: `AGENTS.md` now says that every change adds an entry here.
+- Why: AI tools such as Claude or Codex read `AGENTS.md` in every repo. Whoever codes, the log stays complete.
+- Files: `AGENTS.md`, `docs/HANDOVER.md`.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
