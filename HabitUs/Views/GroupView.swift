@@ -31,11 +31,11 @@ struct GroupView: View {
 
                     VStack(spacing: 0) {
                         Text(roundLabel(round: round, now: now))
-                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                            .tracking(4)
+                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .tracking(2)
+                            .foregroundStyle(.secondary)
                         Text(periodTitle)
-                            .font(Theme.title(46))
-                            .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+                            .font(Theme.title(30))
                     }
                     .foregroundStyle(Theme.ink)
 
@@ -140,8 +140,8 @@ struct GroupView: View {
             .padding(10)
             .background(.white.opacity(0.7), in: Capsule())
             HStack(spacing: 10) {
-                Pill(text: "\(points) pts", emoji: "🔥", dark: false)
-                Pill(text: "#\(rank)", emoji: "🏆", dark: false)
+                Pill(text: "\(points) pts")
+                Pill(text: "#\(rank) of \(data.accepted.count)")
             }
         }
         .padding(.top, 4)
@@ -149,9 +149,9 @@ struct GroupView: View {
 
     private var periodTitle: String {
         switch data.group.period {
-        case .day: return "TODAY"
-        case .week: return "THIS WEEK"
-        case .month: return "THIS MONTH"
+        case .day: return "Today"
+        case .week: return "This week"
+        case .month: return "This month"
         }
     }
 

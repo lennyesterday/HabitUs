@@ -73,14 +73,14 @@ struct GameScreen: View {
     private func leaveTitle(_ data: GroupData) -> String {
         switch data.myMembership?.status {
         case .pending: return "Withdraw request"
-        case .declined: return "Remove from my games"
+        case .declined: return "Remove from my habits"
         default: return "Leave group"
         }
     }
 
     private func leaveMessage(_ data: GroupData) -> String {
         guard data.myMembership?.status == .accepted else {
-            return "The game disappears from your Home."
+            return "The habit disappears from your Home."
         }
         guard data.isOwner else {
             return "The group disappears for you. Your photos stay in the chat but no longer count."
@@ -112,7 +112,7 @@ struct GameScreen: View {
                 ContractView(contract: Contract(data.group),
                              statusText: "Waiting for the owner to accept your request.")
             case (.declined, _):
-                Text("Your request was declined. You can remove the game with the menu at the top.")
+                Text("Your request was declined. You can remove the habit with the menu at the top.")
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding()

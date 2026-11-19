@@ -10,9 +10,8 @@ struct ResultsView: View {
         let rows = data.leaderboard(now: Date())
         ScrollView {
             VStack(spacing: 24) {
-                Text("CHALLENGE OVER")
-                    .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                    .tracking(4)
+                Text("Challenge finished")
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .foregroundStyle(Theme.ink.opacity(0.7))
 
                 if let winner = rows.first {
@@ -22,19 +21,14 @@ struct ResultsView: View {
                             .overlay(Circle().stroke(.white, lineWidth: 5))
                             .shadow(color: .black.opacity(0.15), radius: 10, y: 6)
                     }
-                    HStack(spacing: 10) {
-                        Image(systemName: "laurel.leading")
-                        VStack(spacing: 0) {
-                            Text("Champion")
-                                .font(.system(.headline, design: .rounded).weight(.heavy))
-                            Text(winner.displayName.uppercased())
-                                .font(Theme.title(34))
-                            Text("\(winner.points) pts")
-                                .font(.system(.headline, design: .rounded).weight(.heavy))
-                        }
-                        Image(systemName: "laurel.trailing")
+                    VStack(spacing: 2) {
+                        Text("\(winner.displayName) kept the habit best")
+                            .font(Theme.title(26))
+                            .multilineTextAlignment(.center)
+                        Text("\(winner.points) pts")
+                            .font(.system(.headline, design: .rounded).weight(.semibold))
+                            .foregroundStyle(.secondary)
                     }
-                    .font(.system(size: 52))
                     .foregroundStyle(Theme.ink)
                 }
 

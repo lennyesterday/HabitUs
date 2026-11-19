@@ -28,11 +28,11 @@ struct TaskCard: View {
                         Image(systemName: "hourglass")
                         Text(Theme.durationText(left))
                     }
-                    .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                    .foregroundStyle(.white)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .foregroundStyle(left < 24 * 3600 ? .white : Theme.ink)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
-                    .background(left < 24 * 3600 ? Color.red : Color.black.opacity(0.72), in: Capsule())
+                    .background(left < 24 * 3600 ? Color.red : Color.white, in: Capsule())
                 }
             }
 
@@ -71,7 +71,7 @@ struct TaskCard: View {
                         Label("Do \(habit) \(status.done + status.failed + 1)", systemImage: "camera.fill")
                     }
                 }
-                .buttonStyle(ChunkyButtonStyle())
+                .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.82), textColor: color))
                 .disabled(!status.canCheckInToday || isUploading)
                 .opacity(status.canCheckInToday ? 1 : 0.6)
 

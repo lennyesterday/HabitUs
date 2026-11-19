@@ -12,19 +12,14 @@ struct LeaderboardView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                HStack(spacing: 10) {
-                    Image(systemName: "laurel.leading")
-                    VStack(spacing: 0) {
-                        Text("ROUND \(round)")
-                            .font(Theme.title(32))
-                        Text("Leaderboard")
-                            .font(.system(.headline, design: .rounded).weight(.heavy))
-                            .foregroundStyle(.secondary)
-                    }
-                    Image(systemName: "laurel.trailing")
+                VStack(spacing: 2) {
+                    Text("Leaderboard")
+                        .font(Theme.title(30))
+                        .foregroundStyle(Theme.ink)
+                    Text("Round \(round) · points so far")
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.secondary)
                 }
-                .font(.system(size: 48))
-                .foregroundStyle(Theme.ink)
 
                 chart
                     .frame(height: 260)
@@ -35,13 +30,14 @@ struct LeaderboardView: View {
                         playerRow(row, index: index)
                     }
                     Text("Points: 20 per task · +25 % for a full round · +5 % more per round in a row (max +50 %)")
-                        .font(.system(.caption, design: .rounded).weight(.bold))
-                        .foregroundStyle(Theme.sunshine)
+                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .padding(.top, 4)
                 }
                 .padding(14)
-                .background(Color(white: 0.17), in: RoundedRectangle(cornerRadius: 30))
+                .background(.white, in: RoundedRectangle(cornerRadius: 26))
+                .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
             }
             .padding(18)
         }
@@ -91,7 +87,7 @@ struct LeaderboardView: View {
                 HStack(spacing: 6) {
                     Text("#\(index + 1)")
                         .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                        .foregroundStyle(.white.opacity(0.8))
+                        .foregroundStyle(color)
                     if row.userId == me {
                         Text("YOU")
                             .font(.system(.caption, design: .rounded).weight(.heavy))
@@ -102,11 +98,11 @@ struct LeaderboardView: View {
                     }
                 }
                 Text(row.displayName)
-                    .font(Theme.title(22))
-                    .foregroundStyle(.white)
+                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .foregroundStyle(Theme.ink)
                 Text("\(row.completeRounds) full round\(row.completeRounds == 1 ? "" : "s") · streak \(row.streak) 🔥 · \(row.pauses) pause\(row.pauses == 1 ? "" : "s")")
                     .font(.system(.caption, design: .rounded).weight(.bold))
-                    .foregroundStyle(.white.opacity(0.65))
+                    .foregroundStyle(.secondary)
             }
             Spacer()
             Text("\(row.points)")
@@ -116,7 +112,7 @@ struct LeaderboardView: View {
                 .background(color, in: Circle())
         }
         .padding(12)
-        .overlay(RoundedRectangle(cornerRadius: 22).stroke(color, lineWidth: 3))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(color.opacity(0.5), lineWidth: 2))
     }
 }
 

@@ -28,7 +28,7 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Area | What you can do |
 |---|---|
 | Start | Onboarding pages (shown whenever nobody is logged in), sign up, log in, log out |
-| Home | One card per game: picture or emoji, member pictures, status, my points and rank |
+| Home | One card per habit group: picture or emoji, member pictures, status, my points and rank |
 | Create | Name, habit, emoji icon (all emojis, with search), how often, end date or open end, own rules |
 | Contract | Read the rules, sign with the finger, get a 6 character invite code |
 | Join | Enter code, read the contract first, sign, wait for the owner |
@@ -213,7 +213,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 | Signature drawn with the finger | typed name | feels more like a real contract | stored as a small PNG (max 40 KB) in `memberships.signature` |
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
-| Onboarding pages and new design | – | explain the app, make it fun | – |
+| Onboarding pages and new design | – | explain the app, make it fun | inspired by PlayUs, but toned down on purpose: it is a habit app, not a game ("New Habit", not "New Game") |
 | Email confirmation off | no email verification | Supabase's built-in mailer only reaches team addresses | fake emails possible, but they see nothing without invite code + owner OK |
 
 ---
@@ -364,6 +364,18 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - What: `AGENTS.md` now says that every change adds an entry here.
 - Why: AI tools such as Claude or Codex read `AGENTS.md` in every repo. Whoever codes, the log stays complete.
 - Files: `AGENTS.md`, `docs/HANDOVER.md`.
+
+**Step 14: Habits, not games: calmer design and wording** (branch `a/habit-wording`, PR #13)
+- What:
+  - All visible texts say "habit" instead of "game" ("New Habit", "Join a Habit", "No habits yet", invite text).
+  - Home has a light background instead of strong blue, and the main button is blue.
+  - Buttons have a thin edge and normal case instead of CAPITALS. Pills are light.
+  - Ranking rows are white with a colored place badge. The "Best player" laurels are gone, and the leaderboard is light instead of dark.
+  - The task card button is white in the group color, and the yellow group color was replaced by green for contrast.
+- Why: Lenny: "it's not about games, it's about habits". It should still be fun, but feel like a habit app.
+- Files: `Theme.swift`, `HomeView.swift`, `GroupView.swift`, `TaskCard.swift`, `BonusCard.swift`, `Podium.swift`, `LeaderboardView.swift`, `ResultsView.swift`, `JoinView.swift`, `CreateGroupView.swift`, `LobbyView.swift`, `GameScreen.swift`, `GroupService.swift` (one error text).
+- Not renamed on purpose: internal code names like `GameCard`, `GameScreen` and `myGames`. Nobody sees them, and renaming them would touch many files.
+- How to check: the previews of `GroupView` and `HomeView` (Card). Onboarding and log in were not changed and still use the blue look.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
