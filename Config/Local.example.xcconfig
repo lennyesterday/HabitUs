@@ -1,4 +1,0 @@
-// Kopiere diese Datei nach Config/Local.xcconfig und trag deine Werte ein.
-// Local.xcconfig wird nicht committet.
-DEVELOPMENT_TEAM = DEINE_TEAM_ID
-BUNDLE_ID_SUFFIX = .deinname
