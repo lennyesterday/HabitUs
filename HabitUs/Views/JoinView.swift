@@ -25,7 +25,7 @@ struct JoinView: View {
                         .autocorrectionDisabled()
                         .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
                 } footer: {
-                    Text("6 characters, from the owner of the game.")
+                    Text("6 characters, from the friend who started the habit.")
                 }
                 if errorMessage != nil {
                     ErrorText(message: errorMessage)
@@ -33,7 +33,7 @@ struct JoinView: View {
             }
             .scrollContentBackground(.hidden)
             .background(PaperBackground())
-            .navigationTitle("Join Game")
+            .navigationTitle("Join a Habit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -58,7 +58,7 @@ struct JoinView: View {
                     VStack(spacing: 16) {
                         Text("Request sent ✉️")
                             .font(.title.bold())
-                        Text("The owner has to accept you. You find the game on Home.")
+                        Text("The owner has to accept you. You find the habit on Home.")
                             .multilineTextAlignment(.center)
                             .foregroundStyle(.secondary)
                         Button("Done") { dismiss() }

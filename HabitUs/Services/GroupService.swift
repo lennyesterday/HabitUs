@@ -213,7 +213,7 @@ enum GroupService {
                 .execute()
                 .value
             guard let row = rows.first else {
-                throw RuleError("This invite code is not valid, or the game has already started.")
+                throw RuleError("This invite code is not valid, or the habit has already started.")
             }
             return Contract(name: row.name, habit: row.habit, icon: row.icon, target: row.target,
                             period: Period(rawValue: row.period_days) ?? .week,
