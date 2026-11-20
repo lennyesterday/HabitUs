@@ -463,6 +463,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted it out.
 - Files: `ProfileView.swift`.
 
+**Step 26: Logo and "HabitUs" at the top of Home** (branch `profilsettings`)
+- What: the top of Home shows the app logo and "HabitUs" instead of "Hi Bene 👋 / Your habits". The profile picture on the right stays.
+- Why: Lenny wanted the brand at the top.
+- Files: `HomeView.swift`.
+- How to check: run the app and log in. It builds, but it was not looked at on screen yet.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

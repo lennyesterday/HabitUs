@@ -85,14 +85,18 @@ struct HomeView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(profile.map { "Hi \($0.displayName) 👋" } ?? " ")
-                    .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(.secondary)
-                Text("Your habits")
+            HStack(spacing: 10) {
+                Image("Logo")
+                    .resizable()
+                    .frame(width: 44, height: 44)
+                    .clipShape(RoundedRectangle(cornerRadius: 11))
+                    .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
+                Text("HabitUs")
                     .font(Theme.title(32))
                     .foregroundStyle(Theme.ink)
             }
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(.isHeader)
             Spacer()
             Button {
                 showProfile = true
