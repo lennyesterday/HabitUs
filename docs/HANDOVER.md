@@ -458,6 +458,11 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `ProfileView.swift`, `Config/Info.plist`.
 - How to check: open the profile from Home and tap the picture. In the simulator "Take photo" offers the generated test photo (there is no camera). It was only seen in the preview so far.
 
+**Step 25: Copyright row removed from the settings** (branch `profilsettings`)
+- What: the row "HabitUs, 2026 · Nova SBE · Introduction to Programming" was removed from the "Info" section of the settings. Only the version is left.
+- Why: Lenny wanted it out.
+- Files: `ProfileView.swift`.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

@@ -83,9 +83,6 @@ struct ProfileView: View {
 
                     SettingsSection(title: "Info") {
                         SettingsRow(title: "Version \(appVersion)", symbol: "info", color: Color(white: 0.35))
-                        Divider().padding(.horizontal, 20)
-                        SettingsRow(title: "HabitUs, 2026", subtitle: "Nova SBE · Introduction to Programming",
-                                    symbol: "c.circle", color: Color(white: 0.35))
                     }
                 }
                 .padding(.horizontal, 18)
