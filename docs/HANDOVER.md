@@ -389,6 +389,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `GroupView.swift`.
 - How to check: open a running habit, tap the podium, and the leaderboard opens. It builds without warnings, but it was not tapped on a real screen yet.
 
+**Step 17: No hint text under the podium** (branch `leaderboard`)
+- What: the small text "Tap for leaderboard & chart" under the podium was removed. Tapping the podium still opens the leaderboard.
+- Why: Lenny wanted a cleaner screen.
+- Files: `GroupView.swift`.
+- Note for the walkthrough: the podium no longer shows a hint that it can be tapped. Mention it in the demo.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

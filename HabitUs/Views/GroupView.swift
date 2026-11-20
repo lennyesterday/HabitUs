@@ -53,13 +53,8 @@ struct GroupView: View {
                     NavigationLink {
                         LeaderboardView(rows: rows, me: data.me, round: round)
                     } label: {
-                        VStack(spacing: 8) {
-                            Podium(rows: Array(rows.prefix(3)))
-                            Label("Tap for leaderboard & chart", systemImage: "chart.line.uptrend.xyaxis")
-                                .font(.system(.caption, design: .rounded).weight(.semibold))
-                                .foregroundStyle(.secondary)
-                        }
-                        .contentShape(Rectangle())
+                        Podium(rows: Array(rows.prefix(3)))
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(PressableCardStyle())
                     .accessibilityHint("Opens the leaderboard with the points chart")
