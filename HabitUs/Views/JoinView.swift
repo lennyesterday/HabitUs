@@ -50,10 +50,12 @@ struct JoinView: View {
             .navigationDestination(for: Step.self) { step in
                 switch step {
                 case .contract(let contract):
-                    ContractView(contract: contract) { signature in
+                    ContractView(contract: contract, sign: { signature in
                         try await GroupService.requestToJoin(code: code, signature: signature)
                         path.append(.sent)
-                    }
+                    }, statusText: contract.isRunning
+                        ? "This challenge is already running. Once the owner accepts you, you start in the next round. For the rounds before, you get the average points of the others."
+                        : nil)
                 case .sent:
                     VStack(spacing: 16) {
                         Text("Request sent ✉️")

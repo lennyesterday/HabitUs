@@ -43,6 +43,16 @@ struct GroupView: View {
                     }
                     .foregroundStyle(Theme.ink)
 
+                    if data.isOnHold(now: now) {
+                        onHoldCard
+                    }
+                    if round < data.myFirstRound {
+                        welcomeCard(catchUp: myRow?.catchUpPoints ?? 0)
+                    }
+                    if data.isOwner && !data.pending.isEmpty {
+                        requestsCard
+                    }
+
                     TaskCard(data: data, now: now, isUploading: isUploading) {
                         showCamera = true
                     }
@@ -93,6 +103,12 @@ struct GroupView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
+            // R29: the code keeps working while the challenge runs.
+            ToolbarItem(placement: .secondaryAction) {
+                ShareLink(item: inviteText) {
+                    Label("Invite friends", systemImage: "person.badge.plus")
+                }
+            }
             if data.isOwner {
                 ToolbarItem(placement: .secondaryAction) {
                     Button("Finish challenge", systemImage: "flag.checkered", role: .destructive) {
@@ -286,6 +302,57 @@ struct GroupView: View {
         }
     }
 
+    private var inviteText: String {
+        "Join my habit on Habitract with the code \(data.group.inviteCode)"
+    }
+
+    // MARK: - Joining later (R29) and on hold (R30)
+
+    /// Fewer than 3 players: nobody can check in until someone new is accepted.
+    private var onHoldCard: some View {
+        NoticeCard(emoji: "⏸️", title: "The game is on hold",
+                   text: "Only \(data.accepted.count) \(data.accepted.count == 1 ? "player is" : "players are") left. It goes on as soon as there are \(minimumPlayers) again. Invite someone with the code \(data.group.inviteCode).") {
+            ShareLink(item: inviteText) {
+                Label("Invite friends", systemImage: "person.badge.plus")
+            }
+            .buttonStyle(ChunkyButtonStyle(color: Theme.brand, ledgeColor: Color(red: 0.0, green: 0.12, blue: 0.55),
+                                           textColor: .white))
+        }
+    }
+
+    /// I joined a running challenge and my first round has not started yet.
+    private func welcomeCard(catchUp: Int) -> some View {
+        NoticeCard(emoji: "👋", title: "Welcome! You start in round \(data.myFirstRound)",
+                   text: "For the rounds before you joined, you got the average points of the others: \(catchUp) pts. Until then you can already chat and vote.") {
+            EmptyView()
+        }
+    }
+
+    /// Owner only: people who asked to join while the challenge runs.
+    private var requestsCard: some View {
+        NoticeCard(emoji: "✋", title: data.pending.count == 1 ? "1 join request" : "\(data.pending.count) join requests",
+                   text: "Accepted players start in the next round and get the group average for the rounds before.") {
+            VStack(spacing: 10) {
+                ForEach(data.pending) { member in
+                    HStack(spacing: 10) {
+                        ProfilePicture(name: member.displayName, path: member.photoPath, size: 36)
+                        Text(member.displayName)
+                            .font(.system(.headline, design: .rounded))
+                        Spacer()
+                        Button("Decline", role: .destructive) {
+                            Task { await run { try await GroupService.decide(membershipId: member.id, accept: false) } }
+                        }
+                        .buttonStyle(.bordered)
+                        Button("Accept") {
+                            Task { await run { try await GroupService.decide(membershipId: member.id, accept: true) } }
+                        }
+                        .buttonStyle(.borderedProminent)
+                    }
+                }
+            }
+        }
+    }
+
     /// Runs an action, shows its error, then reloads the group.
     private func run(_ action: () async throws -> Void) async {
         do {
@@ -333,5 +400,45 @@ extension GroupData {
 #Preview {
     NavigationStack {
         GroupView(data: .preview) { }
+    }
+}
+
+#Preview("On hold, with a join request") {
+    var data = GroupData.preview
+    data.members.removeLast()
+    data.members.append(Member(id: UUID(), userId: UUID(), displayName: "Mia", photoPath: nil,
+                               status: .pending, signature: ""))
+    return NavigationStack {
+        GroupView(data: data) { }
+    }
+}
+
+/// A white card with an emoji, a title, a text and optional buttons under it.
+private struct NoticeCard<Actions: View>: View {
+    let emoji: String
+    let title: String
+    let text: String
+    @ViewBuilder let actions: () -> Actions
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Text(emoji).font(.system(size: 30))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .foregroundStyle(Theme.ink)
+                    Text(text)
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            actions()
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white, in: RoundedRectangle(cornerRadius: 22))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 }

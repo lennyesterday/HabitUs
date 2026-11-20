@@ -67,9 +67,12 @@ public struct Member: Sendable, Equatable, Identifiable {
     public var status: MembershipStatus
     public var signature: String
     public var signedAt: Date?       // when the contract was signed (set by the database)
+    /// The first round this member plays (R29). 1 for everyone who was there at the start,
+    /// later for someone who joined a running challenge (set by the database when accepted).
+    public var firstRound: Int
 
     public init(id: UUID, userId: UUID, displayName: String, photoPath: String?,
-                status: MembershipStatus, signature: String, signedAt: Date? = nil) {
+                status: MembershipStatus, signature: String, signedAt: Date? = nil, firstRound: Int = 1) {
         self.id = id
         self.userId = userId
         self.displayName = displayName
@@ -77,6 +80,7 @@ public struct Member: Sendable, Equatable, Identifiable {
         self.status = status
         self.signature = signature
         self.signedAt = signedAt
+        self.firstRound = max(1, firstRound)
     }
 }
 
@@ -158,14 +162,21 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
     public var pauses: Int
     /// Points of each round so far, for the chart on the leaderboard.
     public var pointsPerRound: [Int]
-    /// Counted tasks of each round so far, for the player profile and the grade.
+    /// Counted tasks of each round the member played, starting at `firstRound`,
+    /// for the player profile and the grade.
     public var donePerRound: [Int]
+    /// The first round the member played (R29). Rounds before it got the group average.
+    public var firstRound: Int
+    /// Points given for the rounds before `firstRound` (R29). Part of `points`.
+    public var catchUpPoints: Int
 
     public var id: UUID { userId }
 
     public init(userId: UUID, displayName: String, photoPath: String?, points: Int,
                 completeRounds: Int, streak: Int, pauses: Int, pointsPerRound: [Int] = [],
-                donePerRound: [Int] = []) {
+                donePerRound: [Int] = [], firstRound: Int = 1, catchUpPoints: Int = 0) {
+        self.firstRound = firstRound
+        self.catchUpPoints = catchUpPoints
         self.userId = userId
         self.displayName = displayName
         self.photoPath = photoPath

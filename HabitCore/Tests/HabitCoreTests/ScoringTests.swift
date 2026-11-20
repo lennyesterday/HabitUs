@@ -139,6 +139,44 @@ final class ScoringTests: XCTestCase {
         XCTAssertEqual(me?.streak, 2)
     }
 
+    // MARK: R29 joining a running challenge
+
+    /// Weekly, 1 task. Lenny and Alice play from round 1, Bob joins in round 3.
+    /// Lenny: 25 + 26 (two complete rounds), Alice: 25 + 0. Averages: round 1 = 25, round 2 = 13.
+    func lateJoinRows() -> [LeaderboardRow] {
+        let group = makeGroup(target: 1)
+        let members = [makeMember(owner, "Lenny"), makeMember(alice, "Alice"),
+                       makeMember(bob, "Bob", firstRound: 3)]
+        let checkins = [makeCheckin(owner, on: start), makeCheckin(owner, on: addDays(7, to: start)),
+                        makeCheckin(alice, on: start),
+                        makeCheckin(bob, on: addDays(14, to: start)),
+                        makeCheckin(bob, on: addDays(3, to: start))]   // before he joined: ignored
+        return leaderboard(group: group, members: members, checkins: checkins, reactions: [],
+                           now: time(2026, 1, 20, 12))   // round 3
+    }
+
+    func testR29LateJoinerGetsTheAverageOfTheRoundsBefore() {
+        let bobRow = lateJoinRows().first { $0.userId == bob }
+        XCTAssertEqual(bobRow?.catchUpPoints, 38, "25 + 13")
+        XCTAssertEqual(bobRow?.pointsPerRound, [25, 13, 25])
+        XCTAssertEqual(bobRow?.points, 63)
+    }
+
+    func testR29LateJoinerStreakAndGradeOnlyCountTheirOwnRounds() {
+        let bobRow = lateJoinRows().first { $0.userId == bob }
+        XCTAssertEqual(bobRow?.firstRound, 3)
+        XCTAssertEqual(bobRow?.donePerRound, [1], "only round 3")
+        XCTAssertEqual(bobRow?.completeRounds, 1)
+        XCTAssertEqual(bobRow?.streak, 1, "the streak starts fresh")
+    }
+
+    func testR29MembersFromTheStartAreNotChanged() {
+        let rows = lateJoinRows()
+        XCTAssertEqual(rows.first { $0.userId == owner }?.points, 51)
+        XCTAssertEqual(rows.first { $0.userId == owner }?.catchUpPoints, 0)
+        XCTAssertEqual(rows.first { $0.userId == alice }?.points, 25)
+    }
+
     func testR24OnlyAcceptedMembersAreRanked() {
         let all = members + [makeMember(carol, "Carol", status: .pending)]
         let rows = leaderboard(group: makeGroup(), members: all, checkins: [], reactions: [], now: time(2026, 1, 7, 12))

@@ -211,7 +211,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 
 | Change | SPEC said | Why we changed it | Watch out |
 |---|---|---|---|
-| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | the chat says "X left the group."; if a running challenge drops below 3 players it ends for everyone (step 33); fewer members means fewer X are needed, also for older photos |
+| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | the chat says "X left the group."; below 3 players a running challenge is on hold until someone joins (steps 33, 34); fewer members means fewer X are needed, also for older photos |
 | Signature drawn with the finger | typed name | feels more like a real contract | stored as a small PNG (max 40 KB) in `memberships.signature` |
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
@@ -237,7 +237,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 86 tests green.
+4. `cd HabitCore && swift test` → 92 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
 
@@ -518,13 +518,20 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
 - How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
 
-**Step 33: "X left the group" and the 3 player minimum** (branch `group-updates`, migration 006)
-- What: when an accepted member leaves, the chat shows a grey note in the middle: "Lenny left the group." If a **running** challenge then has fewer than 3 players, it ends for everyone: a second note says "Only 2 players are left, so the challenge has ended. It needs at least 3 to keep going.", and everyone sees the results with the line "Fewer than 3 players were left, so the game stopped." With 3 or more left it goes on as before. In the lobby people come and go without notes or an end. Withdrawing a pending request stays quiet.
-- Why: before, a group could keep running with 2 or even 1 player, which makes the X vote pointless. Nobody can join after the start, so waiting for a new player makes no sense either.
-- How: everything happens inside the database function `leave_group` in one step (`006_leave_messages.sql`): it writes the note as a message with `system = true` and sets `ended_early_at`. The insert policy on `messages` now refuses `system = true`, so no app can fake a note. HabitCore: `minimumPlayers = 3` (now also used for the start check) and `leavingEndsChallenge`, 2 new tests (86 in total). The leave dialog warns before: "Only 2 players would be left, so the challenge ends for everyone."
-- Supabase: **run `supabase/migrations/006_leave_messages.sql` in the SQL editor.** The app also works before that (no notes, no automatic end).
-- Files: `006_leave_messages.sql`, `HabitCore/Sources/HabitCore/Rounds.swift`, `RoundsTests.swift`, `ChatService.swift`, `Rows.swift`, `FeedView.swift` (`SystemNote`), `GameScreen.swift`, `ResultsView.swift`, `GroupService.swift`, `GroupView.swift` (preview).
-- How to check: a running group with 3 players, one leaves → the other two see the note and the results. With 4 players → only the note, the game goes on.
+**Step 33: "X left the group" and on hold below 3 players** (branch `group-updates`, migration 006, rule R30)
+- What: when an accepted member leaves, the chat shows a grey note in the middle: "Lenny left the group." If a **running** challenge then has fewer than 3 players, a second note says "Only 2 players are left, so the game is on hold. Invite someone with the code to go on." While on hold nobody can check in, and the group screen shows a card "The game is on hold" with an "Invite friends" button. As soon as a third player is accepted, it goes on. In the lobby people come and go without notes. Withdrawing a pending request stays quiet.
+- Why: with 2 players the X vote hardly works. Ending the challenge would be too hard now that people can join later (step 34).
+- How: inside the database function `leave_group` (`006_leave_messages.sql`): it writes the note as a message with `system = true`. The insert policy on `messages` refuses `system = true`, so no app can fake a note. "On hold" is not stored: HabitCore `isOnHold` computes it from the number of accepted members (`minimumPlayers = 3`, also used for the start check), and `taskStatus` refuses check-ins while on hold. The rounds keep counting while on hold, for everyone the same. The leave dialog warns before.
+- Files: `006_leave_messages.sql`, `Rounds.swift`, `Tasks.swift`, `ChatService.swift`, `Rows.swift`, `FeedView.swift` (`SystemNote`), `GameScreen.swift`, `GroupView.swift`, `TaskCard.swift`.
+
+**Step 34: Join a running challenge** (branch `group-updates`, migration 007, rule R29)
+- What: the invite code now works until the challenge is over, also in the group screen menu ("Invite friends"). The join screen says "This challenge is already running...". The owner sees a card "1 join request" with Accept and Decline on the group screen. Someone accepted while it runs starts in the **next** round, and the chat says "Mia joined the group and starts in round 4." Until then they see "Welcome! You start in round 4" and can already chat and vote. When the group has 3 players again, the chat says "There are 3 players again, the game goes on." Starting the session no longer declines open requests.
+- Points (option C, chosen by Lenny): for every round before their first, a late joiner gets the **average points of the members who played that round** (rounded down). Their streak, complete rounds, grade and history only count their own rounds. The player profile says "Joined in round 4. Rounds 1 to 3 got the group average: 38 pts."
+- Known weakness (say it yourselves): the average is a gift. Someone could join late on purpose, or leave and join again, to get the average without the work. Fine for friends, not for money.
+- How: `007_late_join.sql` adds `memberships.first_round`. A trigger sets it when the owner accepts (current round + 1), so no app can change it, and writes the note. `join_by_code` and `preview_group_by_code` allow running challenges (not ended ones). HabitCore: `Member.firstRound`, `firstRound(acceptedAt:in:)`, `taskStatus(firstRound:)`, and `leaderboard` gives the average for earlier rounds (`LeaderboardRow.firstRound`, `catchUpPoints`). 6 new tests (92 in total).
+- Supabase: **run `006_leave_messages.sql` (again, it is safe to rerun) and then `007_late_join.sql` in the SQL editor.** The app also works before that, but without notes, late joining and first rounds.
+- Files: `007_late_join.sql`, `Models.swift`, `Rounds.swift`, `Tasks.swift`, `Scoring.swift`, tests, `GroupService.swift`, `Rows.swift`, `JoinView.swift`, `GroupView.swift` (`NoticeCard`, previews), `TaskCard.swift`, `PlayerProfileView.swift`, `LobbyView.swift`, `SPEC.md` (R29, R30).
+- How to check: preview "On hold, with a join request" in `GroupView.swift`. For real: a running group with 3 players, one leaves → note and on hold; a 4th person joins with the code, owner accepts → note, game goes on, the new player starts next round with the average points.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

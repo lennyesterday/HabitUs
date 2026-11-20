@@ -30,6 +30,8 @@ struct Contract: Hashable {
     var period: Period
     var endOn: Date?
     var rulesText: String
+    /// The challenge already runs (R29): the joiner starts in the next round.
+    var isRunning = false
 
     init(name: String, habit: String, icon: String, target: Int, period: Period, endOn: Date?,
          rulesText: String) {
@@ -69,8 +71,16 @@ struct GroupData {
 
     func taskStatus(of user: UUID, now: Date) -> TaskStatus {
         HabitCore.taskStatus(user: user, group: group, checkins: checkins, reactions: reactions,
-                             memberCount: accepted.count, now: now)
+                             memberCount: accepted.count, firstRound: member(user)?.firstRound ?? 1, now: now)
     }
+
+    /// R30: fewer than 3 players in a running challenge.
+    func isOnHold(now: Date) -> Bool {
+        HabitCore.isOnHold(group, acceptedCount: accepted.count, now: now)
+    }
+
+    /// R29: my first round, later than the current one right after I joined a running challenge.
+    var myFirstRound: Int { myMembership?.firstRound ?? 1 }
 
     func leaderboard(now: Date) -> [LeaderboardRow] {
         HabitCore.leaderboard(group: group, members: members, checkins: checkins,
@@ -127,6 +137,8 @@ private struct PreviewRow: Decodable {
     let period_days: Int
     let end_on: String?
     let rules_text: String
+    /// Only sent since migration 007.
+    var started_on: String?
 }
 
 /// Both columns are always sent, so removing the picture writes NULL.
@@ -223,11 +235,13 @@ enum GroupService {
                 .execute()
                 .value
             guard let row = rows.first else {
-                throw RuleError("This invite code is not valid, or the habit has already started.")
+                throw RuleError("This invite code is not valid, or the challenge is already over.")
             }
-            return Contract(name: row.name, habit: row.habit, icon: row.icon, target: row.target,
-                            period: Period(rawValue: row.period_days) ?? .week,
-                            endOn: row.end_on.flatMap(DayFormat.date), rulesText: row.rules_text)
+            var contract = Contract(name: row.name, habit: row.habit, icon: row.icon, target: row.target,
+                                    period: Period(rawValue: row.period_days) ?? .week,
+                                    endOn: row.end_on.flatMap(DayFormat.date), rulesText: row.rules_text)
+            contract.isRunning = row.started_on != nil
+            return contract
         }
     }
 
@@ -245,6 +259,7 @@ enum GroupService {
     }
 
     /// R6: owner only (checked by RLS). Only open requests change, so declined stays final.
+    /// In a running challenge the database sets the first round and writes "X joined" (R29, 007).
     static func decide(membershipId: UUID, accept: Bool) async throws {
         try await readable {
             try await supabase.from("memberships")
@@ -256,7 +271,8 @@ enum GroupService {
     }
 
     /// R7: owner only, at least 3 accepted members, one full round must fit.
-    /// Sets the start day to today and declines all open requests.
+    /// Sets the start day to today. Open requests stay open: the owner can still accept them
+    /// later, and they start in the next round (R29).
     static func start(groupId: UUID) async throws {
         let data = try await load(groupId: groupId)
         let today = localDay(Date())
@@ -273,11 +289,6 @@ enum GroupService {
             try await supabase.from("groups")
                 .update(["started_on": DayFormat.string(today)])
                 .eq("id", value: groupId)
-                .execute()
-            try await supabase.from("memberships")
-                .update(["status": "declined"])
-                .eq("group_id", value: groupId)
-                .eq("status", value: "pending")
                 .execute()
         }
     }
@@ -402,7 +413,7 @@ enum GroupService {
     static func members(groupId: UUID) async throws -> [Member] {
         try await readable {
             let rows: [MemberRow] = try await supabase.from("memberships")
-                .select("id, user_id, status, signature, signed_at, profiles(display_name, photo_path)")
+                .select("*, profiles(display_name, photo_path)")
                 .eq("group_id", value: groupId)
                 .order("signed_at")
                 .execute()

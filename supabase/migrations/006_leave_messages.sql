@@ -1,19 +1,19 @@
--- 006_leave_messages.sql: "Lenny left the group" in the chat, and a running challenge ends
--- when fewer than 3 players are left. Run after 005.
+-- 006_leave_messages.sql: "Lenny left the group" in the chat. Run after 005.
+-- Safe to run again (an earlier version of this file ended the challenge below 3 players;
+-- running this one replaces it).
 --
--- System messages: written only by the database (inside leave_group), never by the app.
---   The insert policy now refuses system = true, so nobody can fake one.
--- Below 3 players: after the start nobody can join any more, so waiting makes no sense.
---   leave_group sets ended_early_at, the app then shows the results. In the lobby
---   people can come and go as before. HabitCore has the same rule (leavingEndsChallenge).
+-- System messages: written only by the database (here and in 007), never by the app.
+--   The insert policy refuses system = true, so nobody can fake one.
+-- Below 3 players a running challenge is on hold (HabitCore isOnHold), it does not end.
+--   People can join a running challenge since 007, so the group can go on later.
 
-alter table messages add column system boolean not null default false;
+alter table messages add column if not exists system boolean not null default false;
 
-drop policy "messages insert" on messages;
+drop policy if exists "messages insert" on messages;
 create policy "messages insert" on messages for insert to authenticated
     with check (user_id = auth.uid() and is_accepted(group_id) and system = false);
 
--- Same as in 004, plus the two system messages and the automatic end.
+-- Same as in 004, plus the system messages.
 create or replace function leave_group(gid uuid) returns void
 language plpgsql security definer set search_path = public as $$
 declare
@@ -68,14 +68,13 @@ begin
 
     select count(*) into players_left from memberships where group_id = gid and status = 'accepted';
     if was_running and players_left < 3 then
-        update groups set ended_early_at = now() where id = gid;
         insert into messages (group_id, user_id, text, system)
         values (gid, auth.uid(),
                 'Only ' || players_left || case when players_left = 1 then ' player is' else ' players are' end
-                || ' left, so the challenge has ended. '
-                || 'It needs at least 3 to keep going.', true);
+                || ' left, so the game is on hold. Invite someone with the code to go on.', true);
     end if;
 end;
 $$;
 
--- "create or replace" keeps the grants from 004 (only logged-in users may call it).
+-- An earlier version of this file set ended_early_at below 3 players. Groups it ended
+-- that way are not reopened automatically; the owner can delete them or start a new one.

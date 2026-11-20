@@ -85,17 +85,21 @@ struct MemberRow: Decodable {
     let status: String
     let signature: String
     let signedAt: Date?
+    /// Optional so the app also works before migration 007 is run.
+    let firstRound: Int?
     let profiles: ProfileRow
 
     enum CodingKeys: String, CodingKey {
         case id, status, signature, profiles
         case userId = "user_id"
         case signedAt = "signed_at"
+        case firstRound = "first_round"
     }
 
     var model: Member {
         Member(id: id, userId: userId, displayName: profiles.displayName, photoPath: profiles.photoPath,
-               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature, signedAt: signedAt)
+               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature, signedAt: signedAt,
+               firstRound: firstRound ?? 1)
     }
 }
 

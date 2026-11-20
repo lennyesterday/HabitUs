@@ -10,17 +10,9 @@ struct ResultsView: View {
         let rows = data.leaderboard(now: Date())
         ScrollView {
             VStack(spacing: 24) {
-                VStack(spacing: 4) {
-                    Text("Challenge finished")
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
-                        .foregroundStyle(Theme.ink.opacity(0.7))
-                    if endedBecauseTooFew {
-                        Text("Fewer than \(minimumPlayers) players were left, so the game stopped.")
-                            .font(.system(.footnote, design: .rounded))
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
+                Text("Challenge finished")
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .foregroundStyle(Theme.ink.opacity(0.7))
 
                 if let winner = rows.first {
                     VStack(spacing: -4) {
@@ -48,10 +40,5 @@ struct ResultsView: View {
         .navigationTitle("\(data.group.icon) \(data.group.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-    }
-
-    /// Ended early with fewer than 3 players: someone left (006_leave_messages.sql), not the owner's button.
-    private var endedBecauseTooFew: Bool {
-        data.group.endedEarlyAt != nil && data.accepted.count < minimumPlayers
     }
 }

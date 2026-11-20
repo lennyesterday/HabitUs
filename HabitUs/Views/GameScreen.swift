@@ -92,10 +92,9 @@ struct GameScreen: View {
         if data.isOwner, let next {
             parts.append("\(next.displayName) becomes the new owner.")
         }
-        if leavingEndsChallenge(data.group, acceptedBefore: data.accepted.count, now: Date()) {
-            parts.append("Only \(data.accepted.count - 1) players would be left, so the challenge ends for everyone.")
-        } else {
-            parts.append("Your photos stay in the chat but no longer count.")
+        parts.append("Your photos stay in the chat but no longer count.")
+        if leavingPutsOnHold(data.group, acceptedBefore: data.accepted.count, now: Date()) {
+            parts.append("Only \(data.accepted.count - 1) players would be left, so the game is on hold until someone new joins.")
         }
         return parts.joined(separator: " ")
     }
