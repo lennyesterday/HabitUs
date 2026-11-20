@@ -18,7 +18,7 @@ streak bonus, and a leaderboard shows who delivers.
 
 ## 2. Status
 
-### Built (the app builds, the 72 rule tests are green)
+### Built (the app builds, the 77 rule tests are green)
 
 Tried in the simulator against our Supabase project: onboarding, sign up, log in, Home, the GIF search.
 **Not yet tried end to end with three real accounts:** create → join → accept → start → check in →
@@ -33,7 +33,7 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Contract | Read the rules, sign with the finger, get a 6 character invite code |
 | Join | Enter code, read the contract first, sign, wait for the owner |
 | Lobby | Owner accepts or declines requests, starts the session with at least 3 members |
-| Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
+| Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s. 👍/👎 on every photo and pause, "Vote on photos" deck (swipe right 👍, left 👎), "Retake photo" after an invalid photo |
 | Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
 | Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks |
 | Group info | Tap the member pictures at the top of the group screen: picture, facts (how often, round length, start, end, current round, owner), contract and own rules with my own signature under it, how points work |
@@ -45,12 +45,11 @@ leave / delete, profile and group pictures. Do this together once before the fea
 
 | Missing | Why it matters | Where |
 |---|---|---|
-| **Like and X buttons** on proofs | The demo story (SPEC §14) is "the other two press X, the photo turns invalid". The rule exists and is tested, only the button and the service are missing | `CheckinService.setReaction`, `FeedView` |
 | **Pause with a reason** | R18 | `CheckinService.addPause`, a sheet in `GroupView` |
 | RLS manual check with screenshots (S5) | Evidence for the security criterion | `docs/` |
 | README names and student numbers, `DECISIONS.md`, `seed.sql` | Hand-in requirements | repo root, `supabase/` |
 
-Both missing services are stubs that throw "This part is not built yet."
+`CheckinService.addPause` is still a stub that throws "This part is not built yet."
 
 ---
 
@@ -112,7 +111,7 @@ Follow this once in Xcode. It is the best way to understand the whole app.
 | `Models.swift` | plain data: `HabitGroup`, `Member`, `Checkin`, `Reaction`, `TaskStatus`, `LeaderboardRow`, `RuleError` | – | – |
 | `Rounds.swift` | `phase`, `currentRound`, `round(of:in:)`, `timeLeft`, `canStart`, `localDay`, `roundCount` | R8, R9, R14 | 14 |
 | `Tasks.swift` | `taskStatus` (done, failed, open, canCheckInToday) | R10 to R12, R19 | 10 |
-| `Votes.swift` | `xThresholdReached`, `isValid` | R15 to R18 | 6 |
+| `Votes.swift` | `xThresholdReached`, `isValid`, `canReact` (who may vote, and when) | R15 to R19 | 11 |
 | `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard`, `grade` (A to D) | R20 to R24 | 19 |
 | `Validation.swift` | `validateSignUp`, `validateGroup`, `validateGroupIcon`, `validateSignatureImage`, `validateMessage`, `validatePauseReason`, `validateGifURL` | R1, R4, R18, R26 | 20 |
 | `InviteCode.swift` | `InviteCode.generate()` (6 characters, no 0/O/1/I, `SystemRandomNumberGenerator`) | R4, S9 | 3 |
@@ -179,7 +178,7 @@ We need it in three places, and each one checks itself what is allowed:
 | `Rows.swift` | how database rows look (snake_case) and how they turn into HabitCore models; Lisbon day format |
 | `AuthService.swift` | sign up, log in (same error for unknown email and wrong password, R3), log out, profile, profile picture |
 | `GroupService.swift` | create, preview, join, accept/decline, start, finish, leave, delete, change look, Home cards, `load` (everything for one group) |
-| `CheckinService.swift` | photo check-in, feed (**pause and like/X are stubs**) |
+| `CheckinService.swift` | photo check-in, like/👎 (`setReaction`), feed (**pause is a stub**) |
 | `PhotoService.swift` | proof photos: resize, JPEG, upload, load with cache, delete all |
 | `PictureService.swift` | profile and group pictures (square 400 px) |
 | `ChatService.swift` | text messages and GIF messages |
@@ -450,6 +449,19 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted it to look like a real signed contract.
 - Files: `Models.swift`, `Rows.swift`, `GroupService.swift`, `Theme.swift`, `GroupInfoView.swift`, `LobbyView.swift`, `ContractView.swift`.
 - How to check: open the group info and a lobby with a request. `swift test` → 72 green. Not checked on screen yet.
+
+**Step 24: Photo validation: 👍/👎, vote deck and retake** (branch `picture-validation`, PR #17, Vincent)
+- What: members can now vote on every photo and pause:
+  - **in the chat:** 👍 and 👎 under every proof. Tapping your vote again takes it back. Once someone gave a 👎, a red bar shows how close the proof is to being thrown out: "1 of 2 👎 to invalidate"
+  - **"Vote on photos" button** under the task card, with a red number of photos still waiting for my vote. It folds open a Tinder style deck: swipe right = 👍, left = 👎. While dragging, a big 👍 or 👎 appears and grows. Below the cards there are also 👎/👍 buttons. When nothing is left: "All votes are done"
+  - when more than half of the **other** members gave a 👎, the photo is INVALID (R17). The task opens again and the author sees a **"Retake photo"** button that opens the camera
+- Rule (HabitCore `canReact`, 5 new tests, tests written first): you may vote only on someone else's proof, only while it is still valid (invalid is final), and only while its round is running and the session is active (R15, R17, R19). The deck only shows photos of the current round I have not voted on yet.
+- Service: `CheckinService.setReaction(groupId:checkinId:kind:)` was a stub. It checks `canReact`, then saves (upsert, one row per person and check-in) or deletes my reaction. **Signature change** (SPEC §6): it now also takes `groupId`, to load the group and check the rule.
+- Database: no change. The reactions policies in `001_schema.sql` already allow exactly this (own reaction, never on your own check-in, accepted members only).
+- Why: Like/X was the main missing Milestone 2 feature and the core of the demo story (SPEC §14). The deck is a shortcut, so nobody has to scroll through the chat to vote. Photos are still posted in the chat and voting works there too. 👎 instead of X on screen, like Step 22; in the code it is still `ReactionKind.x`.
+- Files: `HabitCore/Sources/HabitCore/Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift` (`canReact`, `myReaction`), `FeedView.swift`, `VoteDeck.swift` (new), `GroupView.swift`.
+- How to check: `swift test` → 77 green. With 3 accounts: A posts a photo, B swipes it left in "Vote on photos", C presses 👎 in the chat → INVALID, A's points drop, A sees "Retake photo". Tried in the app by Vincent (vote deck and the "All votes are done" box). **Not yet tried** end to end with three accounts on three phones.
+- Known limit: if saving a vote fails (no internet), an error shows at the top, but the card stays hidden in the deck until it is closed and opened again.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
