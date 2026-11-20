@@ -36,6 +36,7 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
 | Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
 | Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks |
+| Group info | Tap the member pictures at the top of the group screen: picture, facts (how often, round length, start, end, current round, owner), all members with signature, contract and own rules, how points work |
 | End | Owner can finish the challenge, results screen with the champion |
 | Groups | Everyone can leave any time, the owner can delete the group for everyone |
 | Profile | Profile picture, group picture and icon (owner), settings, "How it works" |
@@ -415,6 +416,18 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny decided to leave reminders and notifications out for now.
 - Options for later: real push (paid Apple Developer account, APNs key, device tokens in Supabase, an Edge Function that sends) or local notifications that remind you on your own phone (free, no server).
 - Files: `PlayerProfileView.swift`.
+
+**Step 20: Group info** (branch `group-info`)
+- What: tapping the member pictures at the top of the group screen opens "Group info":
+  - group picture or icon, name, habit
+  - facts: status, how often, length of a round, start, end or open end, current round with time left, owner
+  - all members with crown and signature. Tapping a member opens the player profile
+  - the contract with the group's own rules
+  - a short summary of how points work
+- Why: Lenny wanted one place with everything important about a group.
+- Code: the contract text moved into a small reusable view `ContractTerms` (in `ContractView.swift`), so the signing screen and the group info always show the same words.
+- Files: `GroupInfoView.swift` (new), `GroupView.swift` (the member pictures are a button now), `ContractView.swift`.
+- How to check: the `GroupInfoView` preview, or in the app tap the member pictures in a running habit. Not yet tried on a real device.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

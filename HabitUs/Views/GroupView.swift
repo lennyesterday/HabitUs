@@ -12,6 +12,7 @@ struct GroupView: View {
     @State private var showCamera = false
     @State private var showGifPicker = false
     @State private var selectedPlayer: UUID?
+    @State private var showGroupInfo = false
     @State private var isUploading = false
     @State private var showFinishConfirmation = false
     @State private var messageText = ""
@@ -107,6 +108,9 @@ struct GroupView: View {
         .navigationDestination(item: $selectedPlayer) { userId in
             PlayerProfileView(data: data, userId: userId)
         }
+        .navigationDestination(isPresented: $showGroupInfo) {
+            GroupInfoView(data: data)
+        }
         .sheet(isPresented: $showCamera) {
             CameraView { image in
                 showCamera = false
@@ -133,16 +137,24 @@ struct GroupView: View {
     /// Overlapping member pictures with my points and my rank.
     private func header(points: Int, rank: Int) -> some View {
         VStack(spacing: 10) {
-            HStack(spacing: -14) {
-                ForEach(data.accepted.prefix(6)) { member in
-                    ProfilePicture(name: member.displayName, path: member.photoPath,
-                                   size: member.userId == data.me ? 62 : 50)
-                        .overlay(Circle().stroke(.white, lineWidth: 3))
-                        .zIndex(member.userId == data.me ? 1 : 0)
+            // Tapping the member pictures opens the group info (members, contract, rules).
+            Button {
+                showGroupInfo = true
+            } label: {
+                HStack(spacing: -14) {
+                    ForEach(data.accepted.prefix(6)) { member in
+                        ProfilePicture(name: member.displayName, path: member.photoPath,
+                                       size: member.userId == data.me ? 62 : 50)
+                            .overlay(Circle().stroke(.white, lineWidth: 3))
+                            .zIndex(member.userId == data.me ? 1 : 0)
+                    }
                 }
+                .padding(10)
+                .background(.white.opacity(0.7), in: Capsule())
             }
-            .padding(10)
-            .background(.white.opacity(0.7), in: Capsule())
+            .buttonStyle(PressableCardStyle())
+            .accessibilityLabel("Group info")
+            .accessibilityHint("Shows all members, the contract and the rules")
             HStack(spacing: 10) {
                 Pill(text: "\(points) pts")
                 Pill(text: "#\(rank) of \(data.accepted.count)")
