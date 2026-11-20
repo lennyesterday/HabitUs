@@ -17,31 +17,92 @@ private struct NewProfile: Encodable {
     let avatar: String
 }
 
+/// Thrown by `logIn` when the password was right, but the email address was never confirmed.
+/// A new code has been sent, so the view can ask for it.
+struct EmailNotConfirmed: Error {}
+
 enum AuthService {
     /// R1: checks the input with HabitCore, then creates the account. The database trigger
     /// from 002_profiles_and_join_preview.sql creates the profile row from the name.
-    static func signUp(email: String, password: String, displayName: String,
-                       acceptedTerms: Bool) async throws {
-        try validateSignUp(email: email, password: password, displayName: displayName,
-                           acceptedTerms: acceptedTerms)
-        try await readable {
+    /// Returns true if Supabase sent a confirmation code that has to be entered next
+    /// ("Confirm email" turned on). Returns false if the person is logged in right away.
+    @discardableResult
+    static func signUp(email: String, password: String, repeatedPassword: String, displayName: String,
+                       acceptedTerms: Bool) async throws -> Bool {
+        try validateSignUp(email: email, password: password, repeatedPassword: repeatedPassword,
+                           displayName: displayName, acceptedTerms: acceptedTerms)
+        return try await readable {
             let response = try await supabase.auth.signUp(
                 email: email.trimmingCharacters(in: .whitespaces),
                 password: password,
                 data: ["display_name": .string(displayName.trimmingCharacters(in: .whitespaces))]
             )
-            if response.session == nil {
-                throw RuleError("Account created, but email confirmation is turned on in Supabase. Turn it off (Authentication → Sign In / Providers → Email) or confirm the email, then log in.")
-            }
+            // No session means: Supabase emailed a code and waits for it.
+            return response.session == nil
+        }
+    }
+
+    /// Checks the code from the confirmation email. On success Supabase logs the person in,
+    /// and RootView switches to Home by itself.
+    static func verifyEmailCode(email: String, code: String) async throws {
+        let cleanCode = try validateEmailCode(code)
+        do {
+            try await supabase.auth.verifyOTP(email: email.trimmingCharacters(in: .whitespaces),
+                                              token: cleanCode, type: .signup)
+        } catch is URLError {
+            throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch {
+            throw RuleError("This code is wrong or expired. Ask for a new one.")
+        }
+    }
+
+    /// Sends a new confirmation code to the email address.
+    static func resendEmailCode(email: String) async throws {
+        try await readable {
+            try await supabase.auth.resend(email: email.trimmingCharacters(in: .whitespaces), type: .signup)
+        }
+    }
+
+    /// "Forgot password?": Supabase emails a reset code. It says nothing about whether an
+    /// account with this email exists, so nobody can find out who uses the app (like R3).
+    static func sendResetCode(email: String) async throws {
+        try validateEmail(email)
+        try await readable {
+            try await supabase.auth.resetPasswordForEmail(email.trimmingCharacters(in: .whitespaces))
+        }
+    }
+
+    /// Checks the reset code, which logs the person in, then sets the new password.
+    /// Both inputs are checked first, so a short password does not use up the code.
+    /// Once the code is right, RootView switches to Home by itself.
+    static func setNewPassword(email: String, code: String, password: String,
+                               repeatedPassword: String) async throws {
+        let cleanCode = try validateEmailCode(code)
+        try validatePassword(password, repeated: repeatedPassword)
+        do {
+            try await supabase.auth.verifyOTP(email: email.trimmingCharacters(in: .whitespaces),
+                                              token: cleanCode, type: .recovery)
+        } catch is URLError {
+            throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch {
+            throw RuleError("This code is wrong or expired. Ask for a new one.")
+        }
+        try await readable {
+            _ = try await supabase.auth.update(user: UserAttributes(password: password))
         }
     }
 
     /// R3: the same error text for an unknown email and a wrong password.
     static func logIn(email: String, password: String) async throws {
+        let email = email.trimmingCharacters(in: .whitespaces)
         do {
-            try await supabase.auth.signIn(email: email.trimmingCharacters(in: .whitespaces), password: password)
+            try await supabase.auth.signIn(email: email, password: password)
         } catch is URLError {
             throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch let error as AuthError where error.errorCode == .emailNotConfirmed {
+            // Supabase only says this when the password was right, so R3 still holds.
+            try? await supabase.auth.resend(email: email, type: .signup)
+            throw EmailNotConfirmed()
         } catch {
             throw RuleError("Email or password is wrong.")
         }

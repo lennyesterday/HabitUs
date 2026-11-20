@@ -7,9 +7,10 @@ final class ValidationTests: XCTestCase {
 
     // MARK: R1 sign up
 
-    func validSignUp(email: String = "lenny@example.com", password: String = "secret123",
-                     name: String = "Lenny", terms: Bool = true) throws {
-        try validateSignUp(email: email, password: password, displayName: name, acceptedTerms: terms)
+    func validSignUp(email: String = "lenny@example.com", password: String = "Secret123!",
+                     repeated: String? = nil, name: String = "Lenny", terms: Bool = true) throws {
+        try validateSignUp(email: email, password: password, repeatedPassword: repeated ?? password,
+                           displayName: name, acceptedTerms: terms)
     }
 
     func testR1ValidSignUpIsAccepted() {
@@ -23,8 +24,29 @@ final class ValidationTests: XCTestCase {
     }
 
     func testR1PasswordNeedsEightCharacters() {
-        XCTAssertThrowsError(try validSignUp(password: "1234567"))
-        XCTAssertNoThrow(try validSignUp(password: "12345678"))
+        XCTAssertThrowsError(try validSignUp(password: "Ab1!xyz"))
+        XCTAssertNoThrow(try validSignUp(password: "Ab1!wxyz"))
+    }
+
+    func testR1PasswordNeedsEveryKindOfCharacter() {
+        XCTAssertThrowsError(try validSignUp(password: "secret123!"), "no capital letter")
+        XCTAssertThrowsError(try validSignUp(password: "SECRET123!"), "no small letter")
+        XCTAssertThrowsError(try validSignUp(password: "SecretPass!"), "no number")
+        XCTAssertThrowsError(try validSignUp(password: "Secret1234"), "no special character")
+        XCTAssertNoThrow(try validSignUp(password: "Secret 12?"), "a space is fine as long as all rules are met")
+    }
+
+    func testR1PasswordMustBeTypedTheSameTwice() {
+        XCTAssertThrowsError(try validSignUp(password: "Secret123!", repeated: "Secret123?")) { error in
+            XCTAssertEqual((error as? RuleError)?.message, "The two passwords are not the same.")
+        }
+    }
+
+    func testR1PasswordRulesShowWhatIsMissing() {
+        let rules = passwordRules("abc")
+        XCTAssertEqual(rules.count, 5)
+        XCTAssertEqual(rules.filter(\.isMet).map(\.text), ["A small letter"])
+        XCTAssertTrue(passwordRules("Secret123!").allSatisfy(\.isMet))
     }
 
     func testR1DisplayNameTwoToTwentyCharacters() {
@@ -41,7 +63,7 @@ final class ValidationTests: XCTestCase {
 
     func testR1ErrorHasReadableText() {
         XCTAssertThrowsError(try validSignUp(password: "short")) { error in
-            XCTAssertEqual((error as? RuleError)?.message, "The password needs at least 8 characters.")
+            XCTAssertEqual((error as? RuleError)?.message, "Your password still needs: at least 8 characters.")
         }
     }
 
@@ -128,6 +150,37 @@ final class ValidationTests: XCTestCase {
         XCTAssertNoThrow(try validateMessage("let's go"))
         XCTAssertNoThrow(try validateMessage(String(repeating: "a", count: 500)))
         XCTAssertThrowsError(try validateMessage(String(repeating: "a", count: 501)))
+    }
+
+    // MARK: R1 email confirmation code
+
+    func testR1EmailCodeIsSixToTenDigits() {
+        XCTAssertNoThrow(try validateEmailCode("123456"))
+        XCTAssertNoThrow(try validateEmailCode(" 123 456 "), "spaces from copy and paste are ignored")
+        XCTAssertNoThrow(try validateEmailCode("1234567890"))
+        XCTAssertThrowsError(try validateEmailCode(""))
+        XCTAssertThrowsError(try validateEmailCode("12345"))
+        XCTAssertThrowsError(try validateEmailCode("12345678901"))
+        XCTAssertThrowsError(try validateEmailCode("12a456"))
+    }
+
+    func testR1EmailCodeIsCleaned() throws {
+        XCTAssertEqual(try validateEmailCode(" 123 456 "), "123456")
+    }
+
+    // MARK: R1 forgot password
+
+    func testR1ResetNeedsAValidEmail() {
+        XCTAssertNoThrow(try validateEmail(" lenny@example.com "))
+        XCTAssertThrowsError(try validateEmail("lenny"))
+        XCTAssertThrowsError(try validateEmail("@example.com"))
+        XCTAssertThrowsError(try validateEmail("lenny@example."))
+    }
+
+    func testR1NewPasswordFollowsTheSameRules() {
+        XCTAssertNoThrow(try validatePassword("Secret123!", repeated: "Secret123!"))
+        XCTAssertThrowsError(try validatePassword("12345678", repeated: "12345678"))
+        XCTAssertThrowsError(try validatePassword("Secret123!", repeated: ""))
     }
 
     // MARK: R26 GIFs in the chat

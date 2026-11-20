@@ -155,7 +155,7 @@ struct GroupCreatedView: View {
                     UIPasteboard.general.string = code
                 }
                 .buttonStyle(.bordered)
-                ShareLink(item: "Join my habit on HabitUs with the code \(code)") {
+                ShareLink(item: "Join my habit on Habitract with the code \(code)") {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
                 .buttonStyle(.bordered)

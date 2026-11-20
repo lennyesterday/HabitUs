@@ -1,6 +1,6 @@
 import SwiftUI
 
-// Shown the first time the app opens: a welcome page and one page per idea of HabitUs.
+// Shown the first time the app opens: a welcome page and one page per idea of Habitract.
 // "Next" (or swiping) goes to the next page, the last one leads to sign up and log in. Area A.
 
 struct OnboardingView: View {
@@ -101,7 +101,7 @@ struct OnboardingView: View {
                     .shadow(color: .black.opacity(0.25), radius: 20, y: 10)
             }
             .frame(height: 340)
-            Text("Welcome to\nHabitUs")
+            Text("Welcome to\nHabitract")
                 .font(Theme.title(38))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.white)

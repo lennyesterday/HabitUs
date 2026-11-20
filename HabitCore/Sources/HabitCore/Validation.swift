@@ -6,22 +6,56 @@ private func trimmed(_ text: String) -> String {
     text.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
-/// R1: email, password of at least 8 characters, name of 2 to 20 characters, terms ticked.
-public func validateSignUp(email: String, password: String, displayName: String,
-                           acceptedTerms: Bool) throws {
-    let email = trimmed(email)
-    let parts = email.split(separator: "@", omittingEmptySubsequences: false)
-    guard parts.count == 2, !parts[0].isEmpty, parts[1].contains("."), !parts[1].hasSuffix(".") else {
-        throw RuleError("Please enter a valid email address.")
-    }
-    guard password.count >= 8 else {
-        throw RuleError("The password needs at least 8 characters.")
-    }
+/// R1: email, a password that meets all `passwordRules` and was typed the same twice,
+/// name of 2 to 20 characters, terms ticked.
+public func validateSignUp(email: String, password: String, repeatedPassword: String,
+                           displayName: String, acceptedTerms: Bool) throws {
+    try validateEmail(email)
+    try validatePassword(password, repeated: repeatedPassword)
     guard (2...20).contains(trimmed(displayName).count) else {
         throw RuleError("Your name needs 2 to 20 characters.")
     }
     guard acceptedTerms else {
         throw RuleError("Please accept the terms.")
+    }
+}
+
+/// R1: one "@", something before it and a domain with a dot after it.
+public func validateEmail(_ email: String) throws {
+    let parts = trimmed(email).split(separator: "@", omittingEmptySubsequences: false)
+    guard parts.count == 2, !parts[0].isEmpty, parts[1].contains("."), !parts[1].hasSuffix(".") else {
+        throw RuleError("Please enter a valid email address.")
+    }
+}
+
+/// One rule for a new password and whether the password meets it. The forms show them as a checklist.
+public struct PasswordRule: Hashable, Sendable {
+    public let text: String
+    public let isMet: Bool
+}
+
+/// R1: the usual rules for a new password: 8 characters, a capital and a small letter,
+/// a number and a special character.
+public func passwordRules(_ password: String) -> [PasswordRule] {
+    [
+        PasswordRule(text: "At least 8 characters", isMet: password.count >= 8),
+        PasswordRule(text: "A capital letter", isMet: password.contains(where: \.isUppercase)),
+        PasswordRule(text: "A small letter", isMet: password.contains(where: \.isLowercase)),
+        PasswordRule(text: "A number", isMet: password.contains(where: \.isNumber)),
+        PasswordRule(text: "A special character like ! ? # @",
+                     isMet: password.contains { !$0.isLetter && !$0.isNumber && !$0.isWhitespace }),
+    ]
+}
+
+/// R1: all `passwordRules` met, and the second field says the same. Used for sign up and
+/// for a new password after "Forgot password?". Logging in does not check the rules,
+/// so older accounts with simpler passwords still work.
+public func validatePassword(_ password: String, repeated: String) throws {
+    if let missing = passwordRules(password).first(where: { !$0.isMet }) {
+        throw RuleError("Your password still needs: \(missing.text.lowercased()).")
+    }
+    guard password == repeated else {
+        throw RuleError("The two passwords are not the same.")
     }
 }
 
@@ -94,4 +128,15 @@ public func validateGifURL(_ text: String) throws {
           url.path.hasSuffix(".gif") else {
         throw RuleError("Only GIFs from GIPHY can be sent.")
     }
+}
+
+/// R1 (with email confirmation): the code from the email is 6 to 10 digits.
+/// Spaces from copy and paste are removed. Returns the cleaned code to send to the server.
+@discardableResult
+public func validateEmailCode(_ code: String) throws -> String {
+    let digits = code.filter { !$0.isWhitespace }
+    guard (6...10).contains(digits.count), digits.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+        throw RuleError("Please enter the code from the email (6 digits).")
+    }
+    return digits
 }

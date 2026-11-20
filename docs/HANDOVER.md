@@ -1,4 +1,4 @@
-# HabitUs: what has been built so far
+# Habitract (repo: HabitUs): what has been built so far
 
 Written by Lenny for Bene and Vincent, 19 Nov 2026. Read it once, then open the files it points to.
 Everything here describes the code on branch `test-run-1` / PR #10 ("Initial version of HabitUs").
@@ -216,14 +216,15 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
 | Onboarding pages and new design | – | explain the app, make it fun | inspired by PlayUs, but toned down on purpose: it is a habit app, not a game ("New Habit", not "New Game") |
-| Email confirmation off | no email verification | Supabase's built-in mailer only reaches team addresses | fake emails possible, but they see nothing without invite code + owner OK |
+| Email confirmation, forgot password, password rules | no email verification, 8 characters | real accounts: a 6 digit code from the email, a way back in, the usual password rules (steps 27, 29, 30, 31) | emails go through Resend with our own domain `habitractapp.com` (about 10 € a year, paid by Lenny); if Resend or the SMTP settings break, nobody can sign up |
 
 ---
 
 ## 9. Known limits (say them yourselves in the walkthrough)
 
 - Game rules run in the app, access rules in the database. A hacked app could break a game rule *inside its own group* (e.g. two photos a day), but never get into another group.
-- No email verification, no password reset, no account deletion.
+- No account deletion. Email verification and password reset exist since steps 27 and 29.
+- The password rules are checked in the app. The server only checks them if they are also set in Supabase (step 30).
 - A photo of a screen can fake a "live" photo. That is exactly why the group can press X.
 - No push notifications, no live updates (the group screen reloads every 10 seconds).
 - Not tested automatically: RLS and the database functions, camera, layout. RLS is checked by hand (S5).
@@ -236,9 +237,16 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 72 tests green.
+4. `cd HabitCore && swift test` → 84 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
+
+**On your own iPhone (for the demo):** no paid Apple account needed.
+1. Plug the iPhone in, tap "Trust". Turn on Settings → Privacy & Security → Developer Mode (the iPhone restarts).
+2. In Xcode pick the iPhone instead of the simulator and press ▶ Run.
+3. If it says "Untrusted Developer": Settings → General → VPN & Device Management → your Apple ID → Trust, then ▶ again.
+4. With a free Apple ID the app stops opening after **7 days**. Install it fresh on 22 or 23 Nov for the presentation on 24 Nov.
+5. Show the screen with QuickTime → New Movie Recording → camera: iPhone. Prepare a running group with 3 accounts, so feed, votes and leaderboard are not empty. Test the internet in the room (hotspot as backup).
 
 Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone else reviews, tests stay green, commit from your own account.
 
@@ -450,6 +458,65 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted it to look like a real signed contract.
 - Files: `Models.swift`, `Rows.swift`, `GroupService.swift`, `Theme.swift`, `GroupInfoView.swift`, `LobbyView.swift`, `ContractView.swift`.
 - How to check: open the group info and a lobby with a request. `swift test` → 72 green. Not checked on screen yet.
+
+**Step 24: Change the profile picture by tapping it** (branch `profilsettings`)
+- What: the "Profile" section with "Add picture" was removed from the settings. Instead, the round profile picture at the top has a small camera badge. Tapping it opens a menu: **Take photo** (camera), **Choose from library**, and **Remove picture** (only if there is one).
+- Why: Lenny wanted it like in other apps: tap the picture to change it.
+- Also: the camera permission text in `Config/Info.plist` now mentions profile pictures, because the camera is used for them too.
+- Files: `ProfileView.swift`, `Config/Info.plist`.
+- How to check: open the profile from Home and tap the picture. In the simulator "Take photo" offers the generated test photo (there is no camera). It was only seen in the preview so far.
+
+**Step 25: Copyright row removed from the settings** (branch `profilsettings`)
+- What: the row "HabitUs, 2026 · Nova SBE · Introduction to Programming" was removed from the "Info" section of the settings. Only the version is left.
+- Why: Lenny wanted it out.
+- Files: `ProfileView.swift`.
+
+**Step 26: Logo and "HabitUs" at the top of Home** (branch `profilsettings`)
+- What: the top of Home shows the app logo and "HabitUs" instead of "Hi Bene 👋 / Your habits". The profile picture on the right stays.
+- Why: Lenny wanted the brand at the top.
+- Files: `HomeView.swift`.
+- How to check: run the app and log in. It builds, but it was not looked at on screen yet.
+
+**Step 27: Enter the code from the confirmation email** (branch `email-code`)
+- What: when "Confirm email" is turned on in Supabase, sign up no longer stops with an error. The card shows "Check your email", where you type the code from the email and press "Confirm". There is also "Send a new code" and "Back". If someone who never confirmed tries to log in, a new code is sent and the code screen opens (only when the password was right, so R3 still holds). With "Confirm email" off, nothing changes.
+- How: `AuthService.signUp` now returns whether a code is needed. New `verifyEmailCode` (Supabase `verifyOTP(type: .signup)`) and `resendEmailCode`. `logIn` throws `EmailNotConfirmed` for that case. HabitCore `validateEmailCode`: 6 to 10 digits, spaces ignored, 2 tests (79 in total).
+- Still needed in Supabase before turning it on:
+  1. Custom SMTP: the built-in mailer only reaches team members. Use Brevo or Resend with a domain.
+  2. The "Confirm signup" email template must contain the code `{{ .Token }}` instead of only the link.
+  3. A higher email rate limit.
+  4. Only then turn on "Confirm email".
+- Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
+- How to check: the `AuthView` preview "Code from email". With real emails only after the Supabase steps above. Not tested end to end yet.
+
+**Step 28: The app is now called Habitract** (branch `rename-habitract`)
+- What: everything the user sees says "Habitract" instead of "HabitUs": the name under the app icon, Home header, login card, onboarding, settings texts, invite share text and the camera permission text.
+- Why: the name HabitUs is already taken (also as a domain for the confirmation emails).
+- How: `CFBundleDisplayName = Habitract` in `Config/Info.plist`, plus the visible strings. On purpose NOT renamed: the Xcode project, target, folder `HabitUs/`, `HabitUsApp` and the bundle ID (AGENTS.md forbids changing it, and renaming the project would break everyone's checkout). The GitHub repo is still called HabitUs.
+- Files: `Config/Info.plist`, `HomeView.swift`, `AuthView.swift`, `OnboardingView.swift`, `ProfileView.swift`, `LobbyView.swift`, `CreateGroupView.swift`, `Theme.swift`, `README.md`.
+- How to check: run the app. Home shows "Habitract", the home screen of the simulator shows "Habitract" under the icon.
+
+**Step 29: Forgot password** (branch `forgot-password`)
+- What: under "Log in" there is now "Forgot password?". You enter your email, get a code by email, type the code and a new password, and are logged in with the new password. "Send a new code" and "Back" work like on the sign up code screen.
+- Why: with real accounts and confirmed emails, people need a way back in without asking us.
+- How: `AuthService.sendResetCode` (Supabase `resetPasswordForEmail`) and `setNewPassword` (`verifyOTP(type: .recovery)`, then `update(user:)` with the new password). The screen never says whether an account exists ("If there is an account for ..."), like R3. HabitCore: `validateEmail` and `validatePassword` split out of `validateSignUp`, so sign up and reset use the same rules; 2 new tests (81 in total). The code and the password are checked before the code is sent to Supabase, so a too short password does not use up the code.
+- Supabase: the "Reset Password" email template must contain `{{ .Token }}` (Habitract style template, like Confirm signup).
+- Known limit: the code logs you in before the new password is saved. If saving fails (for example no internet at exactly that moment), you are logged in but keep the old password.
+- Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
+- How to check: previews "Log in" and "Forgot password" in `AuthView`. With a real email: log out, "Forgot password?", enter the code from the email.
+
+**Step 30: Password rules and "Repeat password"** (branch `forgot-password`)
+- What: sign up and "Forgot password?" now ask for the password twice. Under the fields is a live checklist that turns green line by line: at least 8 characters, a capital letter, a small letter, a number, a special character, both passwords match. Logging in does not check the rules, so older accounts with simpler passwords still work.
+- Why: the usual password rules, and typing it twice catches typos before the account exists.
+- How: HabitCore `passwordRules(_:)` returns the rules with `isMet`; the view only shows them (`PasswordChecklist` in `AuthView.swift`). `validatePassword(_:repeated:)` throws the first missing rule or "The two passwords are not the same." `validateSignUp` got a `repeatedPassword` parameter. 3 new tests (84 in total).
+- Supabase (recommended): Authentication → Sign In / Providers → Email → minimum password length 8 and "Lowercase, uppercase letters, digits and symbols", so the server checks the same rules and not only the app.
+- Files: `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`, `AuthService.swift`, `AuthView.swift`.
+- How to check: `AuthView` previews "Sign up" and "Forgot password", or type a password in the app and watch the list.
+
+**Step 31: Emails are live** (Supabase and Resend settings, no code)
+- What: sign up now really sends a 6 digit code, and "Forgot password?" a reset code. Both emails are in the Habitract style (blue header, yellow code box).
+- How: domain `habitractapp.com` bought by Lenny (Cloudflare), added and verified in Resend (region Ireland). In Supabase → Authentication → Emails → SMTP: host `smtp.resend.com`, **port 465**, username `resend`, password = a Resend API key with sending access (only in Supabase, never in the repo or chat), sender `noreply@habitractapp.com`, name "Habitract". Templates "Confirm signup" and "Reset Password" contain `{{ .Token }}`. Email rate limit raised. "Confirm email" turned on.
+- Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
+- How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

@@ -18,7 +18,7 @@ struct LobbyView: View {
                         .font(.title.monospaced().bold())
                         .textSelection(.enabled)
                     Spacer()
-                    ShareLink(item: "Join my habit on HabitUs with the code \(data.group.inviteCode)") {
+                    ShareLink(item: "Join my habit on Habitract with the code \(data.group.inviteCode)") {
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
