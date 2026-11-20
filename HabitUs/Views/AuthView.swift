@@ -19,10 +19,18 @@ struct AuthView: View {
     @State private var codeEmail: String?
     @State private var code = ""
     @State private var infoMessage: String?
+    /// Set while "Forgot password?" is open: first the email, then the code and a new password.
+    @State private var reset: ResetStep?
+    @State private var newPassword = ""
     @FocusState private var focused: Field?
 
     private enum Field {
-        case email, password, name
+        case email, password, name, newPassword
+    }
+
+    private enum ResetStep: Equatable {
+        case askEmail
+        case enterCode(String)
     }
 
     var body: some View {
@@ -52,6 +60,8 @@ struct AuthView: View {
                     VStack(spacing: 14) {
                         if let codeEmail {
                             codeEntry(codeEmail)
+                        } else if let reset {
+                            resetCard(reset)
                         } else {
                         modeSwitch
 
@@ -91,6 +101,14 @@ struct AuthView: View {
                         }
                         .buttonStyle(ChunkyButtonStyle())
                         .disabled(isWorking)
+
+                        if mode == .logIn {
+                            Button("Forgot password?") {
+                                errorMessage = nil
+                                withAnimation { reset = .askEmail }
+                            }
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        }
                         }
                     }
                     .padding(20)
@@ -165,9 +183,10 @@ struct AuthView: View {
         isWorking = false
     }
 
-    /// `codeEmail` is only set by the preview, to show the code screen without a real email.
-    init(codeEmail: String? = nil) {
+    /// `codeEmail` and `resetEmail` are only set by the previews, to show those screens without a real email.
+    init(codeEmail: String? = nil, resetEmail: String? = nil) {
         _codeEmail = State(initialValue: codeEmail)
+        _reset = State(initialValue: resetEmail.map { .enterCode($0) })
     }
 
     private func showCodeEntry() {
@@ -191,21 +210,10 @@ struct AuthView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
-            TextField("123456", text: $code)
-                .textContentType(.oneTimeCode)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-                .font(.system(size: 30, weight: .bold, design: .monospaced))
-                .padding(.vertical, 10)
-                .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
-                .onChange(of: code) { code = String(code.filter(\.isNumber).prefix(10)) }
+            codeField
 
             ErrorText(message: errorMessage)
-            if let infoMessage {
-                Text(infoMessage)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-            }
+            InfoText(message: infoMessage)
 
             Button {
                 Task { await confirm(address) }
@@ -228,6 +236,18 @@ struct AuthView: View {
             }
             .font(.system(.subheadline, design: .rounded).weight(.semibold))
         }
+    }
+
+    /// The big field for the 6 digit code from an email. Only digits can be typed.
+    private var codeField: some View {
+        TextField("123456", text: $code)
+            .textContentType(.oneTimeCode)
+            .keyboardType(.numberPad)
+            .multilineTextAlignment(.center)
+            .font(.system(size: 30, weight: .bold, design: .monospaced))
+            .padding(.vertical, 10)
+            .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
+            .onChange(of: code) { code = String(code.filter(\.isNumber).prefix(10)) }
     }
 
     private func confirm(_ address: String) async {
@@ -253,6 +273,132 @@ struct AuthView: View {
         }
         isWorking = false
     }
+
+    // MARK: - Forgot password
+
+    @ViewBuilder
+    private func resetCard(_ step: ResetStep) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: "key.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(Theme.brand)
+
+            switch step {
+            case .askEmail:
+                Text("Forgot your password?")
+                    .font(Theme.title(24))
+                    .foregroundStyle(Theme.ink)
+                Text("Enter your email. We send you a code to set a new password.")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                field(.email) {
+                    TextField("Email", text: $email)
+                        .textContentType(.emailAddress)
+                        .keyboardType(.emailAddress)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled()
+                }
+
+                ErrorText(message: errorMessage)
+
+                Button {
+                    Task { await sendResetCode() }
+                } label: {
+                    if isWorking { ProgressView().tint(.black) } else { Text("Send code") }
+                }
+                .buttonStyle(ChunkyButtonStyle())
+                .disabled(isWorking)
+
+            case .enterCode(let address):
+                Text("Check your email")
+                    .font(Theme.title(24))
+                    .foregroundStyle(Theme.ink)
+                Text("If there is an account for **\(address)**, we sent it a code. Enter it and choose a new password.")
+                    .font(.system(.subheadline, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+
+                codeField
+                field(.newPassword) {
+                    SecureField("New password (at least 8 characters)", text: $newPassword)
+                        .textContentType(.newPassword)
+                }
+
+                ErrorText(message: errorMessage)
+                InfoText(message: infoMessage)
+
+                Button {
+                    Task { await saveNewPassword(address) }
+                } label: {
+                    if isWorking { ProgressView().tint(.black) } else { Text("Save new password") }
+                }
+                .buttonStyle(ChunkyButtonStyle())
+                .disabled(isWorking || code.count < 6)
+            }
+
+            HStack {
+                Button("Back") {
+                    errorMessage = nil
+                    infoMessage = nil
+                    withAnimation { reset = nil }
+                }
+                Spacer()
+                if case .enterCode = step {
+                    Button("Send a new code") {
+                        Task { await sendResetCode() }
+                    }
+                    .disabled(isWorking)
+                }
+            }
+            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+        }
+    }
+
+    private func sendResetCode() async {
+        isWorking = true
+        errorMessage = nil
+        do {
+            try await AuthService.sendResetCode(email: email)
+            if reset == .askEmail {
+                code = ""
+                newPassword = ""
+                infoMessage = nil
+                withAnimation { reset = .enterCode(email.trimmingCharacters(in: .whitespaces)) }
+            } else {
+                infoMessage = "A new code is on its way. Check your spam folder too."
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isWorking = false
+    }
+
+    private func saveNewPassword(_ address: String) async {
+        isWorking = true
+        errorMessage = nil
+        do {
+            try await AuthService.setNewPassword(email: address, code: code, password: newPassword)
+            // Logged in with the new password now: RootView switches to Home by itself.
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isWorking = false
+    }
+}
+
+/// A grey hint under a form, for example "A new code is on its way".
+private struct InfoText: View {
+    let message: String?
+
+    var body: some View {
+        if let message {
+            Text(message)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
 }
 
 #Preview("Log in") {
@@ -261,4 +407,8 @@ struct AuthView: View {
 
 #Preview("Code from email") {
     AuthView(codeEmail: "lenny@example.com")
+}
+
+#Preview("Forgot password") {
+    AuthView(resetEmail: "lenny@example.com")
 }

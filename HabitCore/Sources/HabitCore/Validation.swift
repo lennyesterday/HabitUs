@@ -9,19 +9,28 @@ private func trimmed(_ text: String) -> String {
 /// R1: email, password of at least 8 characters, name of 2 to 20 characters, terms ticked.
 public func validateSignUp(email: String, password: String, displayName: String,
                            acceptedTerms: Bool) throws {
-    let email = trimmed(email)
-    let parts = email.split(separator: "@", omittingEmptySubsequences: false)
-    guard parts.count == 2, !parts[0].isEmpty, parts[1].contains("."), !parts[1].hasSuffix(".") else {
-        throw RuleError("Please enter a valid email address.")
-    }
-    guard password.count >= 8 else {
-        throw RuleError("The password needs at least 8 characters.")
-    }
+    try validateEmail(email)
+    try validatePassword(password)
     guard (2...20).contains(trimmed(displayName).count) else {
         throw RuleError("Your name needs 2 to 20 characters.")
     }
     guard acceptedTerms else {
         throw RuleError("Please accept the terms.")
+    }
+}
+
+/// R1: one "@", something before it and a domain with a dot after it.
+public func validateEmail(_ email: String) throws {
+    let parts = trimmed(email).split(separator: "@", omittingEmptySubsequences: false)
+    guard parts.count == 2, !parts[0].isEmpty, parts[1].contains("."), !parts[1].hasSuffix(".") else {
+        throw RuleError("Please enter a valid email address.")
+    }
+}
+
+/// R1: at least 8 characters. Used for sign up and for a new password after "Forgot password?".
+public func validatePassword(_ password: String) throws {
+    guard password.count >= 8 else {
+        throw RuleError("The password needs at least 8 characters.")
     }
 }
 

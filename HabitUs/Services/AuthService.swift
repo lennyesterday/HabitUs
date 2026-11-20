@@ -63,6 +63,34 @@ enum AuthService {
         }
     }
 
+    /// "Forgot password?": Supabase emails a reset code. It says nothing about whether an
+    /// account with this email exists, so nobody can find out who uses the app (like R3).
+    static func sendResetCode(email: String) async throws {
+        try validateEmail(email)
+        try await readable {
+            try await supabase.auth.resetPasswordForEmail(email.trimmingCharacters(in: .whitespaces))
+        }
+    }
+
+    /// Checks the reset code, which logs the person in, then sets the new password.
+    /// Both inputs are checked first, so a short password does not use up the code.
+    /// Once the code is right, RootView switches to Home by itself.
+    static func setNewPassword(email: String, code: String, password: String) async throws {
+        let cleanCode = try validateEmailCode(code)
+        try validatePassword(password)
+        do {
+            try await supabase.auth.verifyOTP(email: email.trimmingCharacters(in: .whitespaces),
+                                              token: cleanCode, type: .recovery)
+        } catch is URLError {
+            throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch {
+            throw RuleError("This code is wrong or expired. Ask for a new one.")
+        }
+        try await readable {
+            _ = try await supabase.auth.update(user: UserAttributes(password: password))
+        }
+    }
+
     /// R3: the same error text for an unknown email and a wrong password.
     static func logIn(email: String, password: String) async throws {
         let email = email.trimmingCharacters(in: .whitespaces)

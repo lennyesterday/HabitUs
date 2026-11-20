@@ -146,6 +146,20 @@ final class ValidationTests: XCTestCase {
         XCTAssertEqual(try validateEmailCode(" 123 456 "), "123456")
     }
 
+    // MARK: R1 forgot password
+
+    func testR1ResetNeedsAValidEmail() {
+        XCTAssertNoThrow(try validateEmail(" lenny@example.com "))
+        XCTAssertThrowsError(try validateEmail("lenny"))
+        XCTAssertThrowsError(try validateEmail("@example.com"))
+        XCTAssertThrowsError(try validateEmail("lenny@example."))
+    }
+
+    func testR1NewPasswordNeedsEightCharacters() {
+        XCTAssertNoThrow(try validatePassword("12345678"))
+        XCTAssertThrowsError(try validatePassword("1234567"))
+    }
+
     // MARK: R26 GIFs in the chat
 
     func testR26GifMustComeFromGiphy() {

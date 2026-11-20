@@ -487,6 +487,15 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Config/Info.plist`, `HomeView.swift`, `AuthView.swift`, `OnboardingView.swift`, `ProfileView.swift`, `LobbyView.swift`, `CreateGroupView.swift`, `Theme.swift`, `README.md`.
 - How to check: run the app. Home shows "Habitract", the home screen of the simulator shows "Habitract" under the icon.
 
+**Step 29: Forgot password** (branch `forgot-password`)
+- What: under "Log in" there is now "Forgot password?". You enter your email, get a code by email, type the code and a new password, and are logged in with the new password. "Send a new code" and "Back" work like on the sign up code screen.
+- Why: with real accounts and confirmed emails, people need a way back in without asking us.
+- How: `AuthService.sendResetCode` (Supabase `resetPasswordForEmail`) and `setNewPassword` (`verifyOTP(type: .recovery)`, then `update(user:)` with the new password). The screen never says whether an account exists ("If there is an account for ..."), like R3. HabitCore: `validateEmail` and `validatePassword` split out of `validateSignUp`, so sign up and reset use the same rules; 2 new tests (81 in total). The code and the password are checked before the code is sent to Supabase, so a too short password does not use up the code.
+- Supabase: the "Reset Password" email template must contain `{{ .Token }}` (Habitract style template, like Confirm signup).
+- Known limit: the code logs you in before the new password is saved. If saving fails (for example no internet at exactly that moment), you are logged in but keep the old password.
+- Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
+- How to check: previews "Log in" and "Forgot password" in `AuthView`. With a real email: log out, "Forgot password?", enter the code from the email.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
