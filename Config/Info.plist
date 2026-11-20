@@ -5,7 +5,7 @@
 	<key>GIPHY_API_KEY</key>
 	<string>$(GIPHY_API_KEY)</string>
 	<key>NSCameraUsageDescription</key>
-	<string>HabitUs takes your proof photos live with the camera. Only the members of your group can see them.</string>
+	<string>HabitUs takes your proof photos live with the camera. Only the members of your group can see them. You can also take your profile picture with it.</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>$(SUPABASE_ANON_KEY)</string>
 	<key>SUPABASE_URL</key>

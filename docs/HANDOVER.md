@@ -451,6 +451,13 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Models.swift`, `Rows.swift`, `GroupService.swift`, `Theme.swift`, `GroupInfoView.swift`, `LobbyView.swift`, `ContractView.swift`.
 - How to check: open the group info and a lobby with a request. `swift test` → 72 green. Not checked on screen yet.
 
+**Step 24: Change the profile picture by tapping it** (branch `profilsettings`)
+- What: the "Profile" section with "Add picture" was removed from the settings. Instead, the round profile picture at the top has a small camera badge. Tapping it opens a menu: **Take photo** (camera), **Choose from library**, and **Remove picture** (only if there is one).
+- Why: Lenny wanted it like in other apps: tap the picture to change it.
+- Also: the camera permission text in `Config/Info.plist` now mentions profile pictures, because the camera is used for them too.
+- Files: `ProfileView.swift`, `Config/Info.plist`.
+- How to check: open the profile from Home and tap the picture. In the simulator "Take photo" offers the generated test photo (there is no camera). It was only seen in the preview so far.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
