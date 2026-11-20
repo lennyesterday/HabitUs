@@ -1,8 +1,8 @@
 import SwiftUI
 import HabitCore
 
-// My games, New Game, Join Game (SPEC section 4, Home). Area A.
-// Blue background with one big card per game: picture or icon on top, members, name, points and rank.
+// My habits, New Habit, Join (SPEC section 4, Home). Area A.
+// Light background with one card per habit group: picture or icon on top, members, name, points and rank.
 
 struct HomeView: View {
     @State private var cards: [GameCard] = []
@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                BrandBackground()
+                PaperBackground()
 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -26,17 +26,19 @@ struct HomeView: View {
                             Button {
                                 showCreate = true
                             } label: {
-                                Label("New Game", systemImage: "plus")
+                                Label("New Habit", systemImage: "plus")
                             }
-                            .buttonStyle(ChunkyButtonStyle())
+                            .buttonStyle(ChunkyButtonStyle(color: Theme.brand,
+                                                           ledgeColor: Color(red: 0.0, green: 0.12, blue: 0.55),
+                                                           textColor: .white))
 
                             Button {
                                 showJoin = true
                             } label: {
-                                Label("Join", systemImage: "person.badge.plus")
+                                Label("Join Habit", systemImage: "person.3.fill")
                             }
                             .buttonStyle(ChunkyButtonStyle(color: .white,
-                                                           ledgeColor: Color(white: 0.75),
+                                                           ledgeColor: Color(white: 0.82),
                                                            textColor: Theme.brand))
                         }
 
@@ -84,13 +86,12 @@ struct HomeView: View {
     private var header: some View {
         HStack(alignment: .center) {
             VStack(alignment: .leading, spacing: 2) {
-                Text("HabitUs")
-                    .font(Theme.title(34))
-                    .foregroundStyle(.white)
-                    .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
                 Text(profile.map { "Hi \($0.displayName) 👋" } ?? " ")
                     .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(.secondary)
+                Text("Your habits")
+                    .font(Theme.title(32))
+                    .foregroundStyle(Theme.ink)
             }
             Spacer()
             Button {
@@ -99,6 +100,7 @@ struct HomeView: View {
                 ZStack(alignment: .bottomTrailing) {
                     ProfilePicture(name: profile?.displayName ?? "?", path: profile?.photoPath, size: 46)
                         .overlay(Circle().stroke(.white, lineWidth: 3))
+                        .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
                     Image(systemName: "gearshape.fill")
                         .font(.caption.bold())
                         .foregroundStyle(Theme.brand)
@@ -116,7 +118,7 @@ struct HomeView: View {
         VStack(spacing: 10) {
             Text("🌱")
                 .font(.system(size: 56))
-            Text("No games yet")
+            Text("No habits yet")
                 .font(Theme.title(24))
                 .foregroundStyle(Theme.ink)
             Text("Start a habit with your friends, or join with a code from one of them.")
@@ -126,7 +128,8 @@ struct HomeView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .ledgeCard(.white, ledge: Color(white: 0.8))
+        .background(.white, in: RoundedRectangle(cornerRadius: 26))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
     private func load() async {
@@ -152,13 +155,13 @@ struct PressableCardStyle: ButtonStyle {
     }
 }
 
-/// One game on Home: picture or icon, members, name, status, points and rank.
+/// One habit group on Home: picture or icon, members, name, status, points and rank.
 struct GameCardView: View {
     let card: GameCard
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            GroupBanner(group: card.group, height: 140)
+            GroupBanner(group: card.group, height: 112)
                 .overlay(alignment: .bottomLeading) {
                     memberStack
                         .offset(x: 12, y: 22)
@@ -184,10 +187,12 @@ struct GameCardView: View {
                 Spacer()
                 VStack(alignment: .trailing, spacing: 6) {
                     if let points = card.myPoints {
-                        Pill(text: "\(points)", emoji: "🔥")
+                        Pill(text: "\(points) pts")
                     }
                     if let rank = card.myRank {
-                        Pill(text: "#\(rank)", emoji: "🏆")
+                        Text("#\(rank) of \(card.members.count)")
+                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
@@ -196,7 +201,8 @@ struct GameCardView: View {
             .padding(.bottom, 8)
         }
         .padding(8)
-        .ledgeCard(.white, ledge: Color(white: 0.78), radius: 30)
+        .background(.white, in: RoundedRectangle(cornerRadius: 26))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
         .contentShape(Rectangle())
     }
 
@@ -261,13 +267,6 @@ struct GroupBanner: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                // Soft rays behind the emoji, so the panel does not look empty.
-                ForEach(0..<8) { index in
-                    Capsule()
-                        .fill(.white.opacity(0.10))
-                        .frame(width: 14, height: height * 1.6)
-                        .rotationEffect(.degrees(Double(index) * 22.5))
-                }
                 Text(group.icon)
                     .font(.system(size: height * 0.5))
                     .shadow(color: .black.opacity(0.2), radius: 8, y: 6)
@@ -293,7 +292,7 @@ struct GroupBanner: View {
         Member(id: UUID(), userId: UUID(), displayName: $0, photoPath: nil, status: .accepted, signature: "")
     }
     return ZStack {
-        BrandBackground()
+        PaperBackground()
         GameCardView(card: GameCard(group: group, myStatus: .accepted, isOwner: true, acceptedCount: 3,
                                     openRequests: 0, members: members, myPoints: 136, myRank: 2, myDone: 2))
             .padding()

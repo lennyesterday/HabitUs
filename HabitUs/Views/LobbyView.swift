@@ -18,7 +18,7 @@ struct LobbyView: View {
                         .font(.title.monospaced().bold())
                         .textSelection(.enabled)
                     Spacer()
-                    ShareLink(item: "Join my HabitUs game with the code \(data.group.inviteCode)") {
+                    ShareLink(item: "Join my habit on HabitUs with the code \(data.group.inviteCode)") {
                         Image(systemName: "square.and.arrow.up")
                     }
                 }
@@ -54,6 +54,11 @@ struct LobbyView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 SignatureImage(signature: member.signature)
+                                if let signedAt = member.signedAt {
+                                    Text(Theme.signatureDate(signedAt))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                             HStack {
                                 Button("Accept") { act { try await GroupService.decide(membershipId: member.id, accept: true) } }

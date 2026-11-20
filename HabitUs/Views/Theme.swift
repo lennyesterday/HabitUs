@@ -25,6 +25,11 @@ enum Theme {
         return date.formatted(style)
     }
 
+    /// "20 Nov 2026" for the date next to a signature.
+    static func signatureDate(_ date: Date) -> String {
+        date.formatted(.dateTime.day().month(.abbreviated).year())
+    }
+
     /// "Tue 18:40" for the feed.
     static func timeText(_ date: Date) -> String {
         date.formatted(.dateTime.weekday(.abbreviated).hour().minute())
@@ -70,19 +75,18 @@ struct ErrorText: View {
     }
 }
 
-/// A big rounded button with a darker ledge underneath. It sinks in when pressed.
+/// A big rounded button with a thin darker edge underneath. It sinks in a little when pressed.
 struct ChunkyButtonStyle: ButtonStyle {
     var color: Color = Theme.sunshine
     var ledgeColor: Color = Theme.sunshineLedge
     var textColor: Color = .black
 
     func makeBody(configuration: Configuration) -> some View {
-        let ledge: CGFloat = 5
+        let ledge: CGFloat = 3
         configuration.label
-            .font(.system(.headline, design: .rounded).weight(.heavy))
-            .textCase(.uppercase)
+            .font(.system(.headline, design: .rounded).weight(.bold))
             .foregroundStyle(textColor)
-            .frame(maxWidth: .infinity, minHeight: 54)
+            .frame(maxWidth: .infinity, minHeight: 52)
             .background(color, in: RoundedRectangle(cornerRadius: 16))
             .background(
                 RoundedRectangle(cornerRadius: 16)
@@ -148,7 +152,7 @@ extension Theme {
     static func groupColor(_ id: UUID) -> Color {
         let palette = [Color(red: 0.42, green: 0.36, blue: 0.95), Color(red: 0.18, green: 0.72, blue: 0.62),
                        Color(red: 0.98, green: 0.55, blue: 0.30), Color(red: 0.95, green: 0.38, blue: 0.55),
-                       Color(red: 0.98, green: 0.76, blue: 0.22)]
+                       Color(red: 0.30, green: 0.60, blue: 0.36)]
         return palette[Int(id.uuid.0) % palette.count]
     }
 }
@@ -176,14 +180,14 @@ struct PaperBackground: View {
 struct Pill: View {
     let text: String
     var emoji: String = ""
-    var dark = true
+    var dark = false
 
     var body: some View {
         HStack(spacing: 4) {
             Text(text)
             if !emoji.isEmpty { Text(emoji) }
         }
-        .font(.system(.subheadline, design: .rounded).weight(.heavy))
+        .font(.system(.subheadline, design: .rounded).weight(.bold))
         .foregroundStyle(dark ? .white : Theme.ink)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -193,14 +197,16 @@ struct Pill: View {
 }
 
 extension View {
-    /// A rounded card with a darker edge underneath, the "3D" look of the buttons.
-    func ledgeCard(_ color: Color, ledge: Color? = nil, radius: CGFloat = 26, depth: CGFloat = 6) -> some View {
-        self
+    /// A rounded card with a thin darker edge underneath, like the buttons. Kept subtle on purpose:
+    /// HabitUs should feel like a habit app, not like an arcade.
+    func ledgeCard(_ color: Color, ledge: Color? = nil, radius: CGFloat = 26, depth: CGFloat = 3) -> some View {
+        let depth = min(depth, 3)
+        return self
             .background(color, in: RoundedRectangle(cornerRadius: radius))
             .background(
                 RoundedRectangle(cornerRadius: radius)
                     .fill(ledge ?? color.opacity(0.65))
-                    .overlay(RoundedRectangle(cornerRadius: radius).fill(.black.opacity(0.18)))
+                    .overlay(RoundedRectangle(cornerRadius: radius).fill(.black.opacity(0.10)))
                     .offset(y: depth)
             )
             .padding(.bottom, depth)

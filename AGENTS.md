@@ -16,3 +16,8 @@
 - Small changes. Show the diff and explain it in plain words. We are beginners and need to understand roughly what each part does.
 - Stay inside the files of the area you are working in.
 - New Swift files go into the `HabitUs/` folder. It is a synchronized folder, so Xcode picks them up without editing the project file.
+
+## Handover log
+- After every change (feature, fix, migration, design), add a numbered entry to `docs/HANDOVER.md` section 14 "Step-by-step log": what, why, files, how to check. Use the template at the end of that section.
+- Also update the other sections of `docs/HANDOVER.md` that the change makes out of date (status, file tables, test count, SPEC deviations, known limits).
+- Commit the HANDOVER update together with the code, on the same branch. Plain English for beginners, and say honestly what was not tested.

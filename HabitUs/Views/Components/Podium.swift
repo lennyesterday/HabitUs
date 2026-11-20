@@ -13,22 +13,6 @@ struct Podium: View {
                 place(0)
                 place(2)
             }
-            if let best = rows.first, best.points > 0 {
-                HStack(spacing: 10) {
-                    Image(systemName: "laurel.leading")
-                    VStack(spacing: 0) {
-                        Text("Best player")
-                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                        Text(best.displayName.uppercased())
-                            .font(Theme.title(28))
-                        Text("\(best.points) pts")
-                            .font(.system(.headline, design: .rounded).weight(.heavy))
-                    }
-                    Image(systemName: "laurel.trailing")
-                }
-                .font(.system(size: 44))
-                .foregroundStyle(Theme.ink)
-            }
         }
     }
 
@@ -39,7 +23,7 @@ struct Podium: View {
             let leader = index == 0
             VStack(spacing: -6) {
                 if leader {
-                    Text("👑").font(.system(size: 34)).zIndex(1)
+                    Text("👑").font(.system(size: 26)).zIndex(1)
                 }
                 ProfilePicture(name: row.displayName, path: row.photoPath, size: leader ? 84 : 64)
                     .overlay(Circle().stroke(.white, lineWidth: 4))
@@ -51,38 +35,61 @@ struct Podium: View {
     }
 }
 
-/// One colored row per player: place, picture, points, name and streak.
+/// One white row per player with a colored place badge: place, picture, name, points and streak.
 struct RankingRows: View {
     let rows: [LeaderboardRow]
     let me: UUID
+    /// Called with the user id when a row is tapped. nil: rows are not tappable (e.g. on the results screen).
+    var onSelect: ((UUID) -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                let color = Theme.rankColor(index)
-                HStack(spacing: 12) {
-                    Text("#\(index + 1)")
-                        .font(Theme.title(22))
-                        .foregroundStyle(.white)
-                        .frame(width: 46)
-                    ProfilePicture(name: row.displayName, path: row.photoPath, size: 54)
-                        .overlay(Circle().stroke(.white.opacity(0.6), lineWidth: 3))
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("\(row.points) pts")
-                            .font(Theme.title(24))
-                        Text(row.userId == me ? "\(row.displayName) (you)" : row.displayName)
-                            .font(.system(.headline, design: .rounded).weight(.bold))
-                    }
-                    .foregroundStyle(.white)
-                    Spacer()
-                    if row.streak > 0 {
-                        Pill(text: "\(row.streak)", emoji: "🔥")
-                    }
+                Button {
+                    onSelect?(row.userId)
+                } label: {
+                    rowView(row, index: index)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 10)
-                .ledgeCard(color, radius: 24, depth: 5)
+                .buttonStyle(PressableCardStyle())
+                .disabled(onSelect == nil)
+                .accessibilityHint(onSelect == nil ? "" : "Opens the profile and history")
             }
         }
+    }
+
+    private func rowView(_ row: LeaderboardRow, index: Int) -> some View {
+        let color = Theme.rankColor(index)
+        return HStack(spacing: 12) {
+                    Text("\(index + 1)")
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .foregroundStyle(.white)
+                        .frame(width: 32, height: 32)
+                        .background(color, in: Circle())
+                    ProfilePicture(name: row.displayName, path: row.photoPath, size: 44)
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text(row.userId == me ? "\(row.displayName) (you)" : row.displayName)
+                            .font(.system(.headline, design: .rounded).weight(.bold))
+                        Text("\(row.points) pts")
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .foregroundStyle(Theme.ink)
+                    Spacer()
+                    if row.streak > 0 {
+                        Text("🔥 \(row.streak)")
+                            .font(.system(.subheadline, design: .rounded).weight(.bold))
+                            .foregroundStyle(Theme.ink)
+                    }
+                    if onSelect != nil {
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
+                .contentShape(Rectangle())
     }
 }

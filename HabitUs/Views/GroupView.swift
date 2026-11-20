@@ -11,6 +11,8 @@ struct GroupView: View {
 
     @State private var showCamera = false
     @State private var showGifPicker = false
+    @State private var selectedPlayer: UUID?
+    @State private var showGroupInfo = false
     @State private var isUploading = false
     @State private var showFinishConfirmation = false
     @State private var messageText = ""
@@ -31,11 +33,11 @@ struct GroupView: View {
 
                     VStack(spacing: 0) {
                         Text(roundLabel(round: round, now: now))
-                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                            .tracking(4)
+                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .tracking(2)
+                            .foregroundStyle(.secondary)
                         Text(periodTitle)
-                            .font(Theme.title(46))
-                            .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+                            .font(Theme.title(30))
                     }
                     .foregroundStyle(Theme.ink)
 
@@ -49,17 +51,17 @@ struct GroupView: View {
 
                     BonusCard(round: round, target: data.group.target, status: status, streak: myRow?.streak ?? 0)
 
-                    Podium(rows: Array(rows.prefix(3)))
-
-                    RankingRows(rows: rows, me: data.me)
-
+                    // Tapping the podium opens the full leaderboard with the chart.
                     NavigationLink {
                         LeaderboardView(rows: rows, me: data.me, round: round)
                     } label: {
-                        Label("Leaderboard & chart", systemImage: "chart.line.uptrend.xyaxis")
+                        Podium(rows: Array(rows.prefix(3)))
+                            .contentShape(Rectangle())
                     }
-                    .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.78),
-                                                   textColor: Theme.brand))
+                    .buttonStyle(PressableCardStyle())
+                    .accessibilityHint("Opens the leaderboard with the points chart")
+
+                    RankingRows(rows: rows, me: data.me) { selectedPlayer = $0 }
 
                     HStack {
                         Rectangle().frame(height: 2)
@@ -103,6 +105,12 @@ struct GroupView: View {
         } message: {
             Text("The leaderboard freezes and nobody can check in any more.")
         }
+        .navigationDestination(item: $selectedPlayer) { userId in
+            PlayerProfileView(data: data, userId: userId)
+        }
+        .navigationDestination(isPresented: $showGroupInfo) {
+            GroupInfoView(data: data)
+        }
         .sheet(isPresented: $showCamera) {
             CameraView { image in
                 showCamera = false
@@ -129,19 +137,27 @@ struct GroupView: View {
     /// Overlapping member pictures with my points and my rank.
     private func header(points: Int, rank: Int) -> some View {
         VStack(spacing: 10) {
-            HStack(spacing: -14) {
-                ForEach(data.accepted.prefix(6)) { member in
-                    ProfilePicture(name: member.displayName, path: member.photoPath,
-                                   size: member.userId == data.me ? 62 : 50)
-                        .overlay(Circle().stroke(.white, lineWidth: 3))
-                        .zIndex(member.userId == data.me ? 1 : 0)
+            // Tapping the member pictures opens the group info (members, contract, rules).
+            Button {
+                showGroupInfo = true
+            } label: {
+                HStack(spacing: -14) {
+                    ForEach(data.accepted.prefix(6)) { member in
+                        ProfilePicture(name: member.displayName, path: member.photoPath,
+                                       size: member.userId == data.me ? 62 : 50)
+                            .overlay(Circle().stroke(.white, lineWidth: 3))
+                            .zIndex(member.userId == data.me ? 1 : 0)
+                    }
                 }
+                .padding(10)
+                .background(.white.opacity(0.7), in: Capsule())
             }
-            .padding(10)
-            .background(.white.opacity(0.7), in: Capsule())
+            .buttonStyle(PressableCardStyle())
+            .accessibilityLabel("Group info")
+            .accessibilityHint("Shows all members, the contract and the rules")
             HStack(spacing: 10) {
-                Pill(text: "\(points) pts", emoji: "🔥", dark: false)
-                Pill(text: "#\(rank)", emoji: "🏆", dark: false)
+                Pill(text: "\(points) pts")
+                Pill(text: "#\(rank) of \(data.accepted.count)")
             }
         }
         .padding(.top, 4)
@@ -149,9 +165,9 @@ struct GroupView: View {
 
     private var periodTitle: String {
         switch data.group.period {
-        case .day: return "TODAY"
-        case .week: return "THIS WEEK"
-        case .month: return "THIS MONTH"
+        case .day: return "Today"
+        case .week: return "This week"
+        case .month: return "This month"
         }
     }
 

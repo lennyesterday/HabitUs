@@ -73,12 +73,28 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
         return LeaderboardRow(userId: member.userId, displayName: member.displayName, photoPath: member.photoPath,
                               points: points, completeRounds: complete.filter { $0 }.count, streak: streak,
                               pauses: mine.filter { $0.kind == .pause }.count,
-                              pointsPerRound: roundPoints)
+                              pointsPerRound: roundPoints,
+                              donePerRound: donePerRound.map { min($0, group.target) })
     }
 
     return rows.sorted { a, b in
         if a.points != b.points { return a.points > b.points }
         if a.pauses != b.pauses { return a.pauses < b.pauses }
         return a.displayName.localizedCaseInsensitiveCompare(b.displayName) == .orderedAscending
+    }
+}
+
+/// A to D from the share of tasks done in the given (finished) rounds:
+/// A from 90 %, B from 70 %, C from 50 %, D below. nil before the first finished round.
+/// Whole numbers only, so 90 % is exactly A and not lost to rounding.
+public func grade(donePerRound: [Int], target: Int) -> Grade? {
+    guard !donePerRound.isEmpty, target > 0 else { return nil }
+    let done = donePerRound.reduce(0) { $0 + min($1, target) }
+    let possible = donePerRound.count * target
+    switch done * 100 {
+    case (90 * possible)...: return .a
+    case (70 * possible)...: return .b
+    case (50 * possible)...: return .c
+    default: return .d
     }
 }

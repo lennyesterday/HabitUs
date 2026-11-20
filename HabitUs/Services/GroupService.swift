@@ -213,7 +213,7 @@ enum GroupService {
                 .execute()
                 .value
             guard let row = rows.first else {
-                throw RuleError("This invite code is not valid, or the game has already started.")
+                throw RuleError("This invite code is not valid, or the habit has already started.")
             }
             return Contract(name: row.name, habit: row.habit, icon: row.icon, target: row.target,
                             period: Period(rawValue: row.period_days) ?? .week,
@@ -392,7 +392,7 @@ enum GroupService {
     static func members(groupId: UUID) async throws -> [Member] {
         try await readable {
             let rows: [MemberRow] = try await supabase.from("memberships")
-                .select("id, user_id, status, signature, profiles(display_name, photo_path)")
+                .select("id, user_id, status, signature, signed_at, profiles(display_name, photo_path)")
                 .eq("group_id", value: groupId)
                 .order("signed_at")
                 .execute()
