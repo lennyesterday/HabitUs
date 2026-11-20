@@ -383,6 +383,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`.
 - How to check: run the app and log in. The button is next to "New Habit" on Home. It builds, but it was not checked on screen yet.
 
+**Step 16: Tap the podium to open the leaderboard** (branch `leaderboard`)
+- What: the "Leaderboard & chart" button on the group screen is gone. Tapping the podium (top 3 with the crown) now opens the leaderboard with the chart. A small hint "Tap for leaderboard & chart" sits under the podium.
+- Why: Lenny wanted fewer buttons. The podium is the natural place to tap.
+- Files: `GroupView.swift`.
+- How to check: open a running habit, tap the podium, and the leaderboard opens. It builds without warnings, but it was not tapped on a real screen yet.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

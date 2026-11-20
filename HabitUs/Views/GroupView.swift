@@ -49,17 +49,22 @@ struct GroupView: View {
 
                     BonusCard(round: round, target: data.group.target, status: status, streak: myRow?.streak ?? 0)
 
-                    Podium(rows: Array(rows.prefix(3)))
-
-                    RankingRows(rows: rows, me: data.me)
-
+                    // Tapping the podium opens the full leaderboard with the chart.
                     NavigationLink {
                         LeaderboardView(rows: rows, me: data.me, round: round)
                     } label: {
-                        Label("Leaderboard & chart", systemImage: "chart.line.uptrend.xyaxis")
+                        VStack(spacing: 8) {
+                            Podium(rows: Array(rows.prefix(3)))
+                            Label("Tap for leaderboard & chart", systemImage: "chart.line.uptrend.xyaxis")
+                                .font(.system(.caption, design: .rounded).weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.78),
-                                                   textColor: Theme.brand))
+                    .buttonStyle(PressableCardStyle())
+                    .accessibilityHint("Opens the leaderboard with the points chart")
+
+                    RankingRows(rows: rows, me: data.me)
 
                     HStack {
                         Rectangle().frame(height: 2)
