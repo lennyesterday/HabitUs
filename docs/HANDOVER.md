@@ -533,6 +533,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `007_late_join.sql`, `Models.swift`, `Rounds.swift`, `Tasks.swift`, `Scoring.swift`, tests, `GroupService.swift`, `Rows.swift`, `JoinView.swift`, `GroupView.swift` (`NoticeCard`, previews), `TaskCard.swift`, `PlayerProfileView.swift`, `LobbyView.swift`, `SPEC.md` (R29, R30).
 - How to check: preview "On hold, with a join request" in `GroupView.swift`. For real: a running group with 3 players, one leaves → note and on hold; a 4th person joins with the code, owner accepts → note, game goes on, the new player starts next round with the average points.
 
+**Step 35: Invite code in the group info** (branch `group-updates`)
+- What: the group info (tap the member pictures at the top of the group screen) now shows the invite code big at the top, with "Copy" and "Share". While the challenge runs it says that new players start in the next round and get the group average. After the end the code is grey with "The challenge is over, so the code does not work any more."
+- Why: so everyone in the group can always find the code and invite friends later (R29).
+- Files: `GroupInfoView.swift` (`inviteSection`).
+- How to check: preview of `GroupInfoView`.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
