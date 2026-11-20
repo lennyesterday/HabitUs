@@ -1,6 +1,8 @@
-# HabitUs
+# Habitract
 
 iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Full spec: [SPEC.md](SPEC.md). Rules for AI assistants: [AGENTS.md](AGENTS.md).
+
+The app is called **Habitract**. The Xcode project, target and folders are still named `HabitUs` on purpose (renaming them would break every checkout).
 
 ## Setup (once per Mac)
 

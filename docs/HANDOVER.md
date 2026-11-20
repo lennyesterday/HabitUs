@@ -480,6 +480,13 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
 - How to check: the `AuthView` preview "Code from email". With real emails only after the Supabase steps above. Not tested end to end yet.
 
+**Step 28: The app is now called Habitract** (branch `rename-habitract`)
+- What: everything the user sees says "Habitract" instead of "HabitUs": the name under the app icon, Home header, login card, onboarding, settings texts, invite share text and the camera permission text.
+- Why: the name HabitUs is already taken (also as a domain for the confirmation emails).
+- How: `CFBundleDisplayName = Habitract` in `Config/Info.plist`, plus the visible strings. On purpose NOT renamed: the Xcode project, target, folder `HabitUs/`, `HabitUsApp` and the bundle ID (AGENTS.md forbids changing it, and renaming the project would break everyone's checkout). The GitHub repo is still called HabitUs.
+- Files: `Config/Info.plist`, `HomeView.swift`, `AuthView.swift`, `OnboardingView.swift`, `ProfileView.swift`, `LobbyView.swift`, `CreateGroupView.swift`, `Theme.swift`, `README.md`.
+- How to check: run the app. Home shows "Habitract", the home screen of the simulator shows "Habitract" under the icon.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

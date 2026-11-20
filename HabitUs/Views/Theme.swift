@@ -198,7 +198,7 @@ struct Pill: View {
 
 extension View {
     /// A rounded card with a thin darker edge underneath, like the buttons. Kept subtle on purpose:
-    /// HabitUs should feel like a habit app, not like an arcade.
+    /// Habitract should feel like a habit app, not like an arcade.
     func ledgeCard(_ color: Color, ledge: Color? = nil, radius: CGFloat = 26, depth: CGFloat = 3) -> some View {
         let depth = min(depth, 3)
         return self

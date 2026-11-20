@@ -64,7 +64,7 @@ struct ProfileView: View {
 
                     SettingsSection(title: "Help") {
                         Button { showOnboarding = true } label: {
-                            SettingsRow(title: "How it works", subtitle: "The rules of HabitUs in five pages.",
+                            SettingsRow(title: "How it works", subtitle: "The rules of Habitract in five pages.",
                                         symbol: "questionmark", color: Theme.rankColor(3))
                         }
                         .buttonStyle(.plain)
@@ -116,7 +116,7 @@ struct ProfileView: View {
                 Button("Remove picture", role: .destructive) { Task { await save(nil) } }
             }
         } message: {
-            Text("Every HabitUs user can see your picture, like your name.")
+            Text("Every Habitract user can see your picture, like your name.")
         }
         .photosPicker(isPresented: $showLibrary, selection: $item, matching: .images)
         .fullScreenCover(isPresented: $showCamera) {

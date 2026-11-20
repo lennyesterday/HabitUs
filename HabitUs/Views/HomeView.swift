@@ -91,7 +91,7 @@ struct HomeView: View {
                     .frame(width: 44, height: 44)
                     .clipShape(RoundedRectangle(cornerRadius: 11))
                     .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
-                Text("HabitUs")
+                Text("Habitract")
                     .font(Theme.title(32))
                     .foregroundStyle(Theme.ink)
             }

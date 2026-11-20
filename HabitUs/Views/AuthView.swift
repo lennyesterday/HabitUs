@@ -37,7 +37,7 @@ struct AuthView: View {
                             .frame(width: 88, height: 88)
                             .clipShape(RoundedRectangle(cornerRadius: 22))
                             .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
-                        Text("HabitUs")
+                        Text("Habitract")
                             .font(Theme.title(40))
                             .foregroundStyle(.white)
                             .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
