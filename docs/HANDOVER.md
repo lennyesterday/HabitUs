@@ -36,7 +36,7 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
 | Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
 | Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks |
-| Group info | Tap the member pictures at the top of the group screen: picture, facts (how often, round length, start, end, current round, owner), all members with signature, contract and own rules, how points work |
+| Group info | Tap the member pictures at the top of the group screen: picture, facts (how often, round length, start, end, current round, owner), contract and own rules with my own signature under it, how points work |
 | End | Owner can finish the challenge, results screen with the champion |
 | Groups | Everyone can leave any time, the owner can delete the group for everyone |
 | Profile | Profile picture, group picture and icon (owner), settings, "How it works" |
@@ -428,6 +428,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Code: the contract text moved into a small reusable view `ContractTerms` (in `ContractView.swift`), so the signing screen and the group info always show the same words.
 - Files: `GroupInfoView.swift` (new), `GroupView.swift` (the member pictures are a button now), `ContractView.swift`.
 - How to check: the `GroupInfoView` preview, or in the app tap the member pictures in a running habit. Not yet tried on a real device.
+
+**Step 21: Group info: my signature under the contract instead of the member list** (branch `group-info`)
+- What: the "Members" section with everyone's signature was removed from the group info. Under the contract there is now only **my own** hand-drawn signature with "Signed by Lenny", like on a paper contract.
+- Why: Lenny wanted the group info calmer. Members are already visible on the group screen and in the player profiles.
+- Files: `GroupInfoView.swift`.
+- How to check: open the group info. The signature is under "Contract & rules". The preview has no signature in its sample data, so check this in the app.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
