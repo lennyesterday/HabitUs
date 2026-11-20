@@ -18,7 +18,7 @@ streak bonus, and a leaderboard shows who delivers.
 
 ## 2. Status
 
-### Built (the app builds, the 68 rule tests are green)
+### Built (the app builds, the 72 rule tests are green)
 
 Tried in the simulator against our Supabase project: onboarding, sign up, log in, Home, the GIF search.
 **Not yet tried end to end with three real accounts:** create → join → accept → start → check in →
@@ -34,7 +34,8 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Join | Enter code, read the contract first, sign, wait for the owner |
 | Lobby | Owner accepts or declines requests, starts the session with at least 3 members |
 | Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
-| Leaderboard | Line chart of points per round, all players with full rounds, streak, pauses |
+| Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
+| Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks, "Remind" button (posts in the chat) |
 | End | Owner can finish the challenge, results screen with the champion |
 | Groups | Everyone can leave any time, the owner can delete the group for everyone |
 | Profile | Profile picture, group picture and icon (owner), settings, "How it works" |
@@ -62,7 +63,7 @@ Both missing services are stubs that throw "This part is not built yet."
    │ uses for every rule
    ▼
  HabitCore/        the game rules as pure Swift functions. No SwiftUI, no Supabase, no internet.
-                   Tested with `cd HabitCore && swift test` (68 tests, about 0.01 s).
+                   Tested with `cd HabitCore && swift test` (72 tests, about 0.01 s).
 
  supabase/migrations/   the database: tables, access rules (RLS), database functions
 ```
@@ -111,7 +112,7 @@ Follow this once in Xcode. It is the best way to understand the whole app.
 | `Rounds.swift` | `phase`, `currentRound`, `round(of:in:)`, `timeLeft`, `canStart`, `localDay`, `roundCount` | R8, R9, R14 | 14 |
 | `Tasks.swift` | `taskStatus` (done, failed, open, canCheckInToday) | R10 to R12, R19 | 10 |
 | `Votes.swift` | `xThresholdReached`, `isValid` | R15 to R18 | 6 |
-| `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard` | R20 to R24 | 15 |
+| `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard`, `grade` (A to D) | R20 to R24 | 19 |
 | `Validation.swift` | `validateSignUp`, `validateGroup`, `validateGroupIcon`, `validateSignatureImage`, `validateMessage`, `validatePauseReason`, `validateGifURL` | R1, R4, R18, R26 | 20 |
 | `InviteCode.swift` | `InviteCode.generate()` (6 characters, no 0/O/1/I, `SystemRandomNumberGenerator`) | R4, S9 | 3 |
 
@@ -234,7 +235,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 68 tests green.
+4. `cd HabitCore && swift test` → 72 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
 
@@ -394,6 +395,20 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted a cleaner screen.
 - Files: `GroupView.swift`.
 - Note for the walkthrough: the podium no longer shows a hint that it can be tapped. Mention it in the demo.
+
+### Day 4: Fri 20 Nov
+
+**Step 18: Player profile with grade, history and reminder** (branch `group-playerprofil`)
+- What: tap a player in the rows under the podium to open their profile:
+  - picture, place, points, streak, full rounds and pauses
+  - a **grade A to D**
+  - the **history round by round**: done/target, points, photo thumbnails (rejected photos are faded with an X), pauses with reason (and if they were rejected), missed tasks
+  - for other members, a **"Remind …" button**: it posts "👋 Lenny reminds Bene to do Gym: 2 left this round!" into the group chat
+- Grade rule (HabitCore `grade(donePerRound:target:)`, 4 tests): share of tasks done in **finished** rounds (the running round does not count yet). A from 90 %, B from 70 %, C from 50 %, otherwise D, and no grade before the first finished round. Whole numbers only, so exactly 90 % is an A. `LeaderboardRow` now also has `donePerRound`.
+- Why: Lenny wanted to see who keeps the habit and who is slipping, and to nudge them.
+- **Why not a real push notification:** real push to another iPhone needs the paid Apple Developer account, Apple's push service (APNs) and a server that sends the messages. SPEC section 1 lists push as "Later". The chat reminder is the honest version for now. Mention this in the walkthrough.
+- Files: `PlayerProfileView.swift` (new), `Podium.swift` (`RankingRows` is tappable), `GroupView.swift` (opens the profile), `HabitCore/Sources/HabitCore/Scoring.swift`, `Models.swift`, `ScoringTests.swift`.
+- How to check: the `PlayerProfileView` preview shows a sample player. In the app, open a running habit, tap a row under the podium, then try "Remind". `swift test` → 72 green. Not yet tried with real photos on screen.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

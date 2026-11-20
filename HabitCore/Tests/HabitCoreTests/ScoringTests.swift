@@ -47,6 +47,34 @@ final class ScoringTests: XCTestCase {
         XCTAssertEqual(me?.points, 115)
     }
 
+    // MARK: Grade A to D for the player profile (share of tasks done in finished rounds)
+
+    func testGradeFromShareOfTasksDone() {
+        XCTAssertEqual(grade(donePerRound: [3, 3, 3], target: 3), .a)     // 100 %
+        XCTAssertEqual(grade(donePerRound: [3, 3, 2, 3], target: 3), .a)  // 92 %
+        XCTAssertEqual(grade(donePerRound: [3, 2, 2], target: 3), .b)     // 78 %
+        XCTAssertEqual(grade(donePerRound: [2, 2, 1], target: 3), .c)     // 56 %
+        XCTAssertEqual(grade(donePerRound: [1, 0, 1], target: 3), .d)     // 22 %
+    }
+
+    func testGradeBorders() {
+        XCTAssertEqual(grade(donePerRound: [9], target: 10), .a)   // exactly 90 %
+        XCTAssertEqual(grade(donePerRound: [7], target: 10), .b)   // exactly 70 %
+        XCTAssertEqual(grade(donePerRound: [5], target: 10), .c)   // exactly 50 %
+        XCTAssertEqual(grade(donePerRound: [4], target: 10), .d)
+    }
+
+    func testNoGradeBeforeTheFirstFinishedRound() {
+        XCTAssertNil(grade(donePerRound: [], target: 3))
+    }
+
+    func testDonePerRoundIsInTheLeaderboard() {
+        let checkins = [0, 1, 2, 7, 8].map { makeCheckin(owner, on: addDays($0, to: start)) }
+        let rows = leaderboard(group: makeGroup(target: 3), members: members, checkins: checkins,
+                               reactions: [], now: time(2026, 1, 14, 12))
+        XCTAssertEqual(rows.first { $0.userId == owner }?.donePerRound, [3, 2])
+    }
+
     func testR23MissedTasksGiveZeroNeverNegative() {
         XCTAssertEqual(scoreRounds(donePerRound: [0, 0], target: 3), [0, 0])
     }

@@ -156,11 +156,14 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
     public var pauses: Int
     /// Points of each round so far, for the chart on the leaderboard.
     public var pointsPerRound: [Int]
+    /// Counted tasks of each round so far, for the player profile and the grade.
+    public var donePerRound: [Int]
 
     public var id: UUID { userId }
 
     public init(userId: UUID, displayName: String, photoPath: String?, points: Int,
-                completeRounds: Int, streak: Int, pauses: Int, pointsPerRound: [Int] = []) {
+                completeRounds: Int, streak: Int, pauses: Int, pointsPerRound: [Int] = [],
+                donePerRound: [Int] = []) {
         self.userId = userId
         self.displayName = displayName
         self.photoPath = photoPath
@@ -169,6 +172,7 @@ public struct LeaderboardRow: Sendable, Equatable, Identifiable {
         self.streak = streak
         self.pauses = pauses
         self.pointsPerRound = pointsPerRound
+        self.donePerRound = donePerRound
     }
 }
 
@@ -181,4 +185,9 @@ public struct RuleError: Error, Equatable, LocalizedError {
     }
 
     public var errorDescription: String? { message }
+}
+
+/// How well a member keeps the habit, from A (best) to D, for the player profile.
+public enum Grade: String, Sendable, Equatable {
+    case a = "A", b = "B", c = "C", d = "D"
 }

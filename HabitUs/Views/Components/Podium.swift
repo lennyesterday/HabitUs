@@ -39,12 +39,27 @@ struct Podium: View {
 struct RankingRows: View {
     let rows: [LeaderboardRow]
     let me: UUID
+    /// Called with the user id when a row is tapped. nil: rows are not tappable (e.g. on the results screen).
+    var onSelect: ((UUID) -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 12) {
             ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
-                let color = Theme.rankColor(index)
-                HStack(spacing: 12) {
+                Button {
+                    onSelect?(row.userId)
+                } label: {
+                    rowView(row, index: index)
+                }
+                .buttonStyle(PressableCardStyle())
+                .disabled(onSelect == nil)
+                .accessibilityHint(onSelect == nil ? "" : "Opens the profile and history")
+            }
+        }
+    }
+
+    private func rowView(_ row: LeaderboardRow, index: Int) -> some View {
+        let color = Theme.rankColor(index)
+        return HStack(spacing: 12) {
                     Text("\(index + 1)")
                         .font(.system(.headline, design: .rounded).weight(.heavy))
                         .foregroundStyle(.white)
@@ -65,12 +80,16 @@ struct RankingRows: View {
                             .font(.system(.subheadline, design: .rounded).weight(.bold))
                             .foregroundStyle(Theme.ink)
                     }
+                    if onSelect != nil {
+                        Image(systemName: "chevron.right")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(.tertiary)
+                    }
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
                 .background(.white, in: RoundedRectangle(cornerRadius: 20))
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
-            }
-        }
+                .contentShape(Rectangle())
     }
 }

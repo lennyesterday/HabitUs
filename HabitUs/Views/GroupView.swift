@@ -11,6 +11,7 @@ struct GroupView: View {
 
     @State private var showCamera = false
     @State private var showGifPicker = false
+    @State private var selectedPlayer: UUID?
     @State private var isUploading = false
     @State private var showFinishConfirmation = false
     @State private var messageText = ""
@@ -59,7 +60,7 @@ struct GroupView: View {
                     .buttonStyle(PressableCardStyle())
                     .accessibilityHint("Opens the leaderboard with the points chart")
 
-                    RankingRows(rows: rows, me: data.me)
+                    RankingRows(rows: rows, me: data.me) { selectedPlayer = $0 }
 
                     HStack {
                         Rectangle().frame(height: 2)
@@ -102,6 +103,9 @@ struct GroupView: View {
             }
         } message: {
             Text("The leaderboard freezes and nobody can check in any more.")
+        }
+        .navigationDestination(item: $selectedPlayer) { userId in
+            PlayerProfileView(data: data, userId: userId)
         }
         .sheet(isPresented: $showCamera) {
             CameraView { image in
