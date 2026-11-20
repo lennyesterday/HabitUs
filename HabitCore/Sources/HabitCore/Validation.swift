@@ -95,3 +95,14 @@ public func validateGifURL(_ text: String) throws {
         throw RuleError("Only GIFs from GIPHY can be sent.")
     }
 }
+
+/// R1 (with email confirmation): the code from the email is 6 to 10 digits.
+/// Spaces from copy and paste are removed. Returns the cleaned code to send to the server.
+@discardableResult
+public func validateEmailCode(_ code: String) throws -> String {
+    let digits = code.filter { !$0.isWhitespace }
+    guard (6...10).contains(digits.count), digits.allSatisfy({ $0.isASCII && $0.isNumber }) else {
+        throw RuleError("Please enter the code from the email (6 digits).")
+    }
+    return digits
+}

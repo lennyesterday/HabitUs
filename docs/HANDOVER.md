@@ -216,7 +216,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
 | Onboarding pages and new design | – | explain the app, make it fun | inspired by PlayUs, but toned down on purpose: it is a habit app, not a game ("New Habit", not "New Game") |
-| Email confirmation off | no email verification | Supabase's built-in mailer only reaches team addresses | fake emails possible, but they see nothing without invite code + owner OK |
+| Email confirmation (optional) | no email verification | the app supports a code from the email (step 27), but it is only on once SMTP is set up in Supabase | while it is off: fake emails possible, but they see nothing without invite code + owner OK |
 
 ---
 
@@ -468,6 +468,17 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted the brand at the top.
 - Files: `HomeView.swift`.
 - How to check: run the app and log in. It builds, but it was not looked at on screen yet.
+
+**Step 27: Enter the code from the confirmation email** (branch `email-code`)
+- What: when "Confirm email" is turned on in Supabase, sign up no longer stops with an error. The card shows "Check your email", where you type the code from the email and press "Confirm". There is also "Send a new code" and "Back". If someone who never confirmed tries to log in, a new code is sent and the code screen opens (only when the password was right, so R3 still holds). With "Confirm email" off, nothing changes.
+- How: `AuthService.signUp` now returns whether a code is needed. New `verifyEmailCode` (Supabase `verifyOTP(type: .signup)`) and `resendEmailCode`. `logIn` throws `EmailNotConfirmed` for that case. HabitCore `validateEmailCode`: 6 to 10 digits, spaces ignored, 2 tests (79 in total).
+- Still needed in Supabase before turning it on:
+  1. Custom SMTP: the built-in mailer only reaches team members. Use Brevo or Resend with a domain.
+  2. The "Confirm signup" email template must contain the code `{{ .Token }}` instead of only the link.
+  3. A higher email rate limit.
+  4. Only then turn on "Confirm email".
+- Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
+- How to check: the `AuthView` preview "Code from email". With real emails only after the Supabase steps above. Not tested end to end yet.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

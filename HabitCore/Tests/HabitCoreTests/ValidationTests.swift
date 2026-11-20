@@ -130,6 +130,22 @@ final class ValidationTests: XCTestCase {
         XCTAssertThrowsError(try validateMessage(String(repeating: "a", count: 501)))
     }
 
+    // MARK: R1 email confirmation code
+
+    func testR1EmailCodeIsSixToTenDigits() {
+        XCTAssertNoThrow(try validateEmailCode("123456"))
+        XCTAssertNoThrow(try validateEmailCode(" 123 456 "), "spaces from copy and paste are ignored")
+        XCTAssertNoThrow(try validateEmailCode("1234567890"))
+        XCTAssertThrowsError(try validateEmailCode(""))
+        XCTAssertThrowsError(try validateEmailCode("12345"))
+        XCTAssertThrowsError(try validateEmailCode("12345678901"))
+        XCTAssertThrowsError(try validateEmailCode("12a456"))
+    }
+
+    func testR1EmailCodeIsCleaned() throws {
+        XCTAssertEqual(try validateEmailCode(" 123 456 "), "123456")
+    }
+
     // MARK: R26 GIFs in the chat
 
     func testR26GifMustComeFromGiphy() {

@@ -15,6 +15,10 @@ struct AuthView: View {
     @State private var acceptedTerms = false
     @State private var errorMessage: String?
     @State private var isWorking = false
+    /// Set when Supabase emailed a confirmation code: the card then asks for the code.
+    @State private var codeEmail: String?
+    @State private var code = ""
+    @State private var infoMessage: String?
     @FocusState private var focused: Field?
 
     private enum Field {
@@ -46,6 +50,9 @@ struct AuthView: View {
                     .padding(.top, 40)
 
                     VStack(spacing: 14) {
+                        if let codeEmail {
+                            codeEntry(codeEmail)
+                        } else {
                         modeSwitch
 
                         field(.email) {
@@ -84,6 +91,7 @@ struct AuthView: View {
                         }
                         .buttonStyle(ChunkyButtonStyle())
                         .disabled(isWorking)
+                        }
                     }
                     .padding(20)
                     .background(.background, in: RoundedRectangle(cornerRadius: 28))
@@ -142,12 +150,104 @@ struct AuthView: View {
         errorMessage = nil
         do {
             if mode == .signUp {
-                try await AuthService.signUp(email: email, password: password, displayName: displayName,
-                                             acceptedTerms: acceptedTerms)
+                let needsCode = try await AuthService.signUp(email: email, password: password,
+                                                             displayName: displayName, acceptedTerms: acceptedTerms)
+                if needsCode { showCodeEntry() }
             } else {
                 try await AuthService.logIn(email: email, password: password)
             }
             // RootView switches to Home by itself once the login is there.
+        } catch is EmailNotConfirmed {
+            showCodeEntry()
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isWorking = false
+    }
+
+    /// `codeEmail` is only set by the preview, to show the code screen without a real email.
+    init(codeEmail: String? = nil) {
+        _codeEmail = State(initialValue: codeEmail)
+    }
+
+    private func showCodeEntry() {
+        code = ""
+        infoMessage = nil
+        withAnimation { codeEmail = email.trimmingCharacters(in: .whitespaces) }
+    }
+
+    // MARK: - Confirmation code (only when "Confirm email" is on in Supabase)
+
+    private func codeEntry(_ address: String) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: "envelope.badge.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(Theme.brand)
+            Text("Check your email")
+                .font(Theme.title(24))
+                .foregroundStyle(Theme.ink)
+            Text("We sent a code to **\(address)**. Enter it here to finish.")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            TextField("123456", text: $code)
+                .textContentType(.oneTimeCode)
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.center)
+                .font(.system(size: 30, weight: .bold, design: .monospaced))
+                .padding(.vertical, 10)
+                .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
+                .onChange(of: code) { code = String(code.filter(\.isNumber).prefix(10)) }
+
+            ErrorText(message: errorMessage)
+            if let infoMessage {
+                Text(infoMessage)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+            }
+
+            Button {
+                Task { await confirm(address) }
+            } label: {
+                if isWorking { ProgressView().tint(.black) } else { Text("Confirm") }
+            }
+            .buttonStyle(ChunkyButtonStyle())
+            .disabled(isWorking || code.count < 6)
+
+            HStack {
+                Button("Back") {
+                    withAnimation { codeEmail = nil }
+                    errorMessage = nil
+                }
+                Spacer()
+                Button("Send a new code") {
+                    Task { await resend(address) }
+                }
+                .disabled(isWorking)
+            }
+            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+        }
+    }
+
+    private func confirm(_ address: String) async {
+        isWorking = true
+        errorMessage = nil
+        do {
+            try await AuthService.verifyEmailCode(email: address, code: code)
+            // Logged in now: RootView switches to Home by itself.
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isWorking = false
+    }
+
+    private func resend(_ address: String) async {
+        isWorking = true
+        errorMessage = nil
+        do {
+            try await AuthService.resendEmailCode(email: address)
+            infoMessage = "A new code is on its way. Check your spam folder too."
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -155,6 +255,10 @@ struct AuthView: View {
     }
 }
 
-#Preview {
+#Preview("Log in") {
     AuthView()
+}
+
+#Preview("Code from email") {
+    AuthView(codeEmail: "lenny@example.com")
 }
