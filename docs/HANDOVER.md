@@ -496,6 +496,14 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `AuthService.swift`, `AuthView.swift`, `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`.
 - How to check: previews "Log in" and "Forgot password" in `AuthView`. With a real email: log out, "Forgot password?", enter the code from the email.
 
+**Step 30: Password rules and "Repeat password"** (branch `forgot-password`)
+- What: sign up and "Forgot password?" now ask for the password twice. Under the fields is a live checklist that turns green line by line: at least 8 characters, a capital letter, a small letter, a number, a special character, both passwords match. Logging in does not check the rules, so older accounts with simpler passwords still work.
+- Why: the usual password rules, and typing it twice catches typos before the account exists.
+- How: HabitCore `passwordRules(_:)` returns the rules with `isMet`; the view only shows them (`PasswordChecklist` in `AuthView.swift`). `validatePassword(_:repeated:)` throws the first missing rule or "The two passwords are not the same." `validateSignUp` got a `repeatedPassword` parameter. 3 new tests (84 in total).
+- Supabase (recommended): Authentication → Sign In / Providers → Email → minimum password length 8 and "Lowercase, uppercase letters, digits and symbols", so the server checks the same rules and not only the app.
+- Files: `HabitCore/Sources/HabitCore/Validation.swift`, `ValidationTests.swift`, `AuthService.swift`, `AuthView.swift`.
+- How to check: `AuthView` previews "Sign up" and "Forgot password", or type a password in the app and watch the list.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

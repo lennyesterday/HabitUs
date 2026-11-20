@@ -1,4 +1,5 @@
 import SwiftUI
+import HabitCore
 
 // Landing, sign up and log in (R1 to R3). Area A.
 
@@ -11,6 +12,7 @@ struct AuthView: View {
     @State private var mode = Mode.logIn
     @State private var email = ""
     @State private var password = ""
+    @State private var passwordAgain = ""
     @State private var displayName = ""
     @State private var acceptedTerms = false
     @State private var errorMessage: String?
@@ -22,10 +24,11 @@ struct AuthView: View {
     /// Set while "Forgot password?" is open: first the email, then the code and a new password.
     @State private var reset: ResetStep?
     @State private var newPassword = ""
+    @State private var newPasswordAgain = ""
     @FocusState private var focused: Field?
 
     private enum Field {
-        case email, password, name, newPassword
+        case email, password, passwordAgain, name, newPassword, newPasswordAgain
     }
 
     private enum ResetStep: Equatable {
@@ -73,11 +76,15 @@ struct AuthView: View {
                                 .autocorrectionDisabled()
                         }
                         field(.password) {
-                            SecureField(mode == .signUp ? "Password (at least 8 characters)" : "Password",
-                                        text: $password)
+                            SecureField("Password", text: $password)
                                 .textContentType(mode == .signUp ? .newPassword : .password)
                         }
                         if mode == .signUp {
+                            field(.passwordAgain) {
+                                SecureField("Repeat password", text: $passwordAgain)
+                                    .textContentType(.newPassword)
+                            }
+                            PasswordChecklist(password: password, repeated: passwordAgain)
                             field(.name) {
                                 TextField("Display name (2 to 20 characters)", text: $displayName)
                                     .textContentType(.nickname)
@@ -169,6 +176,7 @@ struct AuthView: View {
         do {
             if mode == .signUp {
                 let needsCode = try await AuthService.signUp(email: email, password: password,
+                                                             repeatedPassword: passwordAgain,
                                                              displayName: displayName, acceptedTerms: acceptedTerms)
                 if needsCode { showCodeEntry() }
             } else {
@@ -183,8 +191,9 @@ struct AuthView: View {
         isWorking = false
     }
 
-    /// `codeEmail` and `resetEmail` are only set by the previews, to show those screens without a real email.
-    init(codeEmail: String? = nil, resetEmail: String? = nil) {
+    /// `signUp`, `codeEmail` and `resetEmail` are only set by the previews, to show those screens without a real email.
+    init(signUp: Bool = false, codeEmail: String? = nil, resetEmail: String? = nil) {
+        _mode = State(initialValue: signUp ? .signUp : .logIn)
         _codeEmail = State(initialValue: codeEmail)
         _reset = State(initialValue: resetEmail.map { .enterCode($0) })
     }
@@ -322,9 +331,14 @@ struct AuthView: View {
 
                 codeField
                 field(.newPassword) {
-                    SecureField("New password (at least 8 characters)", text: $newPassword)
+                    SecureField("New password", text: $newPassword)
                         .textContentType(.newPassword)
                 }
+                field(.newPasswordAgain) {
+                    SecureField("Repeat new password", text: $newPasswordAgain)
+                        .textContentType(.newPassword)
+                }
+                PasswordChecklist(password: newPassword, repeated: newPasswordAgain)
 
                 ErrorText(message: errorMessage)
                 InfoText(message: infoMessage)
@@ -364,6 +378,7 @@ struct AuthView: View {
             if reset == .askEmail {
                 code = ""
                 newPassword = ""
+                newPasswordAgain = ""
                 infoMessage = nil
                 withAnimation { reset = .enterCode(email.trimmingCharacters(in: .whitespaces)) }
             } else {
@@ -379,12 +394,46 @@ struct AuthView: View {
         isWorking = true
         errorMessage = nil
         do {
-            try await AuthService.setNewPassword(email: address, code: code, password: newPassword)
+            try await AuthService.setNewPassword(email: address, code: code, password: newPassword,
+                                                 repeatedPassword: newPasswordAgain)
             // Logged in with the new password now: RootView switches to Home by itself.
         } catch {
             errorMessage = error.localizedDescription
         }
         isWorking = false
+    }
+}
+
+/// The password rules from HabitCore as a live checklist, plus "Both passwords match".
+/// Each line turns green with a tick as soon as it is met.
+private struct PasswordChecklist: View {
+    let password: String
+    let repeated: String
+
+    var body: some View {
+        let rules = passwordRules(password)
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(rules, id: \.text) { rule in
+                line(rule.text, isMet: rule.isMet)
+            }
+            line("Both passwords match", isMet: !repeated.isEmpty && password == repeated)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
+        .animation(.snappy, value: password)
+        .animation(.snappy, value: repeated)
+    }
+
+    private func line(_ text: String, isMet: Bool) -> some View {
+        Label {
+            Text(text)
+        } icon: {
+            Image(systemName: isMet ? "checkmark.circle.fill" : "circle")
+                .foregroundStyle(isMet ? Color.green : Color.secondary)
+        }
+        .font(.system(.footnote, design: .rounded))
+        .foregroundStyle(isMet ? Color.primary : Color.secondary)
+        .accessibilityLabel("\(text): \(isMet ? "done" : "missing")")
     }
 }
 
@@ -403,6 +452,10 @@ private struct InfoText: View {
 
 #Preview("Log in") {
     AuthView()
+}
+
+#Preview("Sign up") {
+    AuthView(signUp: true)
 }
 
 #Preview("Code from email") {

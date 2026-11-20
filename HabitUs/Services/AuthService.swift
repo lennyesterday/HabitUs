@@ -27,10 +27,10 @@ enum AuthService {
     /// Returns true if Supabase sent a confirmation code that has to be entered next
     /// ("Confirm email" turned on). Returns false if the person is logged in right away.
     @discardableResult
-    static func signUp(email: String, password: String, displayName: String,
+    static func signUp(email: String, password: String, repeatedPassword: String, displayName: String,
                        acceptedTerms: Bool) async throws -> Bool {
-        try validateSignUp(email: email, password: password, displayName: displayName,
-                           acceptedTerms: acceptedTerms)
+        try validateSignUp(email: email, password: password, repeatedPassword: repeatedPassword,
+                           displayName: displayName, acceptedTerms: acceptedTerms)
         return try await readable {
             let response = try await supabase.auth.signUp(
                 email: email.trimmingCharacters(in: .whitespaces),
@@ -75,9 +75,10 @@ enum AuthService {
     /// Checks the reset code, which logs the person in, then sets the new password.
     /// Both inputs are checked first, so a short password does not use up the code.
     /// Once the code is right, RootView switches to Home by itself.
-    static func setNewPassword(email: String, code: String, password: String) async throws {
+    static func setNewPassword(email: String, code: String, password: String,
+                               repeatedPassword: String) async throws {
         let cleanCode = try validateEmailCode(code)
-        try validatePassword(password)
+        try validatePassword(password, repeated: repeatedPassword)
         do {
             try await supabase.auth.verifyOTP(email: email.trimmingCharacters(in: .whitespaces),
                                               token: cleanCode, type: .recovery)

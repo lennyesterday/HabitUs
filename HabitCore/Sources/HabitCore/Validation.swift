@@ -6,11 +6,12 @@ private func trimmed(_ text: String) -> String {
     text.trimmingCharacters(in: .whitespacesAndNewlines)
 }
 
-/// R1: email, password of at least 8 characters, name of 2 to 20 characters, terms ticked.
-public func validateSignUp(email: String, password: String, displayName: String,
-                           acceptedTerms: Bool) throws {
+/// R1: email, a password that meets all `passwordRules` and was typed the same twice,
+/// name of 2 to 20 characters, terms ticked.
+public func validateSignUp(email: String, password: String, repeatedPassword: String,
+                           displayName: String, acceptedTerms: Bool) throws {
     try validateEmail(email)
-    try validatePassword(password)
+    try validatePassword(password, repeated: repeatedPassword)
     guard (2...20).contains(trimmed(displayName).count) else {
         throw RuleError("Your name needs 2 to 20 characters.")
     }
@@ -27,10 +28,34 @@ public func validateEmail(_ email: String) throws {
     }
 }
 
-/// R1: at least 8 characters. Used for sign up and for a new password after "Forgot password?".
-public func validatePassword(_ password: String) throws {
-    guard password.count >= 8 else {
-        throw RuleError("The password needs at least 8 characters.")
+/// One rule for a new password and whether the password meets it. The forms show them as a checklist.
+public struct PasswordRule: Hashable, Sendable {
+    public let text: String
+    public let isMet: Bool
+}
+
+/// R1: the usual rules for a new password: 8 characters, a capital and a small letter,
+/// a number and a special character.
+public func passwordRules(_ password: String) -> [PasswordRule] {
+    [
+        PasswordRule(text: "At least 8 characters", isMet: password.count >= 8),
+        PasswordRule(text: "A capital letter", isMet: password.contains(where: \.isUppercase)),
+        PasswordRule(text: "A small letter", isMet: password.contains(where: \.isLowercase)),
+        PasswordRule(text: "A number", isMet: password.contains(where: \.isNumber)),
+        PasswordRule(text: "A special character like ! ? # @",
+                     isMet: password.contains { !$0.isLetter && !$0.isNumber && !$0.isWhitespace }),
+    ]
+}
+
+/// R1: all `passwordRules` met, and the second field says the same. Used for sign up and
+/// for a new password after "Forgot password?". Logging in does not check the rules,
+/// so older accounts with simpler passwords still work.
+public func validatePassword(_ password: String, repeated: String) throws {
+    if let missing = passwordRules(password).first(where: { !$0.isMet }) {
+        throw RuleError("Your password still needs: \(missing.text.lowercased()).")
+    }
+    guard password == repeated else {
+        throw RuleError("The two passwords are not the same.")
     }
 }
 
