@@ -15,6 +15,8 @@ struct GroupView: View {
     @State private var showFinishConfirmation = false
     @State private var messageText = ""
     @State private var errorMessage: String?
+    /// Whether the Tinder style vote deck under the task card is open.
+    @State private var showVoteDeck = false
 
     var body: some View {
         let now = Date()
@@ -47,6 +49,8 @@ struct GroupView: View {
                         ErrorText(message: errorMessage)
                     }
 
+                    voteSection(now: now)
+
                     BonusCard(round: round, target: data.group.target, status: status, streak: myRow?.streak ?? 0)
 
                     Podium(rows: Array(rows.prefix(3)))
@@ -70,7 +74,7 @@ struct GroupView: View {
                     }
                     .foregroundStyle(Theme.ink.opacity(0.25))
 
-                    FeedView(data: data)
+                    FeedView(data: data, onReact: react, onRetake: { showCamera = true })
 
                     Color.clear.frame(height: 1).id("bottom")
                 }
@@ -145,6 +149,59 @@ struct GroupView: View {
             }
         }
         .padding(.top, 4)
+    }
+
+    /// A button that folds open the Tinder style deck with the photos of this round that I can
+    /// still vote on, newest first. A shortcut, so nobody has to scroll through the chat to vote.
+    /// The photos are still in the chat as well, and voting works in both places.
+    private func voteSection(now: Date) -> some View {
+        let current = currentRound(of: data.group, now: now)
+        let toVote = data.checkins
+            .filter {
+                $0.kind == .photo && HabitCore.round(of: $0.day, in: data.group) == current
+                    && data.canReact(to: $0, now: now) && data.myReaction(on: $0) == nil
+            }
+            .sorted { $0.createdAt > $1.createdAt }
+
+        return VStack(spacing: 16) {
+            Button {
+                withAnimation(.spring(duration: 0.35)) { showVoteDeck.toggle() }
+            } label: {
+                HStack {
+                    Text("🗳️  Vote on photos")
+                    if !toVote.isEmpty {
+                        Text("\(toVote.count)")
+                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 3)
+                            .background(Theme.rankColor(0), in: Capsule())
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .rotationEffect(.degrees(showVoteDeck ? 180 : 0))
+                }
+                .padding(.horizontal, 20)
+            }
+            .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.78),
+                                           textColor: Theme.brand))
+
+            if showVoteDeck {
+                VoteDeck(data: data, photos: toVote) { photo, kind in
+                    react(photo, kind)
+                }
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+        }
+    }
+
+    /// Like or 👎 from the chat or the vote deck (R15).
+    private func react(_ checkin: Checkin, _ kind: ReactionKind?) {
+        Task {
+            await run {
+                try await CheckinService.setReaction(groupId: data.group.id, checkinId: checkin.id, kind: kind)
+            }
+        }
     }
 
     private var periodTitle: String {
