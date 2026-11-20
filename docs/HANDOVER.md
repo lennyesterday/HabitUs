@@ -248,7 +248,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 
 | Who | Task | Area | Files |
 |---|---|---|---|
-| Bene | Like and X buttons on photos and pauses (R15, R16, R17, R19) | B | `CheckinService.setReaction`, `Components/FeedView.swift` |
+| Bene | 👍 and 👎 buttons on photos and pauses (R15, R16, R17, R19; "X" in the SPEC and code = 👎 in the app) | B | `CheckinService.setReaction`, `Components/FeedView.swift` |
 | Vincent | Pause with reason (R18) | B | `CheckinService.addPause`, new pause sheet, `TaskCard` |
 | Vincent | RLS manual check S5 with two accounts in two groups, screenshots | A | `docs/` |
 | Lenny | README (names, student numbers), `DECISIONS.md`, SPEC update, `seed.sql`, demo setup | C | repo root, `supabase/` |
@@ -434,6 +434,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Why: Lenny wanted the group info calmer. Members are already visible on the group screen and in the player profiles.
 - Files: `GroupInfoView.swift`.
 - How to check: open the group info. The signature is under "Contract & rules". The preview has no signature in its sample data, so check this in the app.
+
+**Step 22: 👎 instead of X in the contract and the onboarding** (branch `group-info`)
+- What: the contract now says "If more than half of the other members give a **👎** …", and the onboarding page "Your group checks" shows 👍 and 👎 instead of 👍 and ✕.
+- Why: Lenny: a thumbs down is clearer and friendlier than an X.
+- Note: in the SPEC (R15 to R18) and in the code (`ReactionKind.x`, `xThresholdReached`) it is still called "X", only the word on screen changed. The rule itself is the same. The like/👎 buttons in the feed are still to be built (section 11), and they should use 👍 and 👎.
+- Files: `ContractView.swift`, `OnboardingView.swift`.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

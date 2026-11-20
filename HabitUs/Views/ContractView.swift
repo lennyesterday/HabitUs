@@ -72,7 +72,7 @@ struct ContractTerms: View {
             Text(contract.endOn.map { "The challenge ends with the last full round before **\(Theme.dayText($0))**." }
                  ?? "The challenge has an **open end**. It ends when the owner finishes it.")
             Text("Every task is proven with a **live photo** taken in the app. The group sees every photo.")
-            Text("If more than half of the other members press **X**, a photo or pause does not count.")
+            Text("If more than half of the other members give a **👎**, a photo or pause does not count.")
             Text("20 points per task, bonus for complete rounds and streaks.")
             Text("The rules cannot change after the start.")
             Text("You can leave the group at any time.")
