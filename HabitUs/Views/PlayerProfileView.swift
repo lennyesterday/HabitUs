@@ -9,10 +9,6 @@ struct PlayerProfileView: View {
     let data: GroupData
     let userId: UUID
 
-    @State private var reminderSent = false
-    @State private var isSending = false
-    @State private var errorMessage: String?
-
     var body: some View {
         let now = Date()
         let rows = data.leaderboard(now: now)
@@ -44,10 +40,6 @@ struct PlayerProfileView: View {
 
                 if let row {
                     statsGrid(row)
-                }
-
-                if userId != data.me, running {
-                    reminderButton
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
@@ -134,50 +126,6 @@ struct PlayerProfileView: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(.white, in: RoundedRectangle(cornerRadius: 18))
-    }
-
-    // MARK: - Reminder (a chat message, no push: see SPEC section 1, "Later")
-
-    private var reminderButton: some View {
-        let status = data.taskStatus(of: userId, now: Date())
-        let name = data.member(userId)?.displayName ?? "them"
-        return VStack(spacing: 6) {
-            Button {
-                Task { await sendReminder(open: status.open) }
-            } label: {
-                if isSending {
-                    ProgressView().tint(.white)
-                } else {
-                    Label(reminderSent ? "Reminder sent" : "Remind \(name)",
-                          systemImage: reminderSent ? "checkmark" : "bell.fill")
-                }
-            }
-            .buttonStyle(ChunkyButtonStyle(color: Theme.brand, ledgeColor: Color(red: 0, green: 0.12, blue: 0.55),
-                                           textColor: .white))
-            .disabled(reminderSent || isSending || status.open == 0)
-            .opacity(status.open == 0 ? 0.5 : 1)
-            Text(status.open == 0
-                 ? "\(name) has done every task of this round."
-                 : "Posts a reminder in the group chat. \(name) has \(status.open) task\(status.open == 1 ? "" : "s") left.")
-                .font(.system(.caption, design: .rounded))
-                .foregroundStyle(.secondary)
-            ErrorText(message: errorMessage)
-        }
-    }
-
-    private func sendReminder(open: Int) async {
-        let me = data.member(data.me)?.displayName ?? "Someone"
-        let name = data.member(userId)?.displayName ?? "you"
-        let text = "👋 \(me) reminds \(name) to do \(data.group.habit): \(open) left this round!"
-        isSending = true
-        do {
-            try await ChatService.post(groupId: data.group.id, text: text)
-            reminderSent = true
-            errorMessage = nil
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-        isSending = false
     }
 
     // MARK: - History

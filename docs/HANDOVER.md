@@ -35,7 +35,7 @@ leave / delete, profile and group pictures. Do this together once before the fea
 | Lobby | Owner accepts or declines requests, starts the session with at least 3 members |
 | Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
 | Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
-| Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks, "Remind" button (posts in the chat) |
+| Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks |
 | End | Owner can finish the challenge, results screen with the champion |
 | Groups | Everyone can leave any time, the owner can delete the group for everyone |
 | Profile | Profile picture, group picture and icon (owner), settings, "How it works" |
@@ -409,6 +409,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - **Why not a real push notification:** real push to another iPhone needs the paid Apple Developer account, Apple's push service (APNs) and a server that sends the messages. SPEC section 1 lists push as "Later". The chat reminder is the honest version for now. Mention this in the walkthrough.
 - Files: `PlayerProfileView.swift` (new), `Podium.swift` (`RankingRows` is tappable), `GroupView.swift` (opens the profile), `HabitCore/Sources/HabitCore/Scoring.swift`, `Models.swift`, `ScoringTests.swift`.
 - How to check: the `PlayerProfileView` preview shows a sample player. In the app, open a running habit, tap a row under the podium, then try "Remind". `swift test` → 72 green. Not yet tried with real photos on screen.
+
+**Step 19: Reminder button removed again** (branch `group-playerprofil`)
+- What: the "Remind …" button and its chat message were taken out of the player profile. Grade, stats and history stay.
+- Why: Lenny decided to leave reminders and notifications out for now.
+- Options for later: real push (paid Apple Developer account, APNs key, device tokens in Supabase, an Edge Function that sends) or local notifications that remind you on your own phone (free, no server).
+- Files: `PlayerProfileView.swift`.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
