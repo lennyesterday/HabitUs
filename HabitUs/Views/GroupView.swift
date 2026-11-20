@@ -322,7 +322,9 @@ extension GroupData {
         let messages = [Message(id: UUID(), groupId: group.id, userId: bene, text: "let's go 🔥", gifURL: nil,
                                 createdAt: Date().addingTimeInterval(-3600)),
                         Message(id: UUID(), groupId: group.id, userId: me, text: "leg day tomorrow", gifURL: nil,
-                                createdAt: Date().addingTimeInterval(-60))]
+                                createdAt: Date().addingTimeInterval(-60)),
+                        Message(id: UUID(), groupId: group.id, userId: vincent, text: "Vincent left the group.",
+                                gifURL: nil, createdAt: Date().addingTimeInterval(-30), isSystem: true)]
         return GroupData(me: me, group: group, members: members, checkins: checkins, reactions: [],
                          messages: messages)
     }

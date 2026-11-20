@@ -211,7 +211,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 
 | Change | SPEC said | Why we changed it | Watch out |
 |---|---|---|---|
-| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | Fewer members means fewer X are needed, also for older photos; a group can drop below 3 |
+| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | the chat says "X left the group."; if a running challenge drops below 3 players it ends for everyone (step 33); fewer members means fewer X are needed, also for older photos |
 | Signature drawn with the finger | typed name | feels more like a real contract | stored as a small PNG (max 40 KB) in `memberships.signature` |
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
@@ -237,7 +237,7 @@ We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 84 tests green.
+4. `cd HabitCore && swift test` → 86 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
 
@@ -517,6 +517,14 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How: domain `habitractapp.com` bought by Lenny (Cloudflare), added and verified in Resend (region Ireland). In Supabase → Authentication → Emails → SMTP: host `smtp.resend.com`, **port 465**, username `resend`, password = a Resend API key with sending access (only in Supabase, never in the repo or chat), sender `noreply@habitractapp.com`, name "Habitract". Templates "Confirm signup" and "Reset Password" contain `{{ .Token }}`. Email rate limit raised. "Confirm email" turned on.
 - Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
 - How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
+
+**Step 33: "X left the group" and the 3 player minimum** (branch `group-updates`, migration 006)
+- What: when an accepted member leaves, the chat shows a grey note in the middle: "Lenny left the group." If a **running** challenge then has fewer than 3 players, it ends for everyone: a second note says "Only 2 players are left, so the challenge has ended. It needs at least 3 to keep going.", and everyone sees the results with the line "Fewer than 3 players were left, so the game stopped." With 3 or more left it goes on as before. In the lobby people come and go without notes or an end. Withdrawing a pending request stays quiet.
+- Why: before, a group could keep running with 2 or even 1 player, which makes the X vote pointless. Nobody can join after the start, so waiting for a new player makes no sense either.
+- How: everything happens inside the database function `leave_group` in one step (`006_leave_messages.sql`): it writes the note as a message with `system = true` and sets `ended_early_at`. The insert policy on `messages` now refuses `system = true`, so no app can fake a note. HabitCore: `minimumPlayers = 3` (now also used for the start check) and `leavingEndsChallenge`, 2 new tests (86 in total). The leave dialog warns before: "Only 2 players would be left, so the challenge ends for everyone."
+- Supabase: **run `supabase/migrations/006_leave_messages.sql` in the SQL editor.** The app also works before that (no notes, no automatic end).
+- Files: `006_leave_messages.sql`, `HabitCore/Sources/HabitCore/Rounds.swift`, `RoundsTests.swift`, `ChatService.swift`, `Rows.swift`, `FeedView.swift` (`SystemNote`), `GameScreen.swift`, `ResultsView.swift`, `GroupService.swift`, `GroupView.swift` (preview).
+- How to check: a running group with 3 players, one leaves → the other two see the note and the results. With 4 players → only the note, the game goes on.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)

@@ -263,8 +263,8 @@ enum GroupService {
         guard data.isOwner else {
             throw RuleError("Only the owner can start the session.")
         }
-        guard data.accepted.count >= 3 else {
-            throw RuleError("You need at least 3 members including you to start.")
+        guard data.accepted.count >= minimumPlayers else {
+            throw RuleError("You need at least \(minimumPlayers) members including you to start.")
         }
         guard canStart(data.group, today: today) else {
             throw RuleError("The end date is too close. Not even one full round fits.")

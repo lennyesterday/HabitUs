@@ -21,6 +21,8 @@ struct FeedView: View {
             }
             ForEach(items) { item in
                 switch item {
+                case .message(let message) where message.isSystem:
+                    SystemNote(text: message.text)
                 case .message(let message):
                     MessageBubble(data: data, message: message)
                 case .checkin(let checkin, _):
@@ -29,6 +31,22 @@ struct FeedView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
+/// A note from the database in the middle of the chat, for example "Lenny left the group."
+private struct SystemNote: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(.footnote, design: .rounded).weight(.semibold))
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 7)
+            .background(Color.black.opacity(0.05), in: Capsule())
+            .frame(maxWidth: .infinity)
     }
 }
 

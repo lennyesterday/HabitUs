@@ -147,9 +147,11 @@ struct MessageRow: Decodable {
     let text: String
     let gifUrl: String?
     let createdAt: Date
+    /// Optional so the app also works before migration 006 is run.
+    let system: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case id, text
+        case id, text, system
         case groupId = "group_id"
         case userId = "user_id"
         case gifUrl = "gif_url"
@@ -158,6 +160,6 @@ struct MessageRow: Decodable {
 
     var model: Message {
         Message(id: id, groupId: groupId, userId: userId, text: text,
-                gifURL: gifUrl.flatMap(URL.init(string:)), createdAt: createdAt)
+                gifURL: gifUrl.flatMap(URL.init(string:)), createdAt: createdAt, isSystem: system ?? false)
     }
 }

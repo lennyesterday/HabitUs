@@ -106,4 +106,20 @@ final class RoundsTests: XCTestCase {
         XCTAssertEqual(round(of: day(2026, 3, 30), in: group), 3)
         XCTAssertEqual(timeLeft(in: group, now: time(2026, 3, 29, 0)), 23 * 3600)
     }
+
+    // MARK: R28 leaving a running challenge
+
+    func testR28LeavingBelowThreePlayersEndsARunningChallenge() {
+        let group = makeGroup(startedOn: start)
+        let now = addDays(3, to: start)
+        XCTAssertTrue(leavingEndsChallenge(group, acceptedBefore: 3, now: now), "2 left: the challenge ends")
+        XCTAssertFalse(leavingEndsChallenge(group, acceptedBefore: 4, now: now), "3 left: it goes on")
+    }
+
+    func testR28LeavingInTheLobbyOrAfterTheEndChangesNothing() {
+        let lobby = makeGroup(startedOn: nil)
+        XCTAssertFalse(leavingEndsChallenge(lobby, acceptedBefore: 3, now: start))
+        let ended = makeGroup(startedOn: start, endedEarlyAt: addDays(1, to: start))
+        XCTAssertFalse(leavingEndsChallenge(ended, acceptedBefore: 3, now: addDays(2, to: start)))
+    }
 }
