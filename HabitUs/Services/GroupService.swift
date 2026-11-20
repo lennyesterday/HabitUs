@@ -81,6 +81,16 @@ struct GroupData {
         HabitCore.isValid(checkin, reactions: reactions, memberCount: accepted.count)
     }
 
+    func canReact(to checkin: Checkin, now: Date) -> Bool {
+        HabitCore.canReact(me, to: checkin, group: group, reactions: reactions,
+                           memberCount: accepted.count, now: now)
+    }
+
+    /// My like or X on this check-in, if any.
+    func myReaction(on checkin: Checkin) -> ReactionKind? {
+        reactions.first { $0.checkinId == checkin.id && $0.userId == me }?.kind
+    }
+
     /// R25: text messages and check-ins in time order, newest at the bottom, the last `limit` items.
     func feed(limit: Int = 50) -> [FeedItem] {
         let items = messages.map { FeedItem.message($0) }

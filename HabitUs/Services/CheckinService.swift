@@ -31,6 +31,12 @@ private struct NewCheckin: Encodable {
     let text: String
 }
 
+private struct NewReaction: Encodable {
+    let checkin_id: UUID
+    let user_id: UUID
+    let kind: String
+}
+
 enum CheckinService {
     /// R12, R13: checks the rules with HabitCore, uploads the photo, writes the check-in.
     /// The database sets the time and the day.
@@ -61,9 +67,31 @@ enum CheckinService {
         throw notBuiltYet
     }
 
-    /// R15: `.like`, `.x`, or nil to remove my reaction.
-    static func setReaction(checkinId: UUID, kind: ReactionKind?) async throws {
-        throw notBuiltYet
+    /// R15: `.like`, `.x`, or nil to remove my reaction. HabitCore decides if a reaction is
+    /// still allowed (not my own, still valid, round running). One row per person and check-in,
+    /// so a second tap replaces the first one (upsert).
+    static func setReaction(groupId: UUID, checkinId: UUID, kind: ReactionKind?) async throws {
+        let data = try await GroupService.load(groupId: groupId)
+        guard let checkin = data.checkins.first(where: { $0.id == checkinId }) else {
+            throw RuleError("This proof no longer exists.")
+        }
+        guard data.canReact(to: checkin, now: Date()) else {
+            throw RuleError("Voting on this proof is closed.")
+        }
+        try await readable {
+            if let kind {
+                try await supabase.from("reactions")
+                    .upsert(NewReaction(checkin_id: checkinId, user_id: data.me, kind: kind.rawValue),
+                            onConflict: "checkin_id,user_id")
+                    .execute()
+            } else {
+                try await supabase.from("reactions")
+                    .delete()
+                    .eq("checkin_id", value: checkinId)
+                    .eq("user_id", value: data.me)
+                    .execute()
+            }
+        }
     }
 
     /// R25: the last `limit` items, oldest first.

@@ -42,4 +42,44 @@ final class VotesTests: XCTestCase {
         XCTAssertTrue(isValid(pause, reactions: [], memberCount: 3), "a pause is accepted by default")
         XCTAssertFalse(isValid(pause, reactions: xs(on: pause, by: [alice, bob]), memberCount: 3))
     }
+
+    // canReact: who may press like or X, and when (R15, R17, R19).
+
+    func testR15OtherMemberCanReactWhileRoundRuns() {
+        let group = makeGroup()
+        let photo = makeCheckin(owner, on: day(2026, 1, 6))
+        XCTAssertTrue(canReact(alice, to: photo, group: group, reactions: [], memberCount: 3,
+                               now: time(2026, 1, 7, 12)))
+    }
+
+    func testR15AuthorCannotReactToOwnCheckin() {
+        let group = makeGroup()
+        let photo = makeCheckin(owner, on: day(2026, 1, 6))
+        XCTAssertFalse(canReact(owner, to: photo, group: group, reactions: [], memberCount: 3,
+                                now: time(2026, 1, 7, 12)))
+    }
+
+    func testR17NoReactionsOnceInvalid() {
+        let group = makeGroup()
+        let photo = makeCheckin(owner, on: day(2026, 1, 6))
+        let reactions = xs(on: photo, by: [alice, bob])
+        XCTAssertFalse(canReact(alice, to: photo, group: group, reactions: reactions, memberCount: 3,
+                                now: time(2026, 1, 7, 12)), "invalid is final, the X cannot be taken back")
+    }
+
+    func testR19NoReactionsAfterTheRoundEnded() {
+        let group = makeGroup()   // weekly, starts 5 Jan, so round 1 is 5 to 11 Jan
+        let photo = makeCheckin(owner, on: day(2026, 1, 6))
+        XCTAssertTrue(canReact(alice, to: photo, group: group, reactions: [], memberCount: 3,
+                               now: time(2026, 1, 11, 23, 59)))
+        XCTAssertFalse(canReact(alice, to: photo, group: group, reactions: [], memberCount: 3,
+                                now: time(2026, 1, 12, 0, 1)))
+    }
+
+    func testR19NoReactionsAfterTheChallengeWasFinished() {
+        let group = makeGroup(endedEarlyAt: time(2026, 1, 7, 10))
+        let photo = makeCheckin(owner, on: day(2026, 1, 6))
+        XCTAssertFalse(canReact(alice, to: photo, group: group, reactions: [], memberCount: 3,
+                                now: time(2026, 1, 7, 12)))
+    }
 }
