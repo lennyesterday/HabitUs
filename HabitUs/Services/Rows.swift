@@ -84,16 +84,18 @@ struct MemberRow: Decodable {
     let userId: UUID
     let status: String
     let signature: String
+    let signedAt: Date?
     let profiles: ProfileRow
 
     enum CodingKeys: String, CodingKey {
         case id, status, signature, profiles
         case userId = "user_id"
+        case signedAt = "signed_at"
     }
 
     var model: Member {
         Member(id: id, userId: userId, displayName: profiles.displayName, photoPath: profiles.photoPath,
-               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature)
+               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature, signedAt: signedAt)
     }
 }
 

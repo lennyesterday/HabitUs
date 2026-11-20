@@ -441,6 +441,16 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Note: in the SPEC (R15 to R18) and in the code (`ReactionKind.x`, `xThresholdReached`) it is still called "X", only the word on screen changed. The rule itself is the same. The like/👎 buttons in the feed are still to be built (section 11), and they should use 👍 and 👎.
 - Files: `ContractView.swift`, `OnboardingView.swift`.
 
+**Step 23: Date next to every signature** (branch `group-info`)
+- What: wherever a signature is shown, its date is shown next to it:
+  - group info: "Signed by Lenny · 18 Nov 2026"
+  - lobby requests for the owner
+  - while signing: "Date: 20 Nov 2026" under the signature field
+- How: the database already saves the time in `memberships.signed_at` (set by the database, see `001_schema.sql`). The app now loads it: `Member.signedAt` (optional, in HabitCore `Models.swift`), `MemberRow` in `Rows.swift`, and `GroupService.members` selects `signed_at`. New helper `Theme.signatureDate`.
+- Why: Lenny wanted it to look like a real signed contract.
+- Files: `Models.swift`, `Rows.swift`, `GroupService.swift`, `Theme.swift`, `GroupInfoView.swift`, `LobbyView.swift`, `ContractView.swift`.
+- How to check: open the group info and a lobby with a request. `swift test` → 72 green. Not checked on screen yet.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

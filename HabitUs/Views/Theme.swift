@@ -25,6 +25,11 @@ enum Theme {
         return date.formatted(style)
     }
 
+    /// "20 Nov 2026" for the date next to a signature.
+    static func signatureDate(_ date: Date) -> String {
+        date.formatted(.dateTime.day().month(.abbreviated).year())
+    }
+
     /// "Tue 18:40" for the feed.
     static func timeText(_ date: Date) -> String {
         date.formatted(.dateTime.weekday(.abbreviated).hour().minute())

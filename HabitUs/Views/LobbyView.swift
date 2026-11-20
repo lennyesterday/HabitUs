@@ -54,6 +54,11 @@ struct LobbyView: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                 SignatureImage(signature: member.signature)
+                                if let signedAt = member.signedAt {
+                                    Text(Theme.signatureDate(signedAt))
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
                             }
                             HStack {
                                 Button("Accept") { act { try await GroupService.decide(membershipId: member.id, accept: true) } }

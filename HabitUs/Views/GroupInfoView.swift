@@ -111,7 +111,8 @@ struct GroupInfoView: View {
             Rectangle()
                 .fill(Theme.ink.opacity(0.25))
                 .frame(width: 220, height: 1)
-            Text("Signed by \(me.displayName)")
+            Text(me.signedAt.map { "Signed by \(me.displayName) · \(Theme.signatureDate($0))" }
+                 ?? "Signed by \(me.displayName)")
                 .font(.system(.caption, design: .rounded).weight(.semibold))
                 .foregroundStyle(.secondary)
         }

@@ -66,15 +66,17 @@ public struct Member: Sendable, Equatable, Identifiable {
     public var photoPath: String?    // profile picture in the "pictures" bucket
     public var status: MembershipStatus
     public var signature: String
+    public var signedAt: Date?       // when the contract was signed (set by the database)
 
     public init(id: UUID, userId: UUID, displayName: String, photoPath: String?,
-                status: MembershipStatus, signature: String) {
+                status: MembershipStatus, signature: String, signedAt: Date? = nil) {
         self.id = id
         self.userId = userId
         self.displayName = displayName
         self.photoPath = photoPath
         self.status = status
         self.signature = signature
+        self.signedAt = signedAt
     }
 }
 

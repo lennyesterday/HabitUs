@@ -392,7 +392,7 @@ enum GroupService {
     static func members(groupId: UUID) async throws -> [Member] {
         try await readable {
             let rows: [MemberRow] = try await supabase.from("memberships")
-                .select("id, user_id, status, signature, profiles(display_name, photo_path)")
+                .select("id, user_id, status, signature, signed_at, profiles(display_name, photo_path)")
                 .eq("group_id", value: groupId)
                 .order("signed_at")
                 .execute()
