@@ -596,6 +596,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare colorful and neutral emoji in both appearances, then reopen the group to see stable shapes. Group photos should still display. Not yet visually checked on a device.
 
+**Step 45: Serif type and golden group names on Home** (branch `design-interface`)
+- What: Home text uses a system serif style inspired by the Retro reference, and group names use a dark gold in light mode and yellow in dark mode. Card shadows apply to the background so text stays sharp.
+- Why: Bene wanted to try the yellow accent for group names and a Retro-inspired typeface on this page.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare Home and its group cards in both appearances. The exact Retro font is not included; this uses the system serif font. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
