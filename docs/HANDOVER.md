@@ -518,6 +518,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
 - How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
 
+**Step 32: Onboarding in light and dark mode** (branch `design-startscreen`)
+- What: the onboarding keeps its existing blue design in light mode and uses a darker blue gradient in dark mode. Its white and yellow text and buttons stay the same.
+- Why: make the first screens fit the iPhone appearance without changing the design of other screens.
+- Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: open the Welcome light and dark previews, or change the iPhone appearance while viewing onboarding. The app builds; the appearance has not yet been checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

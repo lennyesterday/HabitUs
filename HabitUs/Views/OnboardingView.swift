@@ -6,6 +6,7 @@ import SwiftUI
 struct OnboardingView: View {
     let done: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var page: Int
 
     /// `startPage` is only used by the previews.
@@ -43,7 +44,10 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            BrandBackground()
+            BrandBackground(
+                top: colorScheme == .dark ? Color(red: 0.12, green: 0.17, blue: 0.42) : Theme.brandLight,
+                bottom: colorScheme == .dark ? Color(red: 0.03, green: 0.06, blue: 0.20) : Theme.brand
+            )
 
             VStack {
                 HStack {
@@ -189,8 +193,14 @@ private struct Illustration: View {
     }
 }
 
-#Preview("Welcome") {
+#Preview("Welcome – Light") {
     OnboardingView { }
+        .preferredColorScheme(.light)
+}
+
+#Preview("Welcome – Dark") {
+    OnboardingView { }
+        .preferredColorScheme(.dark)
 }
 
 #Preview("Photo page") {
