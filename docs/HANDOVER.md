@@ -644,6 +644,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Pictures.swift`, `docs/HANDOVER.md`.
 - How to check: view profile photos on Home and in a group. Not yet checked visually on a device.
 
+**Step 53: Softer initial background** (branch `design-in-group`)
+- What: made the dark circle behind profile photo initials more transparent.
+- Why: Bene wanted the letter to remain readable without a strong dark edge.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: compare initials over light and dark profile photos. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
