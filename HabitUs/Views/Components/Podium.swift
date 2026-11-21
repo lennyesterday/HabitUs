@@ -30,6 +30,11 @@ struct Podium: View {
                     .shadow(color: .black.opacity(0.12), radius: 6, y: 4)
                     .opacity(leader ? 1 : 0.85)
                 Pill(text: "\(row.points) pts", dark: false)
+                Text(row.displayName)
+                    .font(.system(.caption, design: .default).weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .padding(.top, 8)
             }
         }
     }

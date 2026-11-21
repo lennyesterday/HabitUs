@@ -716,6 +716,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
 - How to check: open both flows in light and dark mode, choose each frequency, and proceed through the contract. Not yet visually checked or tested with a real group.
 
+**Step 65: Show profile photos without initials** (branch `interface-overhaul`)
+- What: profile photos are shown without the initial overlay; profiles without photos still show their initial. Names are also displayed under the group podium photos, alongside the existing names in group lists and chat.
+- Why: Bene wanted photos unobstructed while keeping players identifiable within a group.
+- Files: `Pictures.swift`, `Podium.swift`, `docs/HANDOVER.md`.
+- How to check: view players with and without photos on Home and in a group, including the podium. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
