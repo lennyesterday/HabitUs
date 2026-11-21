@@ -146,29 +146,25 @@ struct HomeView: View {
     }
 }
 
-/// A compact icon and label, like a small action card.
+/// A simple action with a clear icon and label.
 private struct HomeActionLabel: View {
     let title: LocalizedStringKey
     let symbol: String
     let isPrimary: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.headline, design: .rounded).weight(.bold))
-                .frame(width: 38, height: 38)
-                .background(isPrimary ? Color.white.opacity(0.20) : Color(.systemBackground).opacity(0.65),
-                            in: RoundedRectangle(cornerRadius: 12))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .multilineTextAlignment(.leading)
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
-        .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 54)
         .foregroundStyle(isPrimary ? Color.white : Color.primary)
     }
 }
@@ -177,16 +173,11 @@ private struct HomeActionButtonStyle: ButtonStyle {
     let isPrimary: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 20)
+        let shape = Capsule()
         configuration.label
             .background(isPrimary ? Theme.brand : Color(.secondarySystemBackground), in: shape)
-            .overlay(shape.strokeBorder(isPrimary ? Color.white.opacity(0.18) : Color.primary.opacity(0.10), lineWidth: 1))
-            .background {
-                shape.fill(isPrimary ? Color(red: 0.02, green: 0.10, blue: 0.46) : Color.primary.opacity(0.18))
-                    .offset(y: configuration.isPressed ? 1 : 4)
-            }
-            .offset(y: configuration.isPressed ? 3 : 0)
-            .padding(.bottom, 4)
+            .overlay(shape.strokeBorder(isPrimary ? Color.clear : Color.primary.opacity(0.28), lineWidth: 1))
+            .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }

@@ -554,6 +554,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: open Home in light and dark mode and tap both actions; check that each opens the same screen as before. Not yet checked visually or tapped on a device.
 
+**Step 38: Cleaner Home actions** (branch `design-interface`)
+- What: New Habit and Join Habit now use simple capsule shapes and clear icons, without the raised edge and separate icon tiles. The blue accent and light/dark colors remain.
+- Why: Bene shared Retro screenshots as a reference for a calmer, cleaner interface.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and try both actions. Not yet checked visually or tapped on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
