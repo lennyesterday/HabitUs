@@ -668,6 +668,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `docs/HANDOVER.md`.
 - How to check: compare onboarding, Home, group and create/join screens in both appearances, including text and buttons. The app builds; the appearance has not yet been visually tested on a device or formally contrast audited.
 
+**Step 57: Stronger group colors and emoji pattern** (branch `interface-overhaul`)
+- What: the shared blue background and emoji-based group gradients are a little more saturated. Small, faint copies of the chosen emoji are scattered behind the group banner and task card; their placement stays stable for each group. Group photos still cover the banner background.
+- Why: Bene wanted stronger colors and a playful emoji pattern, while keeping light and dark appearances readable.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups and emoji in both appearances on Home and in their task cards. Not yet visually checked on a device or formally contrast audited.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

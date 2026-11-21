@@ -194,8 +194,8 @@ struct HomeBackground: View {
         let isDark = colorScheme == .dark
         LinearGradient(
             colors: isDark
-                ? [Color(red: 0.12, green: 0.20, blue: 0.39), Color(red: 0.05, green: 0.08, blue: 0.19)]
-                : [Color(red: 0.72, green: 0.81, blue: 0.99), Color(red: 0.91, green: 0.94, blue: 1.0)],
+                ? [Color(red: 0.14, green: 0.23, blue: 0.46), Color(red: 0.05, green: 0.08, blue: 0.20)]
+                : [Color(red: 0.64, green: 0.76, blue: 0.98), Color(red: 0.88, green: 0.92, blue: 1.0)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -366,8 +366,8 @@ struct GroupEmojiBackground: View {
         let bytes = group.id.uuid
         let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
         let isDark = colorScheme == .dark
-        let base = Color(hue: hue, saturation: isDark ? 0.19 : 0.12, brightness: isDark ? 0.29 : 0.92)
-        let accent = Color(hue: hue, saturation: isDark ? 0.25 : 0.18, brightness: isDark ? 0.21 : 0.85)
+        let base = Color(hue: hue, saturation: isDark ? 0.31 : 0.22, brightness: isDark ? 0.29 : 0.92)
+        let accent = Color(hue: hue, saturation: isDark ? 0.38 : 0.29, brightness: isDark ? 0.21 : 0.85)
         let pattern = Int(bytes.1) % 3
         let angle = Double(Int(bytes.2) % 51 - 25)
         let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
@@ -393,6 +393,18 @@ struct GroupEmojiBackground: View {
                         .frame(width: height * 1.9, height: height * 0.38)
                         .rotationEffect(.degrees(angle))
                         .position(x: geometry.size.width * position, y: height * 0.5)
+                }
+                // Small, stable emoji motifs sit behind the main content.
+                ForEach(0..<12, id: \.self) { index in
+                    let column = index % 4
+                    let row = index / 4
+                    let shift = CGFloat((Int(bytes.4) + index * 37) % 21 - 10) / 100
+                    Text(group.icon)
+                        .font(.system(size: min(max(height * 0.13, 12), 19)))
+                        .rotationEffect(.degrees(Double((Int(bytes.5) + index * 29) % 41 - 20)))
+                        .opacity(isDark ? 0.13 : 0.16)
+                        .position(x: geometry.size.width * (CGFloat(column) + 0.5 + shift) / 4,
+                                  y: height * (CGFloat(row) + 0.5 + shift) / 3)
                 }
             }
             .clipped()
