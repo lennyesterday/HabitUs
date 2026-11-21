@@ -8,6 +8,9 @@ struct LeaderboardView: View {
     let rows: [LeaderboardRow]
     let me: UUID
     let round: Int
+    let target: Int
+    let status: TaskStatus
+    let streak: Int
 
     var body: some View {
         ScrollView {
@@ -46,7 +49,7 @@ struct LeaderboardView: View {
                 .padding(16)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
 
-
+                BonusCard(round: round, target: target, status: status, streak: streak)
             }
             .padding(18)
         }
@@ -133,6 +136,8 @@ struct LeaderboardView: View {
 #Preview {
     let data = GroupData.preview
     return NavigationStack {
-        LeaderboardView(rows: data.leaderboard(now: Date()), me: data.me, round: 2)
+        LeaderboardView(rows: data.leaderboard(now: Date()), me: data.me, round: 2,
+                        target: data.group.target, status: data.taskStatus(of: data.me, now: Date()),
+                        streak: data.leaderboard(now: Date()).first { $0.userId == data.me }?.streak ?? 0)
     }
 }

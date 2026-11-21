@@ -57,11 +57,10 @@ struct GroupView: View {
 
                     voteSection(now: now)
 
-                    BonusCard(round: round, target: data.group.target, status: status, streak: myRow?.streak ?? 0)
-
                     // Tapping the podium opens the full leaderboard with the chart.
                     NavigationLink {
-                        LeaderboardView(rows: rows, me: data.me, round: round)
+                        LeaderboardView(rows: rows, me: data.me, round: round, target: data.group.target,
+                                        status: status, streak: myRow?.streak ?? 0)
                     } label: {
                         Podium(rows: Array(rows.prefix(3)))
                             .contentShape(Rectangle())

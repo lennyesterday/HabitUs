@@ -722,6 +722,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Pictures.swift`, `Podium.swift`, `docs/HANDOVER.md`.
 - How to check: view players with and without photos on Home and in a group, including the podium. Not yet visually checked on a device.
 
+**Step 66: Move round bonus below leaderboard** (branch `interface-overhaul`)
+- What: the round bonus card is no longer in the group screen; it appears below the rankings on the leaderboard instead. Its values and scoring rules are unchanged.
+- Why: Bene wanted the group screen less crowded and bonus information on the leaderboard.
+- Files: `GroupView.swift`, `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: open an active group, then its leaderboard; the bonus appears only below the rankings. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
