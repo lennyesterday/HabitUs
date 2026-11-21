@@ -530,6 +530,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `AuthView.swift`, `docs/HANDOVER.md`.
 - How to check: use the light and dark login previews and try login, sign up, confirmation and password recovery in the app. The design has not yet been checked on a device or tested with real accounts.
 
+**Step 34: Matching onboarding design** (branch `design-startscreen`)
+- What: the welcome and game description pages now match the login's neutral light and dark backgrounds, serif headings and rounded buttons. Illustrations use softer colors; the text and navigation stay the same.
+- Why: carry the first design experiment through the whole introduction.
+- Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: view the welcome and photo page previews in both appearances, then swipe through all pages in the app. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
