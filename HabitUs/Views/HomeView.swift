@@ -26,20 +26,16 @@ struct HomeView: View {
                             Button {
                                 showCreate = true
                             } label: {
-                                Label("New Habit", systemImage: "plus")
+                                HomeActionLabel(title: "New Habit", symbol: "plus", isPrimary: true)
                             }
-                            .buttonStyle(ChunkyButtonStyle(color: Theme.brand,
-                                                           ledgeColor: Color(red: 0.0, green: 0.12, blue: 0.55),
-                                                           textColor: .white))
+                            .buttonStyle(HomeActionButtonStyle(isPrimary: true))
 
                             Button {
                                 showJoin = true
                             } label: {
-                                Label("Join Habit", systemImage: "person.3.fill")
+                                HomeActionLabel(title: "Join Habit", symbol: "person.2.fill", isPrimary: false)
                             }
-                            .buttonStyle(ChunkyButtonStyle(color: .white,
-                                                           ledgeColor: Color(white: 0.82),
-                                                           textColor: Theme.brand))
+                            .buttonStyle(HomeActionButtonStyle(isPrimary: false))
                         }
 
                         if let errorMessage {
@@ -147,6 +143,51 @@ struct HomeView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+}
+
+/// A compact icon and label, like a small action card.
+private struct HomeActionLabel: View {
+    let title: LocalizedStringKey
+    let symbol: String
+    let isPrimary: Bool
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: symbol)
+                .font(.system(.headline, design: .rounded).weight(.bold))
+                .frame(width: 38, height: 38)
+                .background(isPrimary ? Color.white.opacity(0.20) : Color(.systemBackground).opacity(0.65),
+                            in: RoundedRectangle(cornerRadius: 12))
+                .accessibilityHidden(true)
+            Text(title)
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 74, alignment: .leading)
+        .foregroundStyle(isPrimary ? Color.white : Color.primary)
+    }
+}
+
+private struct HomeActionButtonStyle: ButtonStyle {
+    let isPrimary: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 20)
+        configuration.label
+            .background(isPrimary ? Theme.brand : Color(.secondarySystemBackground), in: shape)
+            .overlay(shape.strokeBorder(isPrimary ? Color.white.opacity(0.18) : Color.primary.opacity(0.10), lineWidth: 1))
+            .background {
+                shape.fill(isPrimary ? Color(red: 0.02, green: 0.10, blue: 0.46) : Color.primary.opacity(0.18))
+                    .offset(y: configuration.isPressed ? 1 : 4)
+            }
+            .offset(y: configuration.isPressed ? 3 : 0)
+            .padding(.bottom, 4)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
 }
 

@@ -548,6 +548,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: open the Home light and dark previews, and check an empty Home and a Home with habit cards in both appearances. Not yet checked visually on a device.
 
+**Step 37: Home action cards** (branch `design-interface`)
+- What: New Habit and Join Habit are now compact action cards with separate icon tiles, rounded corners and a small pressed effect. They keep their existing actions and adapt to light and dark mode.
+- Why: give the two main actions a playful but restrained appearance that fits the Home background.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and tap both actions; check that each opens the same screen as before. Not yet checked visually or tapped on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
