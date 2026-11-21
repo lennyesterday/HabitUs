@@ -13,33 +13,37 @@ struct GameScreen: View {
     @State private var confirmLeave = false
     @State private var confirmDelete = false
     @State private var showLook = false
+    @State private var showGroupMenu = false
+    @State private var confirmFinish = false
     @State private var actionError: String?
 
     var body: some View {
         content
             .task { await load() }
             .toolbar {
-                if let data {
-                    ToolbarItem(placement: .secondaryAction) {
-                        Button(leaveTitle(data), systemImage: "rectangle.portrait.and.arrow.right", role: .destructive) {
-                            confirmLeave = true
+                if data != nil {
+                    ToolbarItem(placement: .primaryAction) {
+                        Button {
+                            showGroupMenu = true
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
                         }
-                    }
-                    if data.isOwner, data.myMembership?.status == .accepted {
-                        ToolbarItem(placement: .secondaryAction) {
-                            Button("Change icon & picture", systemImage: "photo") {
-                                showLook = true
-                            }
-                        }
-                    }
-                    if data.isOwner {
-                        ToolbarItem(placement: .secondaryAction) {
-                            Button("Delete group for everyone", systemImage: "trash", role: .destructive) {
-                                confirmDelete = true
-                            }
-                        }
+                        .accessibilityLabel("Group options")
                     }
                 }
+            }
+            .overlay {
+                if showGroupMenu, let data {
+                    groupMenu(data)
+                }
+            }
+            .confirmationDialog("Finish the challenge for everyone?", isPresented: $confirmFinish,
+                                titleVisibility: .visible) {
+                Button("Finish challenge", role: .destructive) {
+                    Task { await finishChallenge() }
+                }
+            } message: {
+                Text("The leaderboard freezes and nobody can check in any more.")
             }
             .confirmationDialog(data.map(leaveTitle) ?? "Leave group", isPresented: $confirmLeave,
                                 titleVisibility: .visible) {
@@ -68,6 +72,87 @@ struct GameScreen: View {
             } message: {
                 Text(actionError ?? "")
             }
+    }
+
+    private func groupMenu(_ data: GroupData) -> some View {
+        ZStack {
+            Color.black.opacity(0.45)
+                .ignoresSafeArea()
+                .onTapGesture { showGroupMenu = false }
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Group options")
+                        .font(Theme.title(24))
+                        .accessibilityAddTraits(.isHeader)
+                    Spacer()
+                    Button { showGroupMenu = false } label: {
+                        Image(systemName: "xmark")
+                            .font(.headline)
+                            .frame(width: 44, height: 44)
+                            .background(Color(.tertiarySystemBackground), in: Circle())
+                    }
+                    .accessibilityLabel("Close")
+                }
+                if data.isOwner, data.myMembership?.status == .accepted {
+                    menuOption("Change icon & picture", symbol: "photo", color: Theme.brand) {
+                        showGroupMenu = false
+                        showLook = true
+                    }
+                }
+                if data.isOwner, phase(of: data.group, now: Date()) == .active {
+                    menuOption("Finish challenge", symbol: "flag.checkered", color: .orange) {
+                        showGroupMenu = false
+                        confirmFinish = true
+                    }
+                }
+                menuOption(leaveTitle(data), symbol: "rectangle.portrait.and.arrow.right", color: .red) {
+                    showGroupMenu = false
+                    confirmLeave = true
+                }
+                if data.isOwner {
+                    menuOption("Delete group for everyone", symbol: "trash", color: .red) {
+                        showGroupMenu = false
+                        confirmDelete = true
+                    }
+                }
+            }
+            .padding(20)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 28))
+            .padding(24)
+            .accessibilityAddTraits(.isModal)
+        }
+    }
+
+    private func menuOption(_ title: String, symbol: String, color: Color,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: symbol)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(width: 42, height: 42)
+                    .background(color, in: RoundedRectangle(cornerRadius: 14))
+                Text(title)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(.secondary)
+            }
+            .padding(12)
+            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func finishChallenge() async {
+        do {
+            try await GroupService.finish(groupId: groupId)
+            await load()
+        } catch {
+            actionError = error.localizedDescription
+        }
     }
 
     private func leaveTitle(_ data: GroupData) -> String {

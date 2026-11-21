@@ -14,7 +14,6 @@ struct GroupView: View {
     @State private var selectedPlayer: UUID?
     @State private var showGroupInfo = false
     @State private var isUploading = false
-    @State private var showFinishConfirmation = false
     @State private var messageText = ""
     @State private var errorMessage: String?
     /// Whether the Tinder style vote deck under the task card is open.
@@ -31,6 +30,11 @@ struct GroupView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 22) {
+                    Text("\(data.group.icon) \(data.group.name)")
+                        .font(Theme.title(32))
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
                     header(points: myRow?.points ?? 0, rank: (myIndex ?? 0) + 1)
 
                     VStack(spacing: 0) {
@@ -90,26 +94,9 @@ struct GroupView: View {
         }
         .background(HomeBackground())
         .safeAreaInset(edge: .bottom) { messageBar }
-        .navigationTitle("\(data.group.icon) \(data.group.name)")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbar {
-            if data.isOwner {
-                ToolbarItem(placement: .secondaryAction) {
-                    Button("Finish challenge", systemImage: "flag.checkered", role: .destructive) {
-                        showFinishConfirmation = true
-                    }
-                }
-            }
-        }
-        .confirmationDialog("Finish the challenge for everyone?", isPresented: $showFinishConfirmation,
-                            titleVisibility: .visible) {
-            Button("Finish challenge", role: .destructive) {
-                Task { await run { try await GroupService.finish(groupId: data.group.id) } }
-            }
-        } message: {
-            Text("The leaderboard freezes and nobody can check in any more.")
-        }
         .navigationDestination(item: $selectedPlayer) { userId in
             PlayerProfileView(data: data, userId: userId)
         }

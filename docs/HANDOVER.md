@@ -614,6 +614,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `GroupView.swift`, `TaskCard.swift`, `FeedView.swift`, `BonusCard.swift`, `Podium.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupInfoView.swift`, `GroupLookView.swift`, `LeaderboardView.swift`, `ResultsView.swift`, `PlayerProfileView.swift`, `docs/HANDOVER.md`.
 - How to check: view an active group, lobby, group info, leaderboard, player profile, results and signing screen in both appearances; compare its emoji banner and task card, and send a message. Not yet visually checked or tested with a real group.
 
+**Step 48: Group options and leaderboard styling** (branch `design-in-group`)
+- What: the active group name is larger; the three-dot button opens a custom options panel with the same permitted actions and confirmations. The leaderboard has a small podium, clearer ranked rows and a separate points chart; the current player is highlighted.
+- Why: Bene wanted a clean but more game-like group and leaderboard, inspired by the supplied examples.
+- Files: `GameScreen.swift`, `GroupView.swift`, `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: in both appearances open group options as owner and member, check each action and its confirmation, and inspect the leaderboard with different group sizes. Not yet visually checked or tested with a real group.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

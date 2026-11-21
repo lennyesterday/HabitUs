@@ -21,11 +21,14 @@ struct LeaderboardView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                chart
-                    .frame(height: 260)
-                    .padding(.horizontal, 4)
+                if !rows.isEmpty {
+                    podium
+                }
 
-                VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Rankings", systemImage: "trophy.fill")
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .foregroundStyle(.primary)
                     ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                         playerRow(row, index: index)
                     }
@@ -33,17 +36,63 @@ struct LeaderboardView: View {
                         .font(.system(.caption, design: .rounded).weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                         .padding(.top, 4)
                 }
-                .padding(14)
+                .padding(16)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
-                .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Label("Points over time", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                    chart.frame(height: 240)
+                }
+                .padding(18)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
             }
             .padding(18)
         }
         .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
+    }
+
+    private var podium: some View {
+        HStack(alignment: .bottom, spacing: 10) {
+            podiumPlace(1)
+            podiumPlace(0)
+            podiumPlace(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, 8)
+    }
+
+    @ViewBuilder
+    private func podiumPlace(_ index: Int) -> some View {
+        if rows.indices.contains(index) {
+            let row = rows[index]
+            VStack(spacing: 7) {
+                Text(index == 0 ? "👑" : (index == 1 ? "🥈" : "🥉"))
+                    .font(.title2)
+                ProfilePicture(name: row.displayName, path: row.photoPath, size: index == 0 ? 68 : 54)
+                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 3))
+                Text(row.displayName)
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                    .lineLimit(1)
+                Text("\(row.points) pts")
+                    .font(.system(.caption, design: .rounded).weight(.bold))
+                    .foregroundStyle(.secondary)
+                Text("\(index + 1)")
+                    .font(Theme.title(26))
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, minHeight: index == 0 ? 64 : 42)
+                    .background(Theme.rankColor(index).opacity(0.22), in: RoundedRectangle(cornerRadius: 18))
+            }
+            .frame(maxWidth: .infinity)
+            .accessibilityElement(children: .combine)
+        } else {
+            Color.clear.frame(maxWidth: .infinity, minHeight: 1)
+        }
     }
 
     /// Points added up round by round, one line per player in their rank color.
@@ -82,12 +131,14 @@ struct LeaderboardView: View {
     private func playerRow(_ row: LeaderboardRow, index: Int) -> some View {
         let color = Theme.rankColor(index)
         return HStack(spacing: 12) {
-            ProfilePicture(name: row.displayName, path: row.photoPath, size: 56)
+            Text("\(index + 1)")
+                .font(.system(.headline, design: .rounded).weight(.heavy))
+                .foregroundStyle(.primary)
+                .frame(width: 34, height: 34)
+                .background(color.opacity(0.22), in: Circle())
+            ProfilePicture(name: row.displayName, path: row.photoPath, size: 48)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("#\(index + 1)")
-                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                        .foregroundStyle(color)
                     if row.userId == me {
                         Text("YOU")
                             .font(.system(.caption, design: .rounded).weight(.heavy))
@@ -112,7 +163,10 @@ struct LeaderboardView: View {
                 .background(color, in: Circle())
         }
         .padding(12)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(color.opacity(0.5), lineWidth: 2))
+        .background(row.userId == me ? Theme.brand.opacity(0.10) : Color(.tertiarySystemBackground),
+                    in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(
+            row.userId == me ? Theme.brand.opacity(0.45) : Color.primary.opacity(0.06), lineWidth: 1))
     }
 }
 
