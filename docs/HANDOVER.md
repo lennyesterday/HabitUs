@@ -626,6 +626,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `LeaderboardView.swift`, `docs/HANDOVER.md`.
 - How to check: open the leaderboard and verify the chart appears above the rankings. Not yet checked visually on a device.
 
+**Step 50: Show initials on profile photos** (branch `design-in-group`)
+- What: a small initial badge appears on a profile photo. Profiles without a photo keep the existing large initial. The shared component is used on Home, in groups, chat and profiles.
+- Why: Bene wanted the player's initial to stay visible even after choosing a profile picture.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: compare players with and without photos on Home and in a group, including overlapping avatars. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

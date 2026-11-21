@@ -3,7 +3,7 @@ import HabitCore
 
 // Round profile pictures and group badges. Area A.
 
-/// A profile picture, or the first letter of the name when there is none.
+/// A profile picture with the initial, or a larger initial when there is no picture.
 struct ProfilePicture: View {
     let name: String
     let path: String?
@@ -27,6 +27,17 @@ struct ProfilePicture: View {
         }
         .frame(width: size, height: size)
         .clipShape(Circle())
+        .overlay(alignment: .bottomLeading) {
+            if image != nil {
+                let badgeSize = min(max(size * 0.38, 14), 28)
+                Text(name.prefix(1).uppercased())
+                    .font(.system(size: badgeSize * 0.55, weight: .bold))
+                    .foregroundStyle(.white)
+                    .frame(width: badgeSize, height: badgeSize)
+                    .background(Theme.ink, in: Circle())
+                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+            }
+        }
         .accessibilityHidden(true)
         .task(id: path) {
             image = nil
