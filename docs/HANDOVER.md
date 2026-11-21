@@ -572,6 +572,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
 - How to check: in both appearances open New Habit and Join Habit, try all inputs and advance using Next. Not yet tested visually or with a real group.
 
+**Step 41: Sharper form card text** (branch `design-interface`)
+- What: the raised shadow now applies only to the card background, not its text and controls.
+- Why: the previous shadow made labels such as "How often" look doubled.
+- Files: `CreateGroupView.swift`, `docs/HANDOVER.md`.
+- How to check: open New Habit and Join Habit in light and dark mode and check the section titles. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

@@ -218,9 +218,12 @@ struct HabitFormSection<Content: View>: View {
         }
         .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+        .background {
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.10), radius: 0, y: 4)
+        }
         .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
-        .shadow(color: .black.opacity(0.10), radius: 0, y: 4)
         .padding(.bottom, 4)
     }
 }
