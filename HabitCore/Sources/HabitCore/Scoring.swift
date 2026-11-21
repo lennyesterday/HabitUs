@@ -38,13 +38,24 @@ func lastScoredRound(of group: HabitGroup, now: Date) -> Int {
 }
 
 /// Accepted members sorted by points, then fewer pauses, then name (R24).
+/// Someone who joined later (R29) plays from their `firstRound`. For each round before it,
+/// they get the average points of the members who played that round, rounded down.
+/// Streak, complete rounds and the grade only look at the rounds they played themselves.
 public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin],
                         reactions: [Reaction], now: Date) -> [LeaderboardRow] {
     let accepted = members.filter { $0.status == .accepted }
     let lastRound = lastScoredRound(of: group, now: now)
     let endedEarlyAt = group.endedEarlyAt
 
-    let rows = accepted.map { member -> LeaderboardRow in
+    // Pass 1: everyone's own rounds. `points[r - 1]` is nil for a round before their first.
+    struct Own {
+        let member: Member
+        let done: [Int]          // played rounds only, from firstRound to lastRound
+        let points: [Int?]       // all rounds 1...lastRound
+        let pauses: Int
+    }
+    let own = accepted.map { member -> Own in
+        let first = member.firstRound
         let mine = checkins.filter { checkin in
             guard checkin.userId == member.userId else { return false }
             // Nothing counts that was posted after the owner finished.
@@ -54,13 +65,30 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
         var donePerRound = Array(repeating: 0, count: lastRound)
         for checkin in mine where isValid(checkin, reactions: reactions, memberCount: accepted.count) {
             let r = round(of: checkin.day, in: group)
-            if r >= 1 && r <= lastRound {
+            if r >= first && r <= lastRound {
                 donePerRound[r - 1] += 1
             }
         }
-        let roundPoints = scoreRounds(donePerRound: donePerRound, target: group.target)
-        let points = roundPoints.reduce(0, +)
-        let complete = donePerRound.map { $0 >= group.target }
+        let played = first <= lastRound ? Array(donePerRound[(first - 1)...]) : []
+        let playedPoints = scoreRounds(donePerRound: played, target: group.target)
+        let skipped = min(first - 1, lastRound)
+        let points: [Int?] = Array(repeating: nil, count: skipped) + playedPoints.map { Optional($0) }
+        return Own(member: member, done: played.map { min($0, group.target) }, points: points,
+                   pauses: mine.filter { $0.kind == .pause }.count)
+    }
+
+    // Pass 2: the average of each round over the members who played it.
+    let average: [Int] = (0..<lastRound).map { index in
+        let played = own.compactMap { $0.points[index] }
+        return played.isEmpty ? 0 : played.reduce(0, +) / played.count
+    }
+
+    let rows = own.map { entry -> LeaderboardRow in
+        let pointsPerRound = entry.points.enumerated().map { index, points in points ?? average[index] }
+        let catchUp = entry.points.enumerated().reduce(0) { sum, item in
+            item.element == nil ? sum + average[item.offset] : sum
+        }
+        let complete = entry.done.map { $0 >= group.target }
 
         // The streak counts complete rounds in a row up to now. A running round that is
         // not complete yet does not break it.
@@ -70,11 +98,12 @@ public func leaderboard(group: HabitGroup, members: [Member], checkins: [Checkin
         }
         let streak = streakRounds.reversed().prefix { $0 }.count
 
-        return LeaderboardRow(userId: member.userId, displayName: member.displayName, photoPath: member.photoPath,
-                              points: points, completeRounds: complete.filter { $0 }.count, streak: streak,
-                              pauses: mine.filter { $0.kind == .pause }.count,
-                              pointsPerRound: roundPoints,
-                              donePerRound: donePerRound.map { min($0, group.target) })
+        return LeaderboardRow(userId: entry.member.userId, displayName: entry.member.displayName,
+                              photoPath: entry.member.photoPath,
+                              points: pointsPerRound.reduce(0, +), completeRounds: complete.filter { $0 }.count,
+                              streak: streak, pauses: entry.pauses,
+                              pointsPerRound: pointsPerRound, donePerRound: entry.done,
+                              firstRound: entry.member.firstRound, catchUpPoints: catchUp)
     }
 
     return rows.sorted { a, b in

@@ -3,8 +3,10 @@ import Foundation
 // Tasks of a member in the current round (R10 to R12, R19). Area B.
 
 /// Done, failed and open tasks of `user` in the current round, and whether a photo is allowed today.
+/// `firstRound` is the member's first round (R29): before it, checking in is not possible yet.
+/// With fewer than `minimumPlayers` accepted members the challenge is on hold (R30).
 public func taskStatus(user: UUID, group: HabitGroup, checkins: [Checkin], reactions: [Reaction],
-                       memberCount: Int, now: Date) -> TaskStatus {
+                       memberCount: Int, firstRound: Int = 1, now: Date) -> TaskStatus {
     let target = group.target
     let current = currentRound(of: group, now: now)
     let mine = checkins.filter { $0.userId == user && round(of: $0.day, in: group) == current }
@@ -25,6 +27,7 @@ public func taskStatus(user: UUID, group: HabitGroup, checkins: [Checkin], react
     let photoToday = counted.contains { $0.kind == .photo && localDay($0.day) == today }
     let dayIsFree = group.period == .day || !photoToday
     let canCheckIn = phase(of: group, now: now) == .active && open > 0 && dayIsFree
+        && current >= firstRound && !isOnHold(group, acceptedCount: memberCount, now: now)
 
     return TaskStatus(target: target, done: done, failed: failed, open: open, canCheckInToday: canCheckIn)
 }

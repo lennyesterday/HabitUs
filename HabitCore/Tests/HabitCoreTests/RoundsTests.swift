@@ -106,4 +106,28 @@ final class RoundsTests: XCTestCase {
         XCTAssertEqual(round(of: day(2026, 3, 30), in: group), 3)
         XCTAssertEqual(timeLeft(in: group, now: time(2026, 3, 29, 0)), 23 * 3600)
     }
+
+    // MARK: R30 on hold below 3 players, R29 joining later
+
+    func testR30LeavingBelowThreePlayersPutsARunningChallengeOnHold() {
+        let group = makeGroup(startedOn: start)
+        let now = addDays(3, to: start)
+        XCTAssertTrue(leavingPutsOnHold(group, acceptedBefore: 3, now: now), "2 left: on hold")
+        XCTAssertFalse(leavingPutsOnHold(group, acceptedBefore: 4, now: now), "3 left: it goes on")
+        XCTAssertTrue(isOnHold(group, acceptedCount: 2, now: now))
+        XCTAssertFalse(isOnHold(group, acceptedCount: 3, now: now))
+    }
+
+    func testR30TheLobbyAndAnEndedChallengeAreNeverOnHold() {
+        XCTAssertFalse(isOnHold(makeGroup(startedOn: nil), acceptedCount: 1, now: start))
+        let ended = makeGroup(startedOn: start, endedEarlyAt: addDays(1, to: start))
+        XCTAssertFalse(isOnHold(ended, acceptedCount: 2, now: addDays(2, to: start)))
+    }
+
+    func testR29JoiningLaterStartsWithTheNextRound() {
+        XCTAssertEqual(firstRound(acceptedAt: start, in: makeGroup(startedOn: nil)), 1, "lobby")
+        let group = makeGroup(period: .week, startedOn: start)
+        XCTAssertEqual(firstRound(acceptedAt: start, in: group), 2, "day 1 of round 1")
+        XCTAssertEqual(firstRound(acceptedAt: addDays(16, to: start), in: group), 4, "round 3")
+    }
 }

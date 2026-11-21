@@ -85,17 +85,21 @@ struct MemberRow: Decodable {
     let status: String
     let signature: String
     let signedAt: Date?
+    /// Optional so the app also works before migration 007 is run.
+    let firstRound: Int?
     let profiles: ProfileRow
 
     enum CodingKeys: String, CodingKey {
         case id, status, signature, profiles
         case userId = "user_id"
         case signedAt = "signed_at"
+        case firstRound = "first_round"
     }
 
     var model: Member {
         Member(id: id, userId: userId, displayName: profiles.displayName, photoPath: profiles.photoPath,
-               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature, signedAt: signedAt)
+               status: MembershipStatus(rawValue: status) ?? .pending, signature: signature, signedAt: signedAt,
+               firstRound: firstRound ?? 1)
     }
 }
 
@@ -147,9 +151,11 @@ struct MessageRow: Decodable {
     let text: String
     let gifUrl: String?
     let createdAt: Date
+    /// Optional so the app also works before migration 006 is run.
+    let system: Bool?
 
     enum CodingKeys: String, CodingKey {
-        case id, text
+        case id, text, system
         case groupId = "group_id"
         case userId = "user_id"
         case gifUrl = "gif_url"
@@ -158,6 +164,6 @@ struct MessageRow: Decodable {
 
     var model: Message {
         Message(id: id, groupId: groupId, userId: userId, text: text,
-                gifURL: gifUrl.flatMap(URL.init(string:)), createdAt: createdAt)
+                gifURL: gifUrl.flatMap(URL.init(string:)), createdAt: createdAt, isSystem: system ?? false)
     }
 }

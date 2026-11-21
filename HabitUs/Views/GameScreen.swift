@@ -82,16 +82,21 @@ struct GameScreen: View {
         guard data.myMembership?.status == .accepted else {
             return "The habit disappears from your Home."
         }
-        guard data.isOwner else {
-            return "The group disappears for you. Your photos stay in the chat but no longer count."
-        }
         let next = data.accepted
             .filter { $0.userId != data.me }
             .first   // members are sorted by the time they joined
-        if let next {
-            return "\(next.displayName) becomes the new owner. Your photos stay in the chat but no longer count."
+        guard next != nil else {
+            return "You are the last member, so the group and all its photos are deleted."
         }
-        return "You are the last member, so the group and all its photos are deleted."
+        var parts = ["The group disappears for you and the chat says that you left."]
+        if data.isOwner, let next {
+            parts.append("\(next.displayName) becomes the new owner.")
+        }
+        parts.append("Your photos stay in the chat but no longer count.")
+        if leavingPutsOnHold(data.group, acceptedBefore: data.accepted.count, now: Date()) {
+            parts.append("Only \(data.accepted.count - 1) players would be left, so the game is on hold until someone new joins.")
+        }
+        return parts.joined(separator: " ")
     }
 
     /// Runs leave or delete, then goes back to Home.

@@ -68,6 +68,29 @@ public func timeLeft(in group: HabitGroup, now: Date) -> TimeInterval {
     return max(0, end.timeIntervalSince(now))
 }
 
+/// R7: a session needs at least this many accepted members to start, and to keep running.
+/// With fewer, a photo can hardly be voted invalid any more.
+public let minimumPlayers = 3
+
+/// R30: a running challenge with fewer than `minimumPlayers` is on hold. Nobody can check in
+/// until enough people joined again (R29). The rounds keep counting, for everyone the same.
+public func isOnHold(_ group: HabitGroup, acceptedCount: Int, now: Date) -> Bool {
+    phase(of: group, now: now) == .active && acceptedCount < minimumPlayers
+}
+
+/// R30: true if one accepted member leaving now puts the running challenge on hold.
+public func leavingPutsOnHold(_ group: HabitGroup, acceptedBefore: Int, now: Date) -> Bool {
+    isOnHold(group, acceptedCount: acceptedBefore - 1, now: now)
+}
+
+/// R29: the first round of someone accepted now. In the lobby everyone starts in round 1.
+/// In a running challenge the new member starts with the next round, so nobody has to finish
+/// half a round. The database trigger in 007_late_join.sql computes the same.
+public func firstRound(acceptedAt now: Date, in group: HabitGroup) -> Int {
+    guard phase(of: group, now: now) == .active else { return 1 }
+    return currentRound(of: group, now: now) + 1
+}
+
 /// True if at least one full round fits before the end date when starting `today` (R9).
 public func canStart(_ group: HabitGroup, today: Date) -> Bool {
     guard let endOn = group.endOn else { return true }

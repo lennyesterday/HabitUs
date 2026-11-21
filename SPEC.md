@@ -37,7 +37,7 @@ Friends form a group around one habit, for example "gym three times a week". Eve
 
 - No automatic fake detection (no GPS, no image analysis). The group checks, not an algorithm
 - No uploads from the photo library
-- No rule changes and no late joining once a session runs
+- No rule changes once a session runs. Late joining is possible since 20 Nov (R29)
 - No public feed. Photos are visible to the group only
 - **No push notifications for this deadline.** Real iPhone push needs a paid Apple Developer account, APNs and a server that sends them. See "Later" in section 7
 - No App Store or TestFlight release. The app runs on our own iPhones, installed from Xcode
@@ -175,6 +175,11 @@ One slip costs little. Never fulfilling the contract costs a lot. That is intend
 - **R26** A text message has 1 to 500 characters.
 - **R27** Only accepted members can see or change anything in a group: feed, photos, leaderboard, members. A pending member sees only the contract and the status of the request. Enforced by RLS.
 - **R28** Only the owner can accept, decline, start and end. Enforced by RLS.
+
+### Joining later and leaving (added 20 Nov)
+
+- **R29** The invite code works until the challenge is over. Someone accepted while it runs plays from the next round. For every round before, they get the average points of the members who played that round (rounded down). Their streak, complete rounds and grade only count their own rounds. The database sets the first round when the owner accepts and writes "X joined the group and starts in round N." into the chat.
+- **R30** When an accepted member leaves, the chat says "X left the group." A running challenge with fewer than 3 players is on hold: nobody can check in until a third player is accepted again. The rounds keep counting, for everyone the same. In the lobby people come and go without notes.
 
 ## 4. Screens
 
@@ -399,7 +404,7 @@ These signatures are the agreement between the three areas. We create them as em
 
 **Should have**, in this order, only when every must have works on the phones: live chat with Supabase Realtime instead of the 10 second refresh, results screen, look and feel polish, drawn signature with PencilKit, HabitCore tests running on GitHub Actions for every push.
 
-**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, leaving a group, late joining, badges, points chart, reminders, password reset, account deletion.
+**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, badges, reminders, password reset, account deletion.
 
 ### Four things to try tonight before we rely on them
 

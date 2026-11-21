@@ -41,8 +41,10 @@ func makeCheckin(_ user: UUID, on date: Date, kind: CheckinKind = .photo) -> Che
             day: date, createdAt: date)
 }
 
-func makeMember(_ user: UUID, _ name: String, status: MembershipStatus = .accepted) -> Member {
-    Member(id: UUID(), userId: user, displayName: name, photoPath: nil, status: status, signature: name)
+func makeMember(_ user: UUID, _ name: String, status: MembershipStatus = .accepted,
+                firstRound: Int = 1) -> Member {
+    Member(id: UUID(), userId: user, displayName: name, photoPath: nil, status: status, signature: name,
+           firstRound: firstRound)
 }
 
 func xs(on checkin: Checkin, by users: [UUID]) -> [Reaction] {

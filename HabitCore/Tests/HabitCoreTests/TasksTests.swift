@@ -78,4 +78,20 @@ final class TasksTests: XCTestCase {
     func testR12NoCheckinInTheLobby() {
         XCTAssertFalse(status(makeGroup(startedOn: nil), [], now: time(2026, 1, 6, 10)).canCheckInToday)
     }
+
+    // MARK: R30 on hold, R29 joined later
+
+    func testR30NoCheckInWhileOnHold() {
+        XCTAssertFalse(status(makeGroup(), [], memberCount: 2, now: time(2026, 1, 5, 10)).canCheckInToday)
+        XCTAssertTrue(status(makeGroup(), [], memberCount: 3, now: time(2026, 1, 5, 10)).canCheckInToday)
+    }
+
+    func testR29NoCheckInBeforeTheFirstRound() {
+        let early = taskStatus(user: owner, group: makeGroup(), checkins: [], reactions: [], memberCount: 3,
+                               firstRound: 2, now: time(2026, 1, 7, 10))     // round 1
+        XCTAssertFalse(early.canCheckInToday)
+        let onTime = taskStatus(user: owner, group: makeGroup(), checkins: [], reactions: [], memberCount: 3,
+                                firstRound: 2, now: time(2026, 1, 12, 10))   // round 2
+        XCTAssertTrue(onTime.canCheckInToday)
+    }
 }
