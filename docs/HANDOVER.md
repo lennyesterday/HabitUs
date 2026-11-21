@@ -638,6 +638,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Pictures.swift`, `docs/HANDOVER.md`.
 - How to check: view profile photos of different sizes and brightness on Home and in a group. Not yet checked visually on a device.
 
+**Step 52: Smaller centered initials** (branch `design-in-group`)
+- What: reduced the size of the centered initial and its dark background on profile photos.
+- Why: Bene liked the treatment but wanted it a little smaller.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: view profile photos on Home and in a group. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

@@ -30,9 +30,9 @@ struct ProfilePicture: View {
         .overlay {
             if image != nil {
                 Text(name.prefix(1).uppercased())
-                    .font(.system(size: size * 0.38, weight: .bold))
+                    .font(.system(size: size * 0.30, weight: .bold))
                     .foregroundStyle(.white)
-                    .frame(width: size * 0.60, height: size * 0.60)
+                    .frame(width: size * 0.48, height: size * 0.48)
                     .background(Color.black.opacity(0.72), in: Circle())
             }
         }
