@@ -341,10 +341,57 @@ struct GroupBanner: View {
 struct GroupEmojiBackground: View {
     let group: HabitGroup
     @Environment(\.colorScheme) private var colorScheme
+    @State private var emojiHue: Double?
 
     var body: some View {
-        (colorScheme == .dark ? Color(white: 0.16) : Color(white: 0.88))
-            .accessibilityHidden(true)
+        let bytes = group.id.uuid
+        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
+        let isDark = colorScheme == .dark
+        let base = Color(hue: hue, saturation: isDark ? 0.31 : 0.22, brightness: isDark ? 0.29 : 0.92)
+        let accent = Color(hue: hue, saturation: isDark ? 0.38 : 0.29, brightness: isDark ? 0.21 : 0.85)
+        let pattern = Int(bytes.1) % 3
+        let angle = Double(Int(bytes.2) % 51 - 25)
+        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
+
+        GeometryReader { geometry in
+            let height = geometry.size.height
+            ZStack {
+                LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
+                if pattern == 0 {
+                    Circle()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.35))
+                        .frame(width: height * 1.4, height: height * 1.4)
+                        .position(x: geometry.size.width * position, y: height * 0.25)
+                } else if pattern == 1 {
+                    RoundedRectangle(cornerRadius: 32)
+                        .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
+                        .frame(width: height * 1.7, height: height * 0.8)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.6)
+                } else {
+                    Capsule()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.30))
+                        .frame(width: height * 1.9, height: height * 0.38)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.5)
+                }
+                // Small, stable emoji motifs sit behind the main content.
+                ForEach(0..<12, id: \.self) { index in
+                    let column = index % 4
+                    let row = index / 4
+                    let shift = CGFloat((Int(bytes.4) + index * 37) % 21 - 10) / 100
+                    Text(group.icon)
+                        .font(.system(size: min(max(height * 0.13, 12), 19)))
+                        .rotationEffect(.degrees(Double((Int(bytes.5) + index * 29) % 41 - 20)))
+                        .opacity(isDark ? 0.13 : 0.16)
+                        .position(x: geometry.size.width * (CGFloat(column) + 0.5 + shift) / 4,
+                                  y: height * (CGFloat(row) + 0.5 + shift) / 3)
+                }
+            }
+            .clipped()
+        }
+        .accessibilityHidden(true)
+        .task(id: group.icon) { emojiHue = dominantEmojiHue(group.icon) }
     }
 }
 

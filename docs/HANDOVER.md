@@ -704,6 +704,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Theme.swift`, `HomeView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, `CreateGroupView.swift`, `JoinView.swift`, other `Views/` typography, and `docs/HANDOVER.md`.
 - How to check: inspect onboarding, login, Home, setup, group and profile in both appearances and test their controls. The system serif approximates the reference font; the exact font is not included. Not yet visually checked on a device or tested end to end.
 
+**Step 63: Restore emoji backgrounds** (branch `interface-overhaul`)
+- What: restored the emoji-based muted colors and small emoji pattern on group banners and task cards; the neutral Retro-style app surfaces remain.
+- Why: Bene wanted to keep the emoji backgrounds in the design experiment.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare groups with different emoji in light and dark mode, and verify group photos still display. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
