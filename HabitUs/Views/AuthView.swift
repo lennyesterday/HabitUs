@@ -9,7 +9,6 @@ struct AuthView: View {
         case signUp = "Sign up"
     }
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var mode = Mode.logIn
     @State private var email = ""
     @State private var password = ""
@@ -39,10 +38,7 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            (colorScheme == .dark
-                ? Color(red: 0.10, green: 0.10, blue: 0.10)
-                : Color(red: 0.97, green: 0.96, blue: 0.93))
-                .ignoresSafeArea()
+            BrandBackground()
 
             ScrollView {
                 VStack(spacing: 24) {
@@ -51,13 +47,15 @@ struct AuthView: View {
                             .resizable()
                             .frame(width: 88, height: 88)
                             .clipShape(RoundedRectangle(cornerRadius: 22))
+                            .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
                         Text("Habitract")
-                            .font(.system(size: 40, weight: .bold, design: .serif))
-                            .foregroundStyle(.primary)
+                            .font(Theme.title(40))
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
                         Text(mode == .logIn ? "Welcome back! Your group is waiting."
                                             : "Create your account and start a streak.")
                             .font(.system(.body, design: .rounded))
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.white.opacity(0.85))
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 40)
@@ -94,7 +92,7 @@ struct AuthView: View {
                             Toggle("I agree that my proof photos are visible to the members of my groups.",
                                    isOn: $acceptedTerms)
                                 .font(.footnote)
-                                .tint(.primary)
+                                .tint(Theme.brand)
                         }
 
                         ErrorText(message: errorMessage)
@@ -103,12 +101,12 @@ struct AuthView: View {
                             Task { await submit() }
                         } label: {
                             if isWorking {
-                                ProgressView().tint(Color(.systemBackground))
+                                ProgressView().tint(.black)
                             } else {
                                 Text(mode.rawValue)
                             }
                         }
-                        .buttonStyle(AuthButtonStyle())
+                        .buttonStyle(ChunkyButtonStyle())
                         .disabled(isWorking)
 
                         if mode == .logIn {
@@ -121,14 +119,14 @@ struct AuthView: View {
                         }
                     }
                     .padding(20)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+                    .background(.background, in: RoundedRectangle(cornerRadius: 28))
+                    .shadow(color: .black.opacity(0.15), radius: 20, y: 10)
                 }
                 .padding(.horizontal, 20)
                 .padding(.bottom, 30)
             }
             .scrollDismissesKeyboard(.interactively)
         }
-        .tint(.primary)
         .onChange(of: mode) { errorMessage = nil }
     }
 
@@ -157,7 +155,7 @@ struct AuthView: View {
             }
         }
         .padding(4)
-        .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 13))
+        .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 13))
     }
 
     /// A soft grey rounded box around a text field. Tapping anywhere in the box puts the
@@ -167,7 +165,7 @@ struct AuthView: View {
             .focused($focused, equals: which)
             .padding(.horizontal, 14)
             .frame(minHeight: 50)
-            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+            .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
             .contentShape(RoundedRectangle(cornerRadius: 14))
             .onTapGesture { focused = which }
     }
@@ -212,10 +210,10 @@ struct AuthView: View {
         VStack(spacing: 14) {
             Image(systemName: "envelope.badge.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.brand)
             Text("Check your email")
                 .font(Theme.title(24))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.ink)
             Text("We sent a code to **\(address)**. Enter it here to finish.")
                 .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -229,9 +227,9 @@ struct AuthView: View {
             Button {
                 Task { await confirm(address) }
             } label: {
-                if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Confirm") }
+                if isWorking { ProgressView().tint(.black) } else { Text("Confirm") }
             }
-            .buttonStyle(AuthButtonStyle())
+            .buttonStyle(ChunkyButtonStyle())
             .disabled(isWorking || code.count < 6)
 
             HStack {
@@ -257,7 +255,7 @@ struct AuthView: View {
             .multilineTextAlignment(.center)
             .font(.system(size: 30, weight: .bold, design: .monospaced))
             .padding(.vertical, 10)
-            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+            .background(Theme.cardBackground, in: RoundedRectangle(cornerRadius: 14))
             .onChange(of: code) { code = String(code.filter(\.isNumber).prefix(10)) }
     }
 
@@ -292,13 +290,13 @@ struct AuthView: View {
         VStack(spacing: 14) {
             Image(systemName: "key.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.brand)
 
             switch step {
             case .askEmail:
                 Text("Forgot your password?")
                     .font(Theme.title(24))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.ink)
                 Text("Enter your email. We send you a code to set a new password.")
                     .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(.secondary)
@@ -317,15 +315,15 @@ struct AuthView: View {
                 Button {
                     Task { await sendResetCode() }
                 } label: {
-                    if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Send code") }
+                    if isWorking { ProgressView().tint(.black) } else { Text("Send code") }
                 }
-                .buttonStyle(AuthButtonStyle())
+                .buttonStyle(ChunkyButtonStyle())
                 .disabled(isWorking)
 
             case .enterCode(let address):
                 Text("Check your email")
                     .font(Theme.title(24))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.ink)
                 Text("If there is an account for **\(address)**, we sent it a code. Enter it and choose a new password.")
                     .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(.secondary)
@@ -348,9 +346,9 @@ struct AuthView: View {
                 Button {
                     Task { await saveNewPassword(address) }
                 } label: {
-                    if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Save new password") }
+                    if isWorking { ProgressView().tint(.black) } else { Text("Save new password") }
                 }
-                .buttonStyle(AuthButtonStyle())
+                .buttonStyle(ChunkyButtonStyle())
                 .disabled(isWorking || code.count < 6)
             }
 
@@ -406,16 +404,6 @@ struct AuthView: View {
     }
 }
 
-private struct AuthButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.system(.headline, design: .rounded).weight(.semibold))
-            .foregroundStyle(Color(.systemBackground))
-            .frame(maxWidth: .infinity, minHeight: 52)
-            .background(Color.primary.opacity(configuration.isPressed ? 0.75 : 1), in: Capsule())
-    }
-}
-
 /// The password rules from HabitCore as a live checklist, plus "Both passwords match".
 /// Each line turns green with a tick as soon as it is met.
 private struct PasswordChecklist: View {
@@ -462,14 +450,8 @@ private struct InfoText: View {
     }
 }
 
-#Preview("Log in – Light") {
+#Preview("Log in") {
     AuthView()
-        .preferredColorScheme(.light)
-}
-
-#Preview("Log in – Dark") {
-    AuthView()
-        .preferredColorScheme(.dark)
 }
 
 #Preview("Sign up") {

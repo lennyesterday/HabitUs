@@ -536,6 +536,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
 - How to check: view the welcome and photo page previews in both appearances, then swipe through all pages in the app. Not yet checked visually on a device.
 
+**Step 35: Restore the original introduction design** (branch `design-startscreen`)
+- What: reversed the Retro-inspired login and onboarding design from steps 33 and 34. The onboarding light and dark backgrounds from step 32 remain.
+- Why: Bene preferred the earlier appearance.
+- Files: `AuthView.swift`, `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: open the welcome light and dark previews and the login preview. Visual appearance has not yet been checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
