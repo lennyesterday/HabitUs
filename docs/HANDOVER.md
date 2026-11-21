@@ -650,6 +650,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Pictures.swift`, `docs/HANDOVER.md`.
 - How to check: compare initials over light and dark profile photos. Not yet checked visually on a device.
 
+**Step 54: First Retro-inspired app-wide design pass** (branch `interface-overhaul`)
+- What: major titles use a system serif, body text uses the default system typeface, and shared buttons are flatter capsules. Home, group pages, onboarding, login, setup and profile use a warm light or near-black dark background with adaptive cards. The existing app logo, content and behavior remain.
+- Why: Bene requested a first overall design experiment inspired by Retro's clean typography and neutral surfaces.
+- Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, text styles in `Views/`, `docs/HANDOVER.md`.
+- How to check: inspect onboarding, login, Home, create/join, groups, contract and profile in both appearances. The exact Retro font is not included; the system serif is an approximation. This is a first pass, not yet visually checked on a device or tested end to end.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

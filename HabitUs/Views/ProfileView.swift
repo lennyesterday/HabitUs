@@ -20,7 +20,7 @@ struct ProfileView: View {
 
     var body: some View {
         ZStack(alignment: .topLeading) {
-            BrandBackground()
+            HomeBackground()
 
             ScrollView {
                 VStack(spacing: 28) {
@@ -49,7 +49,7 @@ struct ProfileView: View {
                         .accessibilityHint("Take a photo, choose one from the library, or remove it")
                         Text(profile?.displayName ?? "")
                             .font(Theme.title(32))
-                            .foregroundStyle(.white)
+                            .foregroundStyle(.primary)
                     }
                     .padding(.top, 50)
 

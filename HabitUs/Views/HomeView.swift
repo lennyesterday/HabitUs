@@ -122,7 +122,7 @@ struct HomeView: View {
                 .font(Theme.title(24))
                 .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .rounded))
+                .font(.system(.subheadline, design: .default))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -155,10 +155,10 @@ private struct HomeActionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                .font(.system(.subheadline, design: .default).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .font(.system(.subheadline, design: .default).weight(.semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -187,27 +187,10 @@ struct HomeBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let isDark = colorScheme == .dark
-        LinearGradient(
-            colors: isDark
-                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
-                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay {
-            Canvas { context, size in
-                for x in stride(from: 12.0, through: size.width, by: 30.0) {
-                    for y in stride(from: 12.0, through: size.height, by: 30.0) {
-                        let dot = CGRect(x: x, y: y, width: 3, height: 3)
-                        context.fill(Path(ellipseIn: dot), with: .color(isDark ? .white.opacity(0.07) : .blue.opacity(0.08)))
-                    }
-                }
-            }
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
-        .ignoresSafeArea()
+        (colorScheme == .dark
+            ? Color(red: 0.06, green: 0.06, blue: 0.07)
+            : Color(red: 0.97, green: 0.96, blue: 0.94))
+            .ignoresSafeArea()
     }
 }
 
@@ -245,7 +228,7 @@ struct GameCardView: View {
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .font(.system(.subheadline, design: .default).weight(.bold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -256,7 +239,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .font(.system(.caption, design: .default).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -280,7 +263,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .rounded).bold())
+                    .font(.system(.caption, design: .default).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())

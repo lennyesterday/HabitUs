@@ -50,7 +50,7 @@ struct CreateGroupView: View {
                                 period = option
                             } label: {
                                 Text("per \(option.word)")
-                                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                    .font(.system(.subheadline, design: .default).weight(.bold))
                                     .frame(maxWidth: .infinity, minHeight: 44)
                                     .foregroundStyle(period == option ? Color.white : Color.primary)
                                     .background(period == option ? Theme.brand : Color(.tertiarySystemBackground),
@@ -156,18 +156,7 @@ struct CreateGroupView: View {
 
 /// Shared visual treatment for the first create and join screens.
 struct HabitFormBackground: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    var body: some View {
-        LinearGradient(
-            colors: colorScheme == .dark
-                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
-                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-    }
+    var body: some View { HomeBackground() }
 }
 
 struct HabitFormIntro: View {
@@ -184,7 +173,7 @@ struct HabitFormIntro: View {
                 .background(Theme.sunshine, in: RoundedRectangle(cornerRadius: 18))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.system(.title2, design: .rounded).weight(.heavy))
+                Text(title).font(.system(.title2, design: .default).weight(.heavy))
                 Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
             }
         }
@@ -208,7 +197,7 @@ struct HabitFormSection<Content: View>: View {
                     .background(Theme.brand, in: RoundedRectangle(cornerRadius: 12))
                     .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(.headline, design: .rounded).weight(.heavy))
+                    .font(.system(.headline, design: .default).weight(.heavy))
                     .accessibilityAddTraits(.isHeader)
             }
             VStack(alignment: .leading, spacing: 14) {
