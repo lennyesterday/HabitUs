@@ -7,15 +7,15 @@ enum Theme {
     static let cardBackground = Color(.secondarySystemBackground)
 
     /// The blue of the app icon.
-    static let brand = Color(red: 0.012, green: 0.200, blue: 0.922)
+    static let brand = Color(red: 0.04, green: 0.20, blue: 0.76)
     /// Warm yellow for the main buttons, the "fun" color next to the calm blue.
-    static let sunshine = Color(red: 1.0, green: 0.82, blue: 0.25)
+    static let sunshine = Color(red: 1.0, green: 0.80, blue: 0.18)
     static let sunshineLedge = Color(red: 0.80, green: 0.58, blue: 0.10)
     static let brandLight = Color(red: 0.36, green: 0.48, blue: 1.0)
 
-    /// Rounded, friendly title font used on onboarding and login.
+    /// Rounded, bold system type for the app's game-inspired headings.
     static func title(_ size: CGFloat) -> Font {
-        .system(size: size, weight: .heavy, design: .rounded)
+        .system(size: size, weight: .black, design: .rounded)
     }
 
     /// "14 Feb", always the Lisbon calendar day the database means.
@@ -87,9 +87,10 @@ struct ChunkyButtonStyle: ButtonStyle {
             .font(.system(.headline, design: .rounded).weight(.bold))
             .foregroundStyle(textColor)
             .frame(maxWidth: .infinity, minHeight: 52)
-            .background(color, in: RoundedRectangle(cornerRadius: 16))
+            .background(color, in: RoundedRectangle(cornerRadius: 18))
+            .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.black.opacity(0.12), lineWidth: 1))
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 18)
                     .fill(ledgeColor)
                     .offset(y: configuration.isPressed ? 0 : ledge)
             )

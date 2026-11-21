@@ -128,8 +128,12 @@ struct HomeView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
-        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
+        .background {
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
     }
 
     private func load() async {
@@ -173,10 +177,10 @@ private struct HomeActionButtonStyle: ButtonStyle {
     let isPrimary: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = Capsule()
+        let shape = RoundedRectangle(cornerRadius: 18)
         configuration.label
             .background(isPrimary ? Theme.brand : Color(.secondarySystemBackground), in: shape)
-            .overlay(shape.strokeBorder(isPrimary ? Color.clear : Color.primary.opacity(0.28), lineWidth: 1))
+            .overlay(shape.strokeBorder(isPrimary ? Color.white.opacity(0.22) : Color.primary.opacity(0.24), lineWidth: 1.5))
             .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
@@ -190,8 +194,8 @@ struct HomeBackground: View {
         let isDark = colorScheme == .dark
         LinearGradient(
             colors: isDark
-                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
-                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
+                ? [Color(red: 0.12, green: 0.20, blue: 0.39), Color(red: 0.05, green: 0.08, blue: 0.19)]
+                : [Color(red: 0.72, green: 0.81, blue: 0.99), Color(red: 0.91, green: 0.94, blue: 1.0)],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
@@ -266,8 +270,12 @@ struct GameCardView: View {
             .padding(.bottom, 8)
         }
         .padding(8)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
-        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
+        .background {
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
         .contentShape(Rectangle())
     }
 

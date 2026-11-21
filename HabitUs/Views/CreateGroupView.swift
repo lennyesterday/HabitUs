@@ -156,18 +156,7 @@ struct CreateGroupView: View {
 
 /// Shared visual treatment for the first create and join screens.
 struct HabitFormBackground: View {
-    @Environment(\.colorScheme) private var colorScheme
-
-    var body: some View {
-        LinearGradient(
-            colors: colorScheme == .dark
-                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
-                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-    }
+    var body: some View { HomeBackground() }
 }
 
 struct HabitFormIntro: View {
@@ -223,7 +212,7 @@ struct HabitFormSection<Content: View>: View {
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: .black.opacity(0.10), radius: 0, y: 4)
         }
-        .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(Color.primary.opacity(0.15), lineWidth: 1))
         .padding(.bottom, 4)
     }
 }

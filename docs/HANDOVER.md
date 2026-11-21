@@ -662,6 +662,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: the same `Views/` files changed in step 54 and `docs/HANDOVER.md`.
 - How to check: compare the app with the design before step 54 in light and dark mode. Not yet visually checked on a device.
 
+**Step 56: Stronger game-inspired colors** (branch `interface-overhaul`)
+- What: the shared Home/group/setup background uses a stronger blue gradient for each appearance, headings use a heavier rounded system font, and common buttons and Home cards have clearer edges. The existing muted emoji banner colors remain.
+- Why: Bene requested a more colorful, higher-contrast game-inspired look while supporting light and dark mode.
+- Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `docs/HANDOVER.md`.
+- How to check: compare onboarding, Home, group and create/join screens in both appearances, including text and buttons. The app builds; the appearance has not yet been visually tested on a device or formally contrast audited.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
