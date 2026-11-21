@@ -710,6 +710,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare groups with different emoji in light and dark mode, and verify group photos still display. Not yet visually checked on a device.
 
+**Step 64: Match create and join screens to neutral design** (branch `interface-overhaul`)
+- What: the first New Habit and Join Habit screens use serif introductory titles, quiet section labels and adaptive neutral cards. Period choices use neutral pill buttons. The confirmation pages use the matching background.
+- Why: Bene wanted the setup screens' typography and colors to match the current Retro-inspired experiment.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: open both flows in light and dark mode, choose each frequency, and proceed through the contract. Not yet visually checked or tested with a real group.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

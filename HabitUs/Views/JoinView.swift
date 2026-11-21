@@ -73,6 +73,8 @@ struct JoinView: View {
                             .buttonStyle(.borderedProminent)
                     }
                     .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(HabitFormBackground())
                     .navigationBarBackButtonHidden()
                 }
             }
