@@ -403,36 +403,35 @@ struct AuthView: View {
     }
 }
 
-/// The password rules from HabitCore as a live checklist, plus "Both passwords match".
-/// Each line turns green with a tick as soon as it is met.
+/// Shows only what is still wrong with the new password, in red, while typing.
+/// Nothing is shown before the first character, and a line disappears as soon as its rule is met.
+/// "The passwords are not the same" only appears once something is typed in the second field.
 private struct PasswordChecklist: View {
     let password: String
     let repeated: String
 
     var body: some View {
-        let rules = passwordRules(password)
-        VStack(alignment: .leading, spacing: 4) {
-            ForEach(rules, id: \.text) { rule in
-                line(rule.text, isMet: rule.isMet)
+        let missing = password.isEmpty ? [] : passwordRules(password).filter { !$0.isMet }.map(\.text)
+        let mismatch = !repeated.isEmpty && password != repeated
+        if !missing.isEmpty || mismatch {
+            VStack(alignment: .leading, spacing: 4) {
+                ForEach(missing, id: \.self) { text in
+                    line("Needs \(text.lowercased())")
+                }
+                if mismatch {
+                    line("The passwords are not the same")
+                }
             }
-            line("Both passwords match", isMet: !repeated.isEmpty && password == repeated)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 4)
+            .transition(.opacity)
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 4)
-        .animation(.snappy, value: password)
-        .animation(.snappy, value: repeated)
     }
 
-    private func line(_ text: String, isMet: Bool) -> some View {
-        Label {
-            Text(text)
-        } icon: {
-            Image(systemName: isMet ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(isMet ? Color.green : Color.secondary)
-        }
-        .font(.system(.footnote, design: .default))
-        .foregroundStyle(isMet ? Color.primary : Color.secondary)
-        .accessibilityLabel("\(text): \(isMet ? "done" : "missing")")
+    private func line(_ text: String) -> some View {
+        Label(text, systemImage: "xmark.circle.fill")
+            .font(.system(.footnote, design: .default))
+            .foregroundStyle(.red)
     }
 }
 
@@ -463,4 +462,14 @@ private struct InfoText: View {
 
 #Preview("Forgot password") {
     AuthView(resetEmail: "lenny@example.com")
+}
+
+#Preview("Password hints") {
+    VStack(spacing: 20) {
+        PasswordChecklist(password: "", repeated: "")
+        PasswordChecklist(password: "secret", repeated: "")
+        PasswordChecklist(password: "Secret123!", repeated: "Secret12")
+        PasswordChecklist(password: "Secret123!", repeated: "Secret123!")
+    }
+    .padding()
 }

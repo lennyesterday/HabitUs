@@ -12,6 +12,8 @@ struct Message: Identifiable {
     var text: String
     var gifURL: URL?
     var createdAt: Date
+    /// Written by the database, for example "Lenny left the group." Shown in the middle of the chat.
+    var isSystem = false
 }
 
 private struct NewMessage: Encodable {

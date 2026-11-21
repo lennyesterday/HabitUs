@@ -47,8 +47,10 @@ struct PlayerProfileView: View {
                         .font(Theme.title(22))
                         .foregroundStyle(Color.primary)
                     if let row, !row.donePerRound.isEmpty {
-                        ForEach((1...row.donePerRound.count).reversed(), id: \.self) { round in
-                            roundCard(round: round, row: row, isRunning: running && round == row.donePerRound.count)
+                        // R29: someone who joined later has their own rounds from firstRound on.
+                        let lastPlayed = row.firstRound + row.donePerRound.count - 1
+                        ForEach((row.firstRound...lastPlayed).reversed(), id: \.self) { round in
+                            roundCard(round: round, row: row, isRunning: running && round == lastPlayed)
                         }
                     } else {
                         Text("No rounds yet.")
@@ -56,6 +58,14 @@ struct PlayerProfileView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let row, row.firstRound > 1 {
+                    Label("Joined in round \(row.firstRound). Rounds 1 to \(row.firstRound - 1) got the group average: \(row.catchUpPoints) pts.",
+                          systemImage: "person.badge.plus")
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
             }
             .padding(18)
         }
@@ -132,7 +142,7 @@ struct PlayerProfileView: View {
 
     private func roundCard(round: Int, row: LeaderboardRow, isRunning: Bool) -> some View {
         let target = data.group.target
-        let done = row.donePerRound[round - 1]
+        let done = row.donePerRound[round - row.firstRound]
         let points = row.pointsPerRound.indices.contains(round - 1) ? row.pointsPerRound[round - 1] : 0
         let checkins = data.checkins
             .filter { $0.userId == userId && HabitCore.round(of: $0.day, in: data.group) == round }

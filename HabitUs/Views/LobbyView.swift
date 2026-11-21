@@ -89,7 +89,7 @@ struct LobbyView: View {
                         .foregroundStyle(.secondary)
                 }
             } footer: {
-                Text("The session starts today. Open requests are declined and the code stops working.")
+                Text("The session starts today. The code keeps working: people who join later start in the next round.")
             }
 
             if errorMessage != nil {

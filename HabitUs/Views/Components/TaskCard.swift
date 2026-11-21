@@ -10,6 +10,17 @@ struct TaskCard: View {
     let isUploading: Bool
     let checkIn: () -> Void
 
+    /// Why the camera button is grey: on hold (R30), not my first round yet (R29), or done for today.
+    private func waitingText(now: Date) -> String {
+        if data.isOnHold(now: now) {
+            return "On hold until there are \(minimumPlayers) players again."
+        }
+        if currentRound(of: data.group, now: now) < data.myFirstRound {
+            return "You start in round \(data.myFirstRound). Get ready! 💪"
+        }
+        return "Done for today. Come back tomorrow!"
+    }
+
     var body: some View {
         let group = data.group
         let status = data.taskStatus(of: data.me, now: now)
@@ -75,7 +86,7 @@ struct TaskCard: View {
                 .opacity(status.canCheckInToday ? 1 : 0.6)
 
                 if !status.canCheckInToday {
-                    Text("Done for today. Come back tomorrow!")
+                    Text(waitingText(now: now))
                         .font(.system(.footnote, design: .default).bold())
                         .foregroundStyle(.primary)
                 }

@@ -24,6 +24,8 @@ struct GroupInfoView: View {
                         .foregroundStyle(.secondary)
                 }
 
+                inviteSection(now: now)
+
                 section("Facts") {
                     fact("Status", statusText(now: now), "flag.fill")
                     fact("How often", "\(group.target)× \(group.habit) per \(group.period.word)", "repeat")
@@ -71,6 +73,51 @@ struct GroupInfoView: View {
     }
 
     // MARK: - Pieces
+
+    /// The invite code, always visible, so friends can join also while the challenge runs (R29).
+    private func inviteSection(now: Date) -> some View {
+        let code = data.group.inviteCode
+        let isOver = phase(of: data.group, now: now) == .ended
+        return section("Invite code") {
+            VStack(spacing: 12) {
+                Text(code)
+                    .font(.system(size: 34, weight: .heavy, design: .monospaced))
+                    .tracking(6)
+                    .foregroundStyle(isOver ? .secondary : Theme.ink)
+                    .textSelection(.enabled)
+                    .accessibilityLabel("Invite code \(code.map(String.init).joined(separator: " "))")
+                if isOver {
+                    Text("The challenge is over, so the code does not work any more.")
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(phase(of: data.group, now: now) == .active
+                         ? "New players start in the next round and get the group average for the rounds before."
+                         : "Friends enter this code under Join Habit.")
+                        .font(.system(.footnote, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                    HStack(spacing: 10) {
+                        Button {
+                            UIPasteboard.general.string = code
+                        } label: {
+                            Label("Copy", systemImage: "doc.on.doc")
+                        }
+                        .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.82),
+                                                       textColor: Theme.brand))
+                        ShareLink(item: "Join my habit on Habitract with the code \(code)") {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        .buttonStyle(ChunkyButtonStyle(color: Theme.brand,
+                                                       ledgeColor: Color(red: 0.0, green: 0.12, blue: 0.55),
+                                                       textColor: .white))
+                    }
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(16)
+        }
+    }
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 10) {
