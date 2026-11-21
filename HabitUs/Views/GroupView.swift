@@ -14,7 +14,6 @@ struct GroupView: View {
     @State private var selectedPlayer: UUID?
     @State private var showGroupInfo = false
     @State private var isUploading = false
-    @State private var showFinishConfirmation = false
     @State private var messageText = ""
     @State private var errorMessage: String?
     /// Whether the Tinder style vote deck under the task card is open.
@@ -31,17 +30,22 @@ struct GroupView: View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(spacing: 22) {
+                    Text("\(data.group.icon) \(data.group.name)")
+                        .font(Theme.title(32))
+                        .foregroundStyle(.primary)
+                        .multilineTextAlignment(.center)
+                        .accessibilityAddTraits(.isHeader)
                     header(points: myRow?.points ?? 0, rank: (myIndex ?? 0) + 1)
 
                     VStack(spacing: 0) {
                         Text(roundLabel(round: round, now: now))
-                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .font(.system(.caption, design: .default).weight(.bold))
                             .tracking(2)
                             .foregroundStyle(.secondary)
                         Text(periodTitle)
                             .font(Theme.title(30))
                     }
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
 
                     if data.isOnHold(now: now) {
                         onHoldCard
@@ -63,11 +67,10 @@ struct GroupView: View {
 
                     voteSection(now: now)
 
-                    BonusCard(round: round, target: data.group.target, status: status, streak: myRow?.streak ?? 0)
-
                     // Tapping the podium opens the full leaderboard with the chart.
                     NavigationLink {
-                        LeaderboardView(rows: rows, me: data.me, round: round)
+                        LeaderboardView(rows: rows, me: data.me, round: round, target: data.group.target,
+                                        status: status, streak: myRow?.streak ?? 0)
                     } label: {
                         Podium(rows: Array(rows.prefix(3)))
                             .contentShape(Rectangle())
@@ -77,16 +80,17 @@ struct GroupView: View {
 
                     RankingRows(rows: rows, me: data.me) { selectedPlayer = $0 }
 
-                    HStack {
-                        Rectangle().frame(height: 2)
-                        Text("CHAT")
-                            .font(.system(.caption, design: .rounded).weight(.heavy))
-                            .tracking(3)
-                        Rectangle().frame(height: 2)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
+                            .font(.system(.headline, design: .default).weight(.bold))
+                            .foregroundStyle(.primary)
+                            .accessibilityAddTraits(.isHeader)
+                        FeedView(data: data, onReact: react, onRetake: { showCamera = true })
                     }
-                    .foregroundStyle(Theme.ink.opacity(0.25))
-
-                    FeedView(data: data, onReact: react, onRetake: { showCamera = true })
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemBackground).opacity(0.55), in: RoundedRectangle(cornerRadius: 26))
+                    .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
 
                     Color.clear.frame(height: 1).id("bottom")
                 }
@@ -97,9 +101,9 @@ struct GroupView: View {
                 withAnimation { proxy.scrollTo("bottom") }
             }
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .safeAreaInset(edge: .bottom) { messageBar }
-        .navigationTitle("\(data.group.icon) \(data.group.name)")
+        .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
@@ -109,21 +113,6 @@ struct GroupView: View {
                     Label("Invite friends", systemImage: "person.badge.plus")
                 }
             }
-            if data.isOwner {
-                ToolbarItem(placement: .secondaryAction) {
-                    Button("Finish challenge", systemImage: "flag.checkered", role: .destructive) {
-                        showFinishConfirmation = true
-                    }
-                }
-            }
-        }
-        .confirmationDialog("Finish the challenge for everyone?", isPresented: $showFinishConfirmation,
-                            titleVisibility: .visible) {
-            Button("Finish challenge", role: .destructive) {
-                Task { await run { try await GroupService.finish(groupId: data.group.id) } }
-            }
-        } message: {
-            Text("The leaderboard freezes and nobody can check in any more.")
         }
         .navigationDestination(item: $selectedPlayer) { userId in
             PlayerProfileView(data: data, userId: userId)
@@ -203,7 +192,7 @@ struct GroupView: View {
                     Text("🗳️  Vote on photos")
                     if !toVote.isEmpty {
                         Text("\(toVote.count)")
-                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                            .font(.system(.subheadline, design: .default).weight(.heavy))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 9)
                             .padding(.vertical, 3)
@@ -255,14 +244,14 @@ struct GroupView: View {
         HStack(spacing: 8) {
             TextField("Message", text: $messageText, axis: .vertical)
                 .lineLimit(1...4)
-                .font(.system(.body, design: .rounded))
+                .font(.system(.body, design: .default))
                 .padding(.leading, 6)
             if messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Button {
                     showGifPicker = true
                 } label: {
                     Text("GIF")
-                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                        .font(.system(.subheadline, design: .default).weight(.heavy))
                         .foregroundStyle(.white)
                         .frame(width: 52, height: 38)
                         .ledgeCard(Theme.brand, radius: 12, depth: 3)
@@ -282,7 +271,7 @@ struct GroupView: View {
             }
         }
         .padding(10)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
         .padding(.horizontal, 14)
         .padding(.bottom, 6)

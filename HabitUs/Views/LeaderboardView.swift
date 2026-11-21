@@ -8,6 +8,9 @@ struct LeaderboardView: View {
     let rows: [LeaderboardRow]
     let me: UUID
     let round: Int
+    let target: Int
+    let status: TaskStatus
+    let streak: Int
 
     var body: some View {
         ScrollView {
@@ -15,33 +18,42 @@ struct LeaderboardView: View {
                 VStack(spacing: 2) {
                     Text("Leaderboard")
                         .font(Theme.title(30))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     Text("Round \(round) · points so far")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.system(.subheadline, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
-                chart
-                    .frame(height: 260)
-                    .padding(.horizontal, 4)
+                VStack(alignment: .leading, spacing: 16) {
+                    Label("Points over time", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(.system(.headline, design: .default).weight(.bold))
+                    chart.frame(height: 240)
+                }
+                .padding(18)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
 
-                VStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label("Rankings", systemImage: "trophy.fill")
+                        .font(.system(.headline, design: .default).weight(.heavy))
+                        .foregroundStyle(.primary)
                     ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                         playerRow(row, index: index)
                     }
                     Text("Points: 20 per task · +25 % for a full round · +5 % more per round in a row (max +50 %)")
-                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .font(.system(.caption, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity)
                         .padding(.top, 4)
                 }
-                .padding(14)
-                .background(.white, in: RoundedRectangle(cornerRadius: 26))
-                .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
+                .padding(16)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
+
+                BonusCard(round: round, target: target, status: status, streak: streak)
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }
@@ -82,15 +94,17 @@ struct LeaderboardView: View {
     private func playerRow(_ row: LeaderboardRow, index: Int) -> some View {
         let color = Theme.rankColor(index)
         return HStack(spacing: 12) {
-            ProfilePicture(name: row.displayName, path: row.photoPath, size: 56)
+            Text("\(index + 1)")
+                .font(.system(.headline, design: .default).weight(.heavy))
+                .foregroundStyle(.primary)
+                .frame(width: 34, height: 34)
+                .background(color.opacity(0.22), in: Circle())
+            ProfilePicture(name: row.displayName, path: row.photoPath, size: 48)
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text("#\(index + 1)")
-                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
-                        .foregroundStyle(color)
                     if row.userId == me {
                         Text("YOU")
-                            .font(.system(.caption, design: .rounded).weight(.heavy))
+                            .font(.system(.caption, design: .default).weight(.heavy))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
@@ -98,10 +112,10 @@ struct LeaderboardView: View {
                     }
                 }
                 Text(row.displayName)
-                    .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundStyle(Theme.ink)
+                    .font(.system(.title3, design: .default).weight(.bold))
+                    .foregroundStyle(Color.primary)
                 Text("\(row.completeRounds) full round\(row.completeRounds == 1 ? "" : "s") · streak \(row.streak) 🔥 · \(row.pauses) pause\(row.pauses == 1 ? "" : "s")")
-                    .font(.system(.caption, design: .rounded).weight(.bold))
+                    .font(.system(.caption, design: .default).weight(.bold))
                     .foregroundStyle(.secondary)
             }
             Spacer()
@@ -112,13 +126,18 @@ struct LeaderboardView: View {
                 .background(color, in: Circle())
         }
         .padding(12)
-        .overlay(RoundedRectangle(cornerRadius: 20).stroke(color.opacity(0.5), lineWidth: 2))
+        .background(row.userId == me ? Theme.brand.opacity(0.10) : Color(.tertiarySystemBackground),
+                    in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(
+            row.userId == me ? Theme.brand.opacity(0.45) : Color.primary.opacity(0.06), lineWidth: 1))
     }
 }
 
 #Preview {
     let data = GroupData.preview
     return NavigationStack {
-        LeaderboardView(rows: data.leaderboard(now: Date()), me: data.me, round: 2)
+        LeaderboardView(rows: data.leaderboard(now: Date()), me: data.me, round: 2,
+                        target: data.group.target, status: data.taskStatus(of: data.me, now: Date()),
+                        streak: data.leaderboard(now: Date()).first { $0.userId == data.me }?.streak ?? 0)
     }
 }

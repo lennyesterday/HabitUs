@@ -97,7 +97,7 @@ struct LobbyView: View {
             }
         }
         .scrollContentBackground(.hidden)
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationTitle("\(data.group.icon) \(data.group.name)")
         .refreshable { await reload() }
     }

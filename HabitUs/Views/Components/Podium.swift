@@ -30,6 +30,11 @@ struct Podium: View {
                     .shadow(color: .black.opacity(0.12), radius: 6, y: 4)
                     .opacity(leader ? 1 : 0.85)
                 Pill(text: "\(row.points) pts", dark: false)
+                Text(row.displayName)
+                    .font(.system(.caption, design: .default).weight(.semibold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+                    .padding(.top, 8)
             }
         }
     }
@@ -61,24 +66,24 @@ struct RankingRows: View {
         let color = Theme.rankColor(index)
         return HStack(spacing: 12) {
                     Text("\(index + 1)")
-                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .font(.system(.headline, design: .default).weight(.heavy))
                         .foregroundStyle(.white)
                         .frame(width: 32, height: 32)
                         .background(color, in: Circle())
                     ProfilePicture(name: row.displayName, path: row.photoPath, size: 44)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(row.userId == me ? "\(row.displayName) (you)" : row.displayName)
-                            .font(.system(.headline, design: .rounded).weight(.bold))
+                            .font(.system(.headline, design: .default).weight(.bold))
                         Text("\(row.points) pts")
-                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .font(.system(.subheadline, design: .default).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                     Spacer()
                     if row.streak > 0 {
                         Text("🔥 \(row.streak)")
-                            .font(.system(.subheadline, design: .rounded).weight(.bold))
-                            .foregroundStyle(Theme.ink)
+                            .font(.system(.subheadline, design: .default).weight(.bold))
+                            .foregroundStyle(.primary)
                     }
                     if onSelect != nil {
                         Image(systemName: "chevron.right")
@@ -88,7 +93,7 @@ struct RankingRows: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20))
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
                 .contentShape(Rectangle())
     }

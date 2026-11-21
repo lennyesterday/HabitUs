@@ -20,7 +20,7 @@ struct ContractView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Contract")
                     .font(Theme.title(40))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                 Text("\(contract.icon) \(contract.name)")
                     .font(.title2)
 
@@ -34,7 +34,7 @@ struct ContractView: View {
                 if let sign {
                     SignaturePad(drawing: $drawing)
                     Text("Date: \(Theme.signatureDate(Date()))")
-                        .font(.system(.footnote, design: .rounded).weight(.semibold))
+                        .font(.system(.footnote, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                     ErrorText(message: errorMessage)
                     Button {
@@ -61,7 +61,7 @@ struct ContractView: View {
             }
             .padding()
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
     }
 }
 
@@ -88,7 +88,7 @@ struct ContractTerms: View {
         }
         .padding()
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
     }
 }

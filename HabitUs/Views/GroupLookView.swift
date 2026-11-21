@@ -66,7 +66,7 @@ struct GroupLookView: View {
             }
             .disabled(isWorking)
             .scrollContentBackground(.hidden)
-            .background(PaperBackground())
+            .background(HomeBackground())
             .navigationTitle("Group look")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

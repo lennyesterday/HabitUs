@@ -2,7 +2,7 @@ import SwiftUI
 import HabitCore
 
 // My habits, New Habit, Join (SPEC section 4, Home). Area A.
-// Light background with one card per habit group: picture or icon on top, members, name, points and rank.
+// One card per habit group: picture or icon on top, members, name, points and rank.
 
 struct HomeView: View {
     @State private var cards: [GameCard] = []
@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                PaperBackground()
+                HomeBackground()
 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -26,20 +26,16 @@ struct HomeView: View {
                             Button {
                                 showCreate = true
                             } label: {
-                                Label("New Habit", systemImage: "plus")
+                                HomeActionLabel(title: "New Habit", symbol: "plus", isPrimary: true)
                             }
-                            .buttonStyle(ChunkyButtonStyle(color: Theme.brand,
-                                                           ledgeColor: Color(red: 0.0, green: 0.12, blue: 0.55),
-                                                           textColor: .white))
+                            .buttonStyle(HomeActionButtonStyle(isPrimary: true))
 
                             Button {
                                 showJoin = true
                             } label: {
-                                Label("Join Habit", systemImage: "person.3.fill")
+                                HomeActionLabel(title: "Join Habit", symbol: "person.2.fill", isPrimary: false)
                             }
-                            .buttonStyle(ChunkyButtonStyle(color: .white,
-                                                           ledgeColor: Color(white: 0.82),
-                                                           textColor: Theme.brand))
+                            .buttonStyle(HomeActionButtonStyle(isPrimary: false))
                         }
 
                         if let errorMessage {
@@ -93,7 +89,7 @@ struct HomeView: View {
                     .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
                 Text("Habitract")
                     .font(Theme.title(32))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
@@ -124,16 +120,20 @@ struct HomeView: View {
                 .font(.system(size: 56))
             Text("No habits yet")
                 .font(Theme.title(24))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .rounded))
+                .font(.system(.subheadline, design: .default))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .background(.white, in: RoundedRectangle(cornerRadius: 26))
-        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
+        .background {
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
     }
 
     private func load() async {
@@ -147,6 +147,52 @@ struct HomeView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+}
+
+/// A simple action with a clear icon and label.
+private struct HomeActionLabel: View {
+    let title: LocalizedStringKey
+    let symbol: String
+    let isPrimary: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: symbol)
+                .font(.system(.subheadline, design: .default).weight(.bold))
+                .accessibilityHidden(true)
+            Text(title)
+                .font(.system(.subheadline, design: .default).weight(.semibold))
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, minHeight: 54)
+        .foregroundStyle(isPrimary ? Color(.systemBackground) : Color.primary)
+    }
+}
+
+private struct HomeActionButtonStyle: ButtonStyle {
+    let isPrimary: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = Capsule()
+        configuration.label
+            .background(isPrimary ? Color.primary : Color.clear, in: shape)
+            .overlay(shape.strokeBorder(isPrimary ? Color.white.opacity(0.22) : Color.primary.opacity(0.24), lineWidth: 1.5))
+            .opacity(configuration.isPressed ? 0.75 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+/// A soft blue backdrop for Home, with a subtle pattern inspired by the welcome screen.
+struct HomeBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        (colorScheme == .dark ? Color.black : Color(red: 0.97, green: 0.97, blue: 0.96))
+            .ignoresSafeArea()
     }
 }
 
@@ -180,11 +226,11 @@ struct GameCardView: View {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
-                        .font(Theme.title(24))
-                        .foregroundStyle(Theme.ink)
+                        .font(.system(size: 24, weight: .bold, design: .serif))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .font(.system(.subheadline, design: .default).weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -195,7 +241,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .font(.system(.caption, design: .default).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -205,8 +251,12 @@ struct GameCardView: View {
             .padding(.bottom, 8)
         }
         .padding(8)
-        .background(.white, in: RoundedRectangle(cornerRadius: 26))
-        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
+        .background {
+            RoundedRectangle(cornerRadius: 26)
+                .fill(Color(.secondarySystemBackground))
+                .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
+        }
+        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
         .contentShape(Rectangle())
     }
 
@@ -219,7 +269,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .rounded).bold())
+                    .font(.system(.caption, design: .default).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())
@@ -263,9 +313,8 @@ struct GroupBanner: View {
     @State private var image: UIImage?
 
     var body: some View {
-        let color = Theme.groupColor(group.id)
         ZStack {
-            LinearGradient(colors: [color.opacity(0.75), color], startPoint: .topLeading, endPoint: .bottomTrailing)
+            GroupEmojiBackground(group: group)
             if let image {
                 Image(uiImage: image)
                     .resizable()
@@ -273,7 +322,7 @@ struct GroupBanner: View {
             } else {
                 Text(group.icon)
                     .font(.system(size: height * 0.5))
-                    .shadow(color: .black.opacity(0.2), radius: 8, y: 6)
+                    .shadow(color: .black.opacity(0.12), radius: 5, y: 3)
             }
         }
         .frame(height: height)
@@ -288,6 +337,117 @@ struct GroupBanner: View {
     }
 }
 
+/// The same stable, emoji-inspired background for the group banner and its task card.
+struct GroupEmojiBackground: View {
+    let group: HabitGroup
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var emojiHue: Double?
+
+    var body: some View {
+        let bytes = group.id.uuid
+        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
+        let isDark = colorScheme == .dark
+        let base = Color(hue: hue, saturation: isDark ? 0.31 : 0.22, brightness: isDark ? 0.29 : 0.92)
+        let accent = Color(hue: hue, saturation: isDark ? 0.38 : 0.29, brightness: isDark ? 0.21 : 0.85)
+        let pattern = Int(bytes.1) % 3
+        let angle = Double(Int(bytes.2) % 51 - 25)
+        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
+
+        GeometryReader { geometry in
+            let height = geometry.size.height
+            ZStack {
+                LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
+                if pattern == 0 {
+                    Circle()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.35))
+                        .frame(width: height * 1.4, height: height * 1.4)
+                        .position(x: geometry.size.width * position, y: height * 0.25)
+                } else if pattern == 1 {
+                    RoundedRectangle(cornerRadius: 32)
+                        .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
+                        .frame(width: height * 1.7, height: height * 0.8)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.6)
+                } else {
+                    Capsule()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.30))
+                        .frame(width: height * 1.9, height: height * 0.38)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.5)
+                }
+                // Small, stable emoji motifs sit behind the main content.
+                ForEach(0..<12, id: \.self) { index in
+                    let column = index % 4
+                    let row = index / 4
+                    let shift = CGFloat((Int(bytes.4) + index * 37) % 21 - 10) / 100
+                    Text(group.icon)
+                        .font(.system(size: min(max(height * 0.13, 12), 19)))
+                        .rotationEffect(.degrees(Double((Int(bytes.5) + index * 29) % 41 - 20)))
+                        .opacity(isDark ? 0.13 : 0.16)
+                        .position(x: geometry.size.width * (CGFloat(column) + 0.5 + shift) / 4,
+                                  y: height * (CGFloat(row) + 0.5 + shift) / 3)
+                }
+            }
+            .clipped()
+        }
+        .accessibilityHidden(true)
+        .task(id: group.icon) { emojiHue = dominantEmojiHue(group.icon) }
+    }
+}
+
+/// Find a colorful tone in the rendered emoji; neutral emoji use the group-ID fallback.
+private func dominantEmojiHue(_ emoji: String) -> Double? {
+    let size = 48
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+    let image = renderer.image { _ in
+        let font = UIFont.systemFont(ofSize: 38)
+        let text = emoji as NSString
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let textSize = text.size(withAttributes: attributes)
+        text.draw(at: CGPoint(x: (CGFloat(size) - textSize.width) / 2,
+                              y: (CGFloat(size) - textSize.height) / 2), withAttributes: attributes)
+    }
+    guard let cgImage = image.cgImage else { return nil }
+    let width = cgImage.width
+    let height = cgImage.height
+    var pixels = [UInt8](repeating: 0, count: width * height * 4)
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let drewImage = pixels.withUnsafeMutableBytes { buffer -> Bool in
+        guard let context = CGContext(data: buffer.baseAddress, width: width, height: height,
+                                      bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue |
+                                          CGBitmapInfo.byteOrder32Big.rawValue) else { return false }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return true
+    }
+    guard drewImage else { return nil }
+
+    // Hue wraps around at red, so average it as points on a circle.
+    var x = 0.0
+    var y = 0.0
+    var total = 0.0
+    for index in stride(from: 0, to: pixels.count, by: 4) {
+        let alpha = Double(pixels[index + 3]) / 255
+        guard alpha > 0.5 else { continue }
+        let red = min(Double(pixels[index]) / 255 / alpha, 1)
+        let green = min(Double(pixels[index + 1]) / 255 / alpha, 1)
+        let blue = min(Double(pixels[index + 2]) / 255 / alpha, 1)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        UIColor(red: red, green: green, blue: blue, alpha: 1)
+            .getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: nil)
+        guard saturation > 0.25, brightness > 0.2 else { continue }
+        let weight = Double(saturation) * alpha
+        x += cos(Double(hue) * 2 * .pi) * weight
+        y += sin(Double(hue) * 2 * .pi) * weight
+        total += weight
+    }
+    guard total > 20, hypot(x, y) / total > 0.2 else { return nil }
+    let hue = atan2(y, x) / (2 * .pi)
+    return hue < 0 ? hue + 1 : hue
+}
+
 #Preview("Card") {
     let group = HabitGroup(id: UUID(), name: "Gym Crew", habit: "Gym", icon: "🏋️", photoPath: nil, target: 3,
                            period: .week, endOn: nil, rulesText: "", inviteCode: "ABC234", ownerId: UUID(),
@@ -296,9 +456,19 @@ struct GroupBanner: View {
         Member(id: UUID(), userId: UUID(), displayName: $0, photoPath: nil, status: .accepted, signature: "")
     }
     return ZStack {
-        PaperBackground()
+        HomeBackground()
         GameCardView(card: GameCard(group: group, myStatus: .accepted, isOwner: true, acceptedCount: 3,
                                     openRequests: 0, members: members, myPoints: 136, myRank: 2, myDone: 2))
             .padding()
     }
+}
+
+#Preview("Home – Light") {
+    HomeView()
+        .preferredColorScheme(.light)
+}
+
+#Preview("Home – Dark") {
+    HomeView()
+        .preferredColorScheme(.dark)
 }

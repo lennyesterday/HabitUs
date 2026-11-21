@@ -518,19 +518,229 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
 - How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
 
-**Step 32: Password hints only when something is wrong** (branch `login/signup-edits`)
+**Step 32: Onboarding in light and dark mode** (branch `design-startscreen`)
+- What: the onboarding keeps its existing blue design in light mode and uses a darker blue gradient in dark mode. Its white and yellow text and buttons stay the same.
+- Why: make the first screens fit the iPhone appearance without changing the design of other screens.
+- Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: open the Welcome light and dark previews, or change the iPhone appearance while viewing onboarding. The app builds; the appearance has not yet been checked on a device.
+
+**Step 33: A first Retro-inspired login design** (branch `design-startscreen`)
+- What: the login and related account forms use a warm neutral background, a serif title, a simple card and rounded buttons. Colors adapt to light and dark appearance. Login, sign up and password recovery keep their existing behavior.
+- Why: try a calmer visual direction inspired by the Retro photo app, starting with the login screen.
+- Files: `AuthView.swift`, `docs/HANDOVER.md`.
+- How to check: use the light and dark login previews and try login, sign up, confirmation and password recovery in the app. The design has not yet been checked on a device or tested with real accounts.
+
+**Step 34: Matching onboarding design** (branch `design-startscreen`)
+- What: the welcome and game description pages now match the login's neutral light and dark backgrounds, serif headings and rounded buttons. Illustrations use softer colors; the text and navigation stay the same.
+- Why: carry the first design experiment through the whole introduction.
+- Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: view the welcome and photo page previews in both appearances, then swipe through all pages in the app. Not yet checked visually on a device.
+
+**Step 35: Restore the original introduction design** (branch `design-startscreen`)
+- What: reversed the Retro-inspired login and onboarding design from steps 33 and 34. The onboarding light and dark backgrounds from step 32 remain.
+- Why: Bene preferred the earlier appearance.
+- Files: `AuthView.swift`, `OnboardingView.swift`, `docs/HANDOVER.md`.
+- How to check: open the welcome light and dark previews and the login preview. Visual appearance has not yet been checked on a device.
+
+**Step 36: First Home background design** (branch `design-interface`)
+- What: Home has a soft blue gradient and a subtle dotted texture, with a darker version in dark mode. The title and habit cards use appearance-aware text and card colors.
+- Why: connect Home to the blue introduction while keeping the photos and habit cards easy to see.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open the Home light and dark previews, and check an empty Home and a Home with habit cards in both appearances. Not yet checked visually on a device.
+
+**Step 37: Home action cards** (branch `design-interface`)
+- What: New Habit and Join Habit are now compact action cards with separate icon tiles, rounded corners and a small pressed effect. They keep their existing actions and adapt to light and dark mode.
+- Why: give the two main actions a playful but restrained appearance that fits the Home background.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and tap both actions; check that each opens the same screen as before. Not yet checked visually or tapped on a device.
+
+**Step 38: Cleaner Home actions** (branch `design-interface`)
+- What: New Habit and Join Habit now use simple capsule shapes and clear icons, without the raised edge and separate icon tiles. The blue accent and light/dark colors remain.
+- Why: Bene shared Retro screenshots as a reference for a calmer, cleaner interface.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and try both actions. Not yet checked visually or tapped on a device.
+
+**Step 39: Create and join form design** (branch `design-interface`)
+- What: the first New Habit and Join Habit screens use a soft blue background and clean rounded sections instead of the standard grouped form. Existing inputs, validation and navigation remain.
+- Why: Bene wanted the screens opened by the two Home actions to feel cleaner and more distinctive, in light and dark mode.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: open both screens in light and dark mode, try the controls and advance to the contract. Not yet checked visually or tested with a real group.
+
+**Step 40: More playful create and join screens** (branch `design-interface`)
+- What: the first create and join screens now have colored icon badges, rounded cards with a subtle raised edge, a prominent yellow Next button and custom period choices. The invite code has its own inset field.
+- Why: Bene wanted a more game-like feel while keeping the forms clean and readable in light and dark mode.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: in both appearances open New Habit and Join Habit, try all inputs and advance using Next. Not yet tested visually or with a real group.
+
+**Step 41: Sharper form card text** (branch `design-interface`)
+- What: the raised shadow now applies only to the card background, not its text and controls.
+- Why: the previous shadow made labels such as "How often" look doubled.
+- Files: `CreateGroupView.swift`, `docs/HANDOVER.md`.
+- How to check: open New Habit and Join Habit in light and dark mode and check the section titles. Not yet visually checked on a device.
+
+**Step 42: Softer group banner colors** (branch `design-interface`)
+- What: groups without a photo get one of five muted blue, violet, warm brown, slate blue or rose gradients and a subtle circle pattern behind their chosen emoji. The group's ID picks a stable color; two groups can occasionally share one. A group photo still replaces the emoji and pattern.
+- Why: Bene wanted group cards to feel varied and fit the app palette instead of using a standard green background.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups without photos and one with a photo in both appearances. The same banner is also used in group info. Not yet checked visually on a device.
+
+**Step 43: Subtle varied group banners** (branch `design-interface`)
+- What: emoji banners use a softly tinted gradient and one of three understated shapes, selected from the group ID. Colors adjust to light or dark appearance and remain stable when the app redraws. Photos still fill the banner.
+- Why: Bene wanted less intense color and more variety across groups.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups in both appearances and confirm a group photo still displays. Not yet checked visually on a device; similar groups can still occur by chance.
+
+**Step 44: Emoji-inspired group banners** (branch `design-interface`)
+- What: emoji banners derive a muted background hue from colorful pixels in the selected emoji. Neutral or ambiguous emoji use the stable group-ID color. Shape, position and angle vary using the group ID, and both appearances stay muted.
+- Why: Bene wanted the background to relate to the emoji and the decorative shapes to vary too.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare colorful and neutral emoji in both appearances, then reopen the group to see stable shapes. Group photos should still display. Not yet visually checked on a device.
+
+**Step 45: Serif type and golden group names on Home** (branch `design-interface`)
+- What: Home text uses a system serif style inspired by the Retro reference, and group names use a dark gold in light mode and yellow in dark mode. Card shadows apply to the background so text stays sharp.
+- Why: Bene wanted to try the yellow accent for group names and a Retro-inspired typeface on this page.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare Home and its group cards in both appearances. The exact Retro font is not included; this uses the system serif font. Not yet checked visually on a device.
+
+**Step 46: Restore Home text styling** (branch `design-interface`)
+- What: reversed the serif font and gold group names from step 45, restoring the previous Home appearance. Emoji-inspired group banners remain.
+- Why: Bene preferred the earlier text styling.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and check group names and banners. Not yet checked visually on a device.
+
+**Step 47: Consistent group backgrounds and chat area** (branch `design-in-group`)
+- What: group screens and contract use the same light/dark blue background as Home. The task card uses the same emoji-derived colors and pattern as the Home group banner. Chat has its own rounded area, and the message field and key cards adapt to appearance.
+- Why: Bene wanted consistent backgrounds, matching group colors and a clearer boundary around chat.
+- Files: `HomeView.swift`, `GroupView.swift`, `TaskCard.swift`, `FeedView.swift`, `BonusCard.swift`, `Podium.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupInfoView.swift`, `GroupLookView.swift`, `LeaderboardView.swift`, `ResultsView.swift`, `PlayerProfileView.swift`, `docs/HANDOVER.md`.
+- How to check: view an active group, lobby, group info, leaderboard, player profile, results and signing screen in both appearances; compare its emoji banner and task card, and send a message. Not yet visually checked or tested with a real group.
+
+**Step 48: Group options and leaderboard styling** (branch `design-in-group`)
+- What: the active group name is larger; the three-dot button opens a custom options panel with the same permitted actions and confirmations. The leaderboard has a small podium, clearer ranked rows and a separate points chart; the current player is highlighted.
+- Why: Bene wanted a clean but more game-like group and leaderboard, inspired by the supplied examples.
+- Files: `GameScreen.swift`, `GroupView.swift`, `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: in both appearances open group options as owner and member, check each action and its confirmation, and inspect the leaderboard with different group sizes. Not yet visually checked or tested with a real group.
+
+**Step 49: Put the leaderboard chart back on top** (branch `design-in-group`)
+- What: removed the leaderboard podium and placed the points history chart above the redesigned ranking rows.
+- Why: Bene preferred the graph at the top as before.
+- Files: `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: open the leaderboard and verify the chart appears above the rankings. Not yet checked visually on a device.
+
+**Step 50: Show initials on profile photos** (branch `design-in-group`)
+- What: a small initial badge appears on a profile photo. Profiles without a photo keep the existing large initial. The shared component is used on Home, in groups, chat and profiles.
+- Why: Bene wanted the player's initial to stay visible even after choosing a profile picture.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: compare players with and without photos on Home and in a group, including overlapping avatars. Not yet checked visually on a device.
+
+**Step 51: Center initials on profile photos** (branch `design-in-group`)
+- What: the initial moves from the edge to the center of the photo, on a dark circular background for readability.
+- Why: Bene wanted the letter clearly readable over any photo.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: view profile photos of different sizes and brightness on Home and in a group. Not yet checked visually on a device.
+
+**Step 52: Smaller centered initials** (branch `design-in-group`)
+- What: reduced the size of the centered initial and its dark background on profile photos.
+- Why: Bene liked the treatment but wanted it a little smaller.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: view profile photos on Home and in a group. Not yet checked visually on a device.
+
+**Step 53: Softer initial background** (branch `design-in-group`)
+- What: made the dark circle behind profile photo initials more transparent.
+- Why: Bene wanted the letter to remain readable without a strong dark edge.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: compare initials over light and dark profile photos. Not yet checked visually on a device.
+
+**Step 54: First Retro-inspired app-wide design pass** (branch `interface-overhaul`)
+- What: major titles use a system serif, body text uses the default system typeface, and shared buttons are flatter capsules. Home, group pages, onboarding, login, setup and profile use a warm light or near-black dark background with adaptive cards. The existing app logo, content and behavior remain.
+- Why: Bene requested a first overall design experiment inspired by Retro's clean typography and neutral surfaces.
+- Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, text styles in `Views/`, `docs/HANDOVER.md`.
+- How to check: inspect onboarding, login, Home, create/join, groups, contract and profile in both appearances. The exact Retro font is not included; the system serif is an approximation. This is a first pass, not yet visually checked on a device or tested end to end.
+
+**Step 55: Restore the previous app design** (branch `interface-overhaul`)
+- What: reverted the Retro-inspired overall design experiment from step 54, restoring the previous colors, typography and controls.
+- Why: Bene preferred the earlier design.
+- Files: the same `Views/` files changed in step 54 and `docs/HANDOVER.md`.
+- How to check: compare the app with the design before step 54 in light and dark mode. Not yet visually checked on a device.
+
+**Step 56: Stronger game-inspired colors** (branch `interface-overhaul`)
+- What: the shared Home/group/setup background uses a stronger blue gradient for each appearance, headings use a heavier rounded system font, and common buttons and Home cards have clearer edges. The existing muted emoji banner colors remain.
+- Why: Bene requested a more colorful, higher-contrast game-inspired look while supporting light and dark mode.
+- Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `docs/HANDOVER.md`.
+- How to check: compare onboarding, Home, group and create/join screens in both appearances, including text and buttons. The app builds; the appearance has not yet been visually tested on a device or formally contrast audited.
+
+**Step 57: Stronger group colors and emoji pattern** (branch `interface-overhaul`)
+- What: the shared blue background and emoji-based group gradients are a little more saturated. Small, faint copies of the chosen emoji are scattered behind the group banner and task card; their placement stays stable for each group. Group photos still cover the banner background.
+- Why: Bene wanted stronger colors and a playful emoji pattern, while keeping light and dark appearances readable.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups and emoji in both appearances on Home and in their task cards. Not yet visually checked on a device or formally contrast audited.
+
+**Step 58: Classic system typography** (branch `interface-overhaul`)
+- What: changed rounded system fonts in the app views to the standard system typeface, including shared headings. Existing weights, colors and layouts remain.
+- Why: Bene preferred a more classic, less rounded font throughout the app.
+- Files: text styles in `Views/`, `docs/HANDOVER.md`.
+- How to check: inspect text across onboarding, Home, group, chat and settings in both appearances. Not yet visually checked on a device.
+
+**Step 59: Square group cards experiment** (branch `interface-overhaul`)
+- What: group cards on Home and their emoji/photo banners have square corners. The group info banner retains its previous shape.
+- Why: Bene wanted to try square group boxes.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: inspect group cards with emoji and photos in both appearances. Not yet visually checked on a device.
+
+**Step 60: Lighter group card text** (branch `interface-overhaul`)
+- What: group names and status text on Home use lighter font weights.
+- Why: Bene wanted thinner text, especially for the group names.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: view group cards on Home in both appearances. Not yet checked visually on a device.
+
+**Step 61: Restore rounded type and group cards** (branch `interface-overhaul`)
+- What: restored rounded system fonts and rounded Home group cards and banners. Group names and status text keep the lighter weights from step 60.
+- Why: Bene preferred the earlier rounded style with thinner group card text.
+- Files: text styles in `Views/`, `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: inspect the Home group cards and typography in both appearances. Not yet checked visually on a device.
+
+**Step 62: Retro-style overall experiment** (branch `interface-overhaul`)
+- What: this experiment uses black/neutral backgrounds, adaptive cards, serif headings, standard body type, and flat pill buttons. Emoji-only group banners use neutral backgrounds, while group photos remain visible. Onboarding, login, Home, group pages and profile follow the neutral palette.
+- Why: Bene requested another overall test closely inspired by the supplied Retro screenshots.
+- Files: `Theme.swift`, `HomeView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, `CreateGroupView.swift`, `JoinView.swift`, other `Views/` typography, and `docs/HANDOVER.md`.
+- How to check: inspect onboarding, login, Home, setup, group and profile in both appearances and test their controls. The system serif approximates the reference font; the exact font is not included. Not yet visually checked on a device or tested end to end.
+
+**Step 63: Restore emoji backgrounds** (branch `interface-overhaul`)
+- What: restored the emoji-based muted colors and small emoji pattern on group banners and task cards; the neutral Retro-style app surfaces remain.
+- Why: Bene wanted to keep the emoji backgrounds in the design experiment.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare groups with different emoji in light and dark mode, and verify group photos still display. Not yet visually checked on a device.
+
+**Step 64: Match create and join screens to neutral design** (branch `interface-overhaul`)
+- What: the first New Habit and Join Habit screens use serif introductory titles, quiet section labels and adaptive neutral cards. Period choices use neutral pill buttons. The confirmation pages use the matching background.
+- Why: Bene wanted the setup screens' typography and colors to match the current Retro-inspired experiment.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: open both flows in light and dark mode, choose each frequency, and proceed through the contract. Not yet visually checked or tested with a real group.
+
+**Step 65: Show profile photos without initials** (branch `interface-overhaul`)
+- What: profile photos are shown without the initial overlay; profiles without photos still show their initial. Names are also displayed under the group podium photos, alongside the existing names in group lists and chat.
+- Why: Bene wanted photos unobstructed while keeping players identifiable within a group.
+- Files: `Pictures.swift`, `Podium.swift`, `docs/HANDOVER.md`.
+- How to check: view players with and without photos on Home and in a group, including the podium. Not yet visually checked on a device.
+
+**Step 66: Move round bonus below leaderboard** (branch `interface-overhaul`)
+- What: the round bonus card is no longer in the group screen; it appears below the rankings on the leaderboard instead. Its values and scoring rules are unchanged.
+- Why: Bene wanted the group screen less crowded and bonus information on the leaderboard.
+- Files: `GroupView.swift`, `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: open an active group, then its leaderboard; the bonus appears only below the rankings. Not yet visually checked on a device.
+
+**Step 67: Password hints only when something is wrong** (branch `login/signup-edits`)
 - What: the password checklist under sign up and "Forgot password?" is gone while everything is fine. As soon as you type, only the rules that are still missing appear in red ("Needs a number"), and each line disappears once it is met. "The passwords are not the same" appears only after you typed something into the second field.
 - Why: a list of six grey lines looked busy before anyone typed anything.
 - How: `PasswordChecklist` in `AuthView.swift` filters `passwordRules` to the missing ones. The rules themselves (HabitCore) did not change.
 - How to check: `AuthView` preview "Password hints" (empty, too simple, not the same, all fine).
 
-**Step 33: "X left the group" and on hold below 3 players** (branch `group-updates`, migration 006, rule R30)
+**Step 68: "X left the group" and on hold below 3 players** (branch `group-updates`, migration 006, rule R30)
 - What: when an accepted member leaves, the chat shows a grey note in the middle: "Lenny left the group." If a **running** challenge then has fewer than 3 players, a second note says "Only 2 players are left, so the game is on hold. Invite someone with the code to go on." While on hold nobody can check in, and the group screen shows a card "The game is on hold" with an "Invite friends" button. As soon as a third player is accepted, it goes on. In the lobby people come and go without notes. Withdrawing a pending request stays quiet.
-- Why: with 2 players the X vote hardly works. Ending the challenge would be too hard now that people can join later (step 34).
+- Why: with 2 players the X vote hardly works. Ending the challenge would be too hard now that people can join later (step 69).
 - How: inside the database function `leave_group` (`006_leave_messages.sql`): it writes the note as a message with `system = true`. The insert policy on `messages` refuses `system = true`, so no app can fake a note. "On hold" is not stored: HabitCore `isOnHold` computes it from the number of accepted members (`minimumPlayers = 3`, also used for the start check), and `taskStatus` refuses check-ins while on hold. The rounds keep counting while on hold, for everyone the same. The leave dialog warns before.
 - Files: `006_leave_messages.sql`, `Rounds.swift`, `Tasks.swift`, `ChatService.swift`, `Rows.swift`, `FeedView.swift` (`SystemNote`), `GameScreen.swift`, `GroupView.swift`, `TaskCard.swift`.
 
-**Step 34: Join a running challenge** (branch `group-updates`, migration 007, rule R29)
+**Step 69: Join a running challenge** (branch `group-updates`, migration 007, rule R29)
 - What: the invite code now works until the challenge is over, also in the group screen menu ("Invite friends"). The join screen says "This challenge is already running...". The owner sees a card "1 join request" with Accept and Decline on the group screen. Someone accepted while it runs starts in the **next** round, and the chat says "Mia joined the group and starts in round 4." Until then they see "Welcome! You start in round 4" and can already chat and vote. When the group has 3 players again, the chat says "There are 3 players again, the game goes on." Starting the session no longer declines open requests.
 - Points (option C, chosen by Lenny): for every round before their first, a late joiner gets the **average points of the members who played that round** (rounded down). Their streak, complete rounds, grade and history only count their own rounds. The player profile says "Joined in round 4. Rounds 1 to 3 got the group average: 38 pts."
 - Known weakness (say it yourselves): the average is a gift. Someone could join late on purpose, or leave and join again, to get the average without the work. Fine for friends, not for money.
@@ -539,7 +749,7 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `007_late_join.sql`, `Models.swift`, `Rounds.swift`, `Tasks.swift`, `Scoring.swift`, tests, `GroupService.swift`, `Rows.swift`, `JoinView.swift`, `GroupView.swift` (`NoticeCard`, previews), `TaskCard.swift`, `PlayerProfileView.swift`, `LobbyView.swift`, `SPEC.md` (R29, R30).
 - How to check: preview "On hold, with a join request" in `GroupView.swift`. For real: a running group with 3 players, one leaves → note and on hold; a 4th person joins with the code, owner accepts → note, game goes on, the new player starts next round with the average points.
 
-**Step 35: Invite code in the group info** (branch `group-updates`)
+**Step 70: Invite code in the group info** (branch `group-updates`)
 - What: the group info (tap the member pictures at the top of the group screen) now shows the invite code big at the top, with "Copy" and "Share". While the challenge runs it says that new players start in the next round and get the group average. After the end the code is grey with "The challenge is over, so the code does not work any more."
 - Why: so everyone in the group can always find the code and invite friends later (R29).
 - Files: `GroupInfoView.swift` (`inviteSection`).

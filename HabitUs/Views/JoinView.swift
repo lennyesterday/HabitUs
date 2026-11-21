@@ -17,34 +17,42 @@ struct JoinView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                Section {
-                    TextField("Invite code", text: $code)
-                        .font(.title2.monospaced())
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
-                } footer: {
-                    Text("6 characters, from the friend who started the habit.")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HabitFormIntro(title: "Join your friends", subtitle: "Your next habit starts together.", symbol: "person.2.fill")
+                    HabitFormSection(title: "Invite code", symbol: "envelope.open.fill") {
+                        TextField("Invite code", text: $code)
+                            .font(.title2.monospaced().weight(.bold))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                            .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
+                        Text("6 characters, from the friend who started the habit.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    if errorMessage != nil {
+                        ErrorText(message: errorMessage)
+                    }
+                    Button {
+                        Task { await next() }
+                    } label: {
+                        if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Next") }
+                    }
+                    .buttonStyle(ChunkyButtonStyle())
+                    .disabled(isWorking)
                 }
-                if errorMessage != nil {
-                    ErrorText(message: errorMessage)
-                }
+                .padding(20)
             }
-            .scrollContentBackground(.hidden)
-            .background(PaperBackground())
+            .background(HabitFormBackground())
+            .tint(.primary)
             .navigationTitle("Join a Habit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isWorking {
-                        ProgressView()
-                    } else {
-                        Button("Next") { Task { await next() } }
-                    }
                 }
             }
             .navigationDestination(for: Step.self) { step in
@@ -67,6 +75,8 @@ struct JoinView: View {
                             .buttonStyle(.borderedProminent)
                     }
                     .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(HabitFormBackground())
                     .navigationBarBackButtonHidden()
                 }
             }

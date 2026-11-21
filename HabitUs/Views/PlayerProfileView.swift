@@ -28,10 +28,10 @@ struct PlayerProfileView: View {
                         .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
                     Text(member?.displayName ?? "Former member")
                         .font(Theme.title(28))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     if let index {
                         Text("#\(index + 1) of \(rows.count) in \(data.group.name)")
-                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .font(.system(.subheadline, design: .default).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -45,7 +45,7 @@ struct PlayerProfileView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("History")
                         .font(Theme.title(22))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     if let row, !row.donePerRound.isEmpty {
                         // R29: someone who joined later has their own rounds from firstRound on.
                         let lastPlayed = row.firstRound + row.donePerRound.count - 1
@@ -69,7 +69,7 @@ struct PlayerProfileView: View {
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }
@@ -86,18 +86,18 @@ struct PlayerProfileView: View {
                 .background(color, in: RoundedRectangle(cornerRadius: 20))
             VStack(alignment: .leading, spacing: 4) {
                 Text(text)
-                    .font(.system(.headline, design: .rounded).weight(.bold))
-                    .foregroundStyle(Theme.ink)
+                    .font(.system(.headline, design: .default).weight(.bold))
+                    .foregroundStyle(Color.primary)
                 Text(playerGrade == nil
                      ? "The grade appears after the first finished round."
                      : "Share of tasks done in \(finishedRounds) finished round\(finishedRounds == 1 ? "" : "s"). A from 90 %, B from 70 %, C from 50 %.")
-                    .font(.system(.caption, design: .rounded))
+                    .font(.system(.caption, design: .default))
                     .foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
     }
 
@@ -125,17 +125,17 @@ struct PlayerProfileView: View {
     private func stat(_ value: String, _ label: String) -> some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(.title3, design: .rounded).weight(.bold))
-                .foregroundStyle(Theme.ink)
+                .font(.system(.title3, design: .default).weight(.bold))
+                .foregroundStyle(Color.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(label)
-                .font(.system(.caption2, design: .rounded).weight(.semibold))
+                .font(.system(.caption2, design: .default).weight(.semibold))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(.white, in: RoundedRectangle(cornerRadius: 18))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
     }
 
     // MARK: - History
@@ -154,13 +154,13 @@ struct PlayerProfileView: View {
         return VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(isRunning ? "Round \(round) · now" : "Round \(round)")
-                    .font(.system(.headline, design: .rounded).weight(.bold))
+                    .font(.system(.headline, design: .default).weight(.bold))
                 Spacer()
                 Text("\(done)/\(target) done · \(points) pts")
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .font(.system(.subheadline, design: .default).weight(.semibold))
                     .foregroundStyle(done >= target ? Theme.rankColor(1) : .secondary)
             }
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(Color.primary)
 
             if !photos.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -175,18 +175,18 @@ struct PlayerProfileView: View {
             ForEach(pauses) { pause in
                 Label("Paused: \(pause.text)\(data.isValid(pause) ? "" : " (rejected)")",
                       systemImage: "pause.circle.fill")
-                    .font(.system(.subheadline, design: .rounded))
+                    .font(.system(.subheadline, design: .default))
                     .foregroundStyle(data.isValid(pause) ? Color.secondary : Theme.rankColor(0))
             }
 
             if missed > 0 {
                 Label("\(missed) task\(missed == 1 ? "" : "s") missed", systemImage: "xmark.circle.fill")
-                    .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                    .font(.system(.subheadline, design: .default).weight(.semibold))
                     .foregroundStyle(Theme.rankColor(0))
             }
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 22))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 }
@@ -219,7 +219,7 @@ private struct ProofThumbnail: View {
                 }
             }
             Text(checkin.createdAt.formatted(.dateTime.weekday(.abbreviated).day()))
-                .font(.system(.caption2, design: .rounded).weight(.semibold))
+                .font(.system(.caption2, design: .default).weight(.semibold))
                 .foregroundStyle(.secondary)
         }
         .task(id: checkin.photoPath) {

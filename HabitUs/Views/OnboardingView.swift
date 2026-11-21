@@ -43,15 +43,15 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            BrandBackground()
+            HomeBackground()
 
             VStack {
                 HStack {
                     Spacer()
                     if page > 0 && page <= pages.count {
                         Button("Skip") { done() }
-                            .font(.system(.subheadline, design: .rounded).bold())
-                            .foregroundStyle(.white.opacity(0.8))
+                            .font(.system(.subheadline, design: .default).bold())
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .frame(height: 30)
@@ -86,30 +86,18 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(spacing: 24) {
             Spacer()
-            ZStack {
-                // Soft rays behind the logo, like a sunrise.
-                ForEach(0..<12) { index in
-                    Capsule()
-                        .fill(.white.opacity(0.12))
-                        .frame(width: 18, height: 340)
-                        .rotationEffect(.degrees(Double(index) * 15))
-                }
-                Image("Logo")
-                    .resizable()
-                    .frame(width: 150, height: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 34))
-                    .shadow(color: .black.opacity(0.25), radius: 20, y: 10)
-            }
-            .frame(height: 340)
+            Image("Logo")
+                .resizable()
+                .frame(width: 150, height: 150)
+                .clipShape(RoundedRectangle(cornerRadius: 34))
+                .frame(height: 340)
             Text("Welcome to\nHabitract")
                 .font(Theme.title(38))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
-            (Text("Build habits ") + Text("together").foregroundStyle(Theme.sunshine).bold()
-                + Text(" with your friends."))
-                .font(.system(.title3, design: .rounded))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
+            Text("Build habits together with your friends.")
+                .font(.system(.title3, design: .default))
+                .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             Spacer()
         }
@@ -123,22 +111,21 @@ struct OnboardingView: View {
             Text(page.title)
                 .font(Theme.title(32))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
+                .foregroundStyle(.primary)
             highlighted(page.text, page.highlight)
-                .font(.system(.title3, design: .rounded))
+                .font(.system(.title3, design: .default))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.white.opacity(0.9))
+                .foregroundStyle(.secondary)
             Spacer()
         }
         .padding(.horizontal, 32)
     }
 
-    /// The text with one part in yellow and bold.
+    /// Emphasize the key phrase in the description.
     private func highlighted(_ text: String, _ part: String) -> Text {
         guard let range = text.range(of: part) else { return Text(text) }
         return Text(text[..<range.lowerBound])
-            + Text(text[range]).foregroundStyle(Theme.sunshine).bold()
+            + Text(text[range]).bold()
             + Text(text[range.upperBound...])
     }
 
@@ -146,7 +133,7 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(0...pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(.white.opacity(index == page ? 1 : 0.35))
+                    .fill(Color.primary.opacity(index == page ? 1 : 0.25))
                     .frame(width: index == page ? 22 : 8, height: 8)
             }
         }
@@ -189,8 +176,14 @@ private struct Illustration: View {
     }
 }
 
-#Preview("Welcome") {
+#Preview("Welcome – Light") {
     OnboardingView { }
+        .preferredColorScheme(.light)
+}
+
+#Preview("Welcome – Dark") {
+    OnboardingView { }
+        .preferredColorScheme(.dark)
 }
 
 #Preview("Photo page") {

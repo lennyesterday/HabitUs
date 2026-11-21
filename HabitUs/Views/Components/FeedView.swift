@@ -15,7 +15,7 @@ struct FeedView: View {
         LazyVStack(alignment: .leading, spacing: 14) {
             if items.isEmpty {
                 Text("Nothing here yet. Do your first task or say hi 👋")
-                    .font(.system(.subheadline, design: .rounded))
+                    .font(.system(.subheadline, design: .default))
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity)
             }
@@ -65,7 +65,7 @@ private struct MessageBubble: View {
             VStack(alignment: mine ? .trailing : .leading, spacing: 4) {
                 if !mine {
                     Text(author?.displayName ?? "Former member")
-                        .font(.system(.caption, design: .rounded).weight(.heavy))
+                        .font(.system(.caption, design: .default).weight(.heavy))
                         .foregroundStyle(.secondary)
                 }
                 if let gifURL = message.gifURL {
@@ -75,7 +75,7 @@ private struct MessageBubble: View {
                 }
                 if !message.text.isEmpty {
                     Text(message.text)
-                        .font(.system(.body, design: .rounded))
+                        .font(.system(.body, design: .default))
                         .foregroundStyle(mine ? .white : Theme.ink)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 9)
@@ -106,17 +106,17 @@ private struct CheckinFeedRow: View {
                 ProfilePicture(name: author?.displayName ?? "?", path: author?.photoPath, size: 36)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(author?.displayName ?? "Former member")
-                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .font(.system(.headline, design: .default).weight(.heavy))
                     Text(checkin.kind == .photo
                          ? "📸 \(data.group.habit) · \(Theme.timeText(checkin.createdAt))"
                          : "⏸ Pause · \(Theme.timeText(checkin.createdAt))")
-                        .font(.system(.caption, design: .rounded).weight(.bold))
+                        .font(.system(.caption, design: .default).weight(.bold))
                         .foregroundStyle(.secondary)
                 }
                 Spacer()
                 Text(valid ? (checkin.kind == .photo ? "VALID" : "ACCEPTED")
                            : (checkin.kind == .photo ? "INVALID" : "REJECTED"))
-                    .font(.system(.caption2, design: .rounded).weight(.heavy))
+                    .font(.system(.caption2, design: .default).weight(.heavy))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -127,7 +127,7 @@ private struct CheckinFeedRow: View {
             }
             if !checkin.text.isEmpty {
                 Text(checkin.text)
-                    .font(.system(.callout, design: .rounded))
+                    .font(.system(.callout, design: .default))
             }
             reactionBar(valid: valid, now: now)
             if !valid && checkin.kind == .photo && checkin.userId == data.me
@@ -142,7 +142,7 @@ private struct CheckinFeedRow: View {
             }
         }
         .padding(12)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
     }
 
@@ -189,7 +189,7 @@ private struct CheckinFeedRow: View {
                     Text(valid
                          ? "\(min(xCount, needed)) of \(needed) 👎 to \(invalidWord)"
                          : "\(needed) of \(needed) 👎 · \(checkin.kind == .photo ? "invalid" : "rejected")")
-                        .font(.system(.caption, design: .rounded).weight(.bold))
+                        .font(.system(.caption, design: .default).weight(.bold))
                         .foregroundStyle(reject)
                 }
                 .accessibilityElement(children: .combine)
@@ -201,7 +201,7 @@ private struct CheckinFeedRow: View {
                                 action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(text)
-                .font(.system(.subheadline, design: .rounded).weight(.heavy))
+                .font(.system(.subheadline, design: .default).weight(.heavy))
                 .foregroundStyle(selected ? .white : Theme.ink)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)

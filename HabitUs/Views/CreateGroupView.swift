@@ -24,10 +24,14 @@ struct CreateGroupView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                Section("Group") {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HabitFormIntro(title: "Build your habit", subtitle: "Set a goal and invite your friends.", symbol: "sparkles")
+                    HabitFormSection(title: "Group", symbol: "person.2.fill") {
                     TextField("Name, for example Gym Crew", text: $name)
+                    Divider()
                     TextField("Habit, for example Gym", text: $habit)
+                    Divider()
                     Button {
                         showEmojiPicker = true
                     } label: {
@@ -39,16 +43,30 @@ struct CreateGroupView: View {
                     }
                 }
 
-                Section("How often") {
-                    Picker("Per", selection: $period) {
-                        ForEach(Period.allCases, id: \.self) { Text("per \($0.word)") }
+                HabitFormSection(title: "How often", symbol: "calendar") {
+                    HStack(spacing: 8) {
+                        ForEach(Period.allCases, id: \.self) { option in
+                            Button {
+                                period = option
+                            } label: {
+                                Text("per \(option.word)")
+                                    .font(.system(.subheadline, design: .default).weight(.bold))
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .foregroundStyle(period == option ? Color(.systemBackground) : Color.primary)
+                                    .background(period == option ? Color.primary : Color(.tertiarySystemBackground),
+                                                in: Capsule())
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityAddTraits(period == option ? .isSelected : [])
+                        }
                     }
-                    .pickerStyle(.segmented)
+                    Divider()
                     Stepper("\(target) per \(period.word)", value: $target, in: 1...period.maxTarget)
                 }
 
-                Section("End") {
+                HabitFormSection(title: "End", symbol: "flag.fill") {
                     Toggle("End date", isOn: $hasEndDate)
+                    Divider()
                     if hasEndDate {
                         DatePicker("Ends on", selection: $endDate, in: Date()..., displayedComponents: .date)
                         HStack {
@@ -62,18 +80,22 @@ struct CreateGroupView: View {
                     }
                 }
 
-                Section("Rules") {
+                HabitFormSection(title: "Rules", symbol: "text.alignleft") {
                     TextField("Your own rules, for example: the photo must show the gym",
                               text: $rulesText, axis: .vertical)
                         .lineLimit(3...8)
                 }
 
-                if errorMessage != nil {
-                    ErrorText(message: errorMessage)
+                    if errorMessage != nil {
+                        ErrorText(message: errorMessage)
+                    }
+                    Button("Next") { next() }
+                        .buttonStyle(ChunkyButtonStyle())
                 }
+                .padding(20)
             }
-            .scrollContentBackground(.hidden)
-            .background(PaperBackground())
+            .background(HabitFormBackground())
+            .tint(.primary)
             .navigationTitle("New Habit")
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: period) { target = min(target, period.maxTarget) }
@@ -83,9 +105,6 @@ struct CreateGroupView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Next") { next() }
                 }
             }
             .navigationDestination(for: Step.self) { step in
@@ -135,6 +154,53 @@ struct CreateGroupView: View {
     }
 }
 
+/// Shared visual treatment for the first create and join screens.
+struct HabitFormBackground: View {
+    var body: some View { HomeBackground() }
+}
+
+struct HabitFormIntro: View {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    let symbol: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(Theme.title(34))
+                .foregroundStyle(.primary)
+                .accessibilityAddTraits(.isHeader)
+            Text(subtitle)
+                .font(.body)
+                .foregroundStyle(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+    }
+}
+
+struct HabitFormSection<Content: View>: View {
+    let title: LocalizedStringKey
+    let symbol: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(.headline).weight(.semibold))
+                .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 14) {
+                content
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+
 /// Shows the invite code large, to copy or share (SPEC section 4).
 struct GroupCreatedView: View {
     let code: String
@@ -165,6 +231,8 @@ struct GroupCreatedView: View {
                 .controlSize(.large)
         }
         .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(HabitFormBackground())
         .navigationBarBackButtonHidden()
     }
 }
