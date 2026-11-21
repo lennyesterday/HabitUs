@@ -4,6 +4,7 @@ import HabitCore
 // Shows the round bonus you can get or already have (R21, R22), so the scoring is visible and fun. Area C.
 
 struct BonusCard: View {
+    @Environment(\.colorScheme) private var colorScheme
     let round: Int
     let target: Int
     let status: TaskStatus
@@ -26,13 +27,13 @@ struct BonusCard: View {
                 .background(green, in: Capsule())
             Text("+\(percent) %")
                 .font(Theme.title(40))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(.primary)
             Text("round bonus")
                 .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(.secondary)
             Text(message(complete: complete, percent: percent))
                 .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .foregroundStyle(green)
+                .foregroundStyle(colorScheme == .dark ? Color(red: 0.55, green: 0.83, blue: 0.72) : green)
                 .multilineTextAlignment(.center)
                 .padding(.top, 4)
         }

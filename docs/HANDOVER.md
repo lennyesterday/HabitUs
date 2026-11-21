@@ -608,6 +608,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: open Home in light and dark mode and check group names and banners. Not yet checked visually on a device.
 
+**Step 47: Consistent group backgrounds and chat area** (branch `design-in-group`)
+- What: group screens and contract use the same light/dark blue background as Home. The task card uses the same emoji-derived colors and pattern as the Home group banner. Chat has its own rounded area, and the message field and key cards adapt to appearance.
+- Why: Bene wanted consistent backgrounds, matching group colors and a clearer boundary around chat.
+- Files: `HomeView.swift`, `GroupView.swift`, `TaskCard.swift`, `FeedView.swift`, `BonusCard.swift`, `Podium.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupInfoView.swift`, `GroupLookView.swift`, `LeaderboardView.swift`, `ResultsView.swift`, `PlayerProfileView.swift`, `docs/HANDOVER.md`.
+- How to check: view an active group, lobby, group info, leaderboard, player profile, results and signing screen in both appearances; compare its emoji banner and task card, and send a message. Not yet visually checked or tested with a real group.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

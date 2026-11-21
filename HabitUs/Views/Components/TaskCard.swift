@@ -14,7 +14,6 @@ struct TaskCard: View {
         let group = data.group
         let status = data.taskStatus(of: data.me, now: now)
         let habit = group.habit.uppercased()
-        let color = Theme.groupColor(group.id)
 
         VStack(spacing: 16) {
             HStack {
@@ -48,18 +47,18 @@ struct TaskCard: View {
                         let failed = !done && k <= status.done + status.failed
                         Image(systemName: done ? "checkmark" : (failed ? "xmark" : "circle.dotted"))
                             .font(.system(size: 15, weight: .black))
-                            .foregroundStyle(done ? color : (failed ? .red : .white.opacity(0.8)))
+                            .foregroundStyle(done ? Theme.ink : (failed ? .red : Color.primary))
                             .frame(width: 34, height: 34)
-                            .background(done ? Color.white : Color.white.opacity(0.2), in: Circle())
+                            .background(done ? Color.white : Color.primary.opacity(0.12), in: Circle())
                     }
                 }
             } else {
                 VStack(spacing: 6) {
                     ProgressView(value: Double(status.done), total: Double(group.target))
-                        .tint(.white)
+                        .tint(.primary)
                     Text("\(status.done) of \(group.target)")
                         .font(.system(.subheadline, design: .rounded).bold())
-                        .foregroundStyle(.white)
+                        .foregroundStyle(.primary)
                 }
             }
 
@@ -71,19 +70,19 @@ struct TaskCard: View {
                         Label("Do \(habit) \(status.done + status.failed + 1)", systemImage: "camera.fill")
                     }
                 }
-                .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.82), textColor: color))
+                .buttonStyle(ChunkyButtonStyle(color: .white, ledgeColor: Color(white: 0.82), textColor: Theme.ink))
                 .disabled(!status.canCheckInToday || isUploading)
                 .opacity(status.canCheckInToday ? 1 : 0.6)
 
                 if !status.canCheckInToday {
                     Text("Done for today. Come back tomorrow!")
                         .font(.system(.footnote, design: .rounded).bold())
-                        .foregroundStyle(.white.opacity(0.9))
+                        .foregroundStyle(.primary)
                 }
             } else {
                 Text("You finished this round. See you next round! 💪")
                     .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
             }
 
@@ -91,12 +90,16 @@ struct TaskCard: View {
             if !others.isEmpty {
                 Text(others)
                     .font(.system(.footnote, design: .rounded).weight(.semibold))
-                    .foregroundStyle(.white.opacity(0.85))
+                    .foregroundStyle(.primary)
             }
         }
         .padding(18)
         .frame(maxWidth: .infinity)
-        .ledgeCard(color, radius: 30, depth: 8)
+        .background {
+            GroupEmojiBackground(group: group)
+                .clipShape(RoundedRectangle(cornerRadius: 30))
+        }
+        .overlay(RoundedRectangle(cornerRadius: 30).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
     }
 
     /// "Bene 3/3 · Vincent 1/3"

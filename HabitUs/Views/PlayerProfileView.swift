@@ -28,7 +28,7 @@ struct PlayerProfileView: View {
                         .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
                     Text(member?.displayName ?? "Former member")
                         .font(Theme.title(28))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     if let index {
                         Text("#\(index + 1) of \(rows.count) in \(data.group.name)")
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
@@ -45,7 +45,7 @@ struct PlayerProfileView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     Text("History")
                         .font(Theme.title(22))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     if let row, !row.donePerRound.isEmpty {
                         ForEach((1...row.donePerRound.count).reversed(), id: \.self) { round in
                             roundCard(round: round, row: row, isRunning: running && round == row.donePerRound.count)
@@ -59,7 +59,7 @@ struct PlayerProfileView: View {
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }
@@ -77,7 +77,7 @@ struct PlayerProfileView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(text)
                     .font(.system(.headline, design: .rounded).weight(.bold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Color.primary)
                 Text(playerGrade == nil
                      ? "The grade appears after the first finished round."
                      : "Share of tasks done in \(finishedRounds) finished round\(finishedRounds == 1 ? "" : "s"). A from 90 %, B from 70 %, C from 50 %.")
@@ -87,7 +87,7 @@ struct PlayerProfileView: View {
             Spacer(minLength: 0)
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
     }
 
@@ -116,7 +116,7 @@ struct PlayerProfileView: View {
         VStack(spacing: 2) {
             Text(value)
                 .font(.system(.title3, design: .rounded).weight(.bold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(Color.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
             Text(label)
@@ -125,7 +125,7 @@ struct PlayerProfileView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(.white, in: RoundedRectangle(cornerRadius: 18))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
     }
 
     // MARK: - History
@@ -150,7 +150,7 @@ struct PlayerProfileView: View {
                     .font(.system(.subheadline, design: .rounded).weight(.semibold))
                     .foregroundStyle(done >= target ? Theme.rankColor(1) : .secondary)
             }
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(Color.primary)
 
             if !photos.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -176,7 +176,7 @@ struct PlayerProfileView: View {
             }
         }
         .padding(14)
-        .background(.white, in: RoundedRectangle(cornerRadius: 22))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
         .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
     }
 }

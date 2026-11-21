@@ -15,7 +15,7 @@ struct LeaderboardView: View {
                 VStack(spacing: 2) {
                     Text("Leaderboard")
                         .font(Theme.title(30))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     Text("Round \(round) · points so far")
                         .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundStyle(.secondary)
@@ -36,12 +36,12 @@ struct LeaderboardView: View {
                         .padding(.top, 4)
                 }
                 .padding(14)
-                .background(.white, in: RoundedRectangle(cornerRadius: 26))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
                 .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }
@@ -99,7 +99,7 @@ struct LeaderboardView: View {
                 }
                 Text(row.displayName)
                     .font(.system(.title3, design: .rounded).weight(.bold))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Color.primary)
                 Text("\(row.completeRounds) full round\(row.completeRounds == 1 ? "" : "s") · streak \(row.streak) 🔥 · \(row.pauses) pause\(row.pauses == 1 ? "" : "s")")
                     .font(.system(.caption, design: .rounded).weight(.bold))
                     .foregroundStyle(.secondary)

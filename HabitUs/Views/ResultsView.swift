@@ -12,7 +12,7 @@ struct ResultsView: View {
             VStack(spacing: 24) {
                 Text("Challenge finished")
                     .font(.system(.subheadline, design: .rounded).weight(.bold))
-                    .foregroundStyle(Theme.ink.opacity(0.7))
+                    .foregroundStyle(Color.primary.opacity(0.7))
 
                 if let winner = rows.first {
                     VStack(spacing: -4) {
@@ -29,14 +29,14 @@ struct ResultsView: View {
                             .font(.system(.headline, design: .rounded).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Color.primary)
                 }
 
                 RankingRows(rows: rows, me: data.me)
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationTitle("\(data.group.icon) \(data.group.name)")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)

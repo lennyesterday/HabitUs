@@ -18,7 +18,7 @@ struct GroupInfoView: View {
                     GroupBanner(group: group, height: 150)
                     Text(group.name)
                         .font(Theme.title(30))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     Text("\(group.icon) \(group.habit) · \(group.target)× per \(group.period.word)")
                         .font(.system(.headline, design: .rounded))
                         .foregroundStyle(.secondary)
@@ -41,7 +41,7 @@ struct GroupInfoView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Contract & rules")
                         .font(Theme.title(22))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(Color.primary)
                     ContractTerms(contract: Contract(group))
                     if let me = data.myMembership, !me.signature.isEmpty {
                         mySignature(me)
@@ -57,14 +57,14 @@ struct GroupInfoView: View {
                     • Same points: fewer pauses first, then the name
                     """)
                     .font(.system(.subheadline, design: .rounded))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(14)
                 }
             }
             .padding(18)
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .navigationTitle("Group info")
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
@@ -76,9 +76,9 @@ struct GroupInfoView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text(title)
                 .font(Theme.title(22))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(Color.primary)
             VStack(spacing: 0) { content() }
-                .background(.white, in: RoundedRectangle(cornerRadius: 22))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,7 +96,7 @@ struct GroupInfoView: View {
             Spacer()
             Text(value)
                 .font(.system(.subheadline, design: .rounded).weight(.bold))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(Color.primary)
                 .multilineTextAlignment(.trailing)
         }
         .padding(.horizontal, 14)
@@ -109,7 +109,7 @@ struct GroupInfoView: View {
             SignatureImage(signature: me.signature)
                 .frame(maxWidth: 220, maxHeight: 80, alignment: .leading)
             Rectangle()
-                .fill(Theme.ink.opacity(0.25))
+                .fill(Color.primary.opacity(0.25))
                 .frame(width: 220, height: 1)
             Text(me.signedAt.map { "Signed by \(me.displayName) · \(Theme.signatureDate($0))" }
                  ?? "Signed by \(me.displayName)")

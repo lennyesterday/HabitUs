@@ -41,7 +41,7 @@ struct GroupView: View {
                         Text(periodTitle)
                             .font(Theme.title(30))
                     }
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
 
                     TaskCard(data: data, now: now, isUploading: isUploading) {
                         showCamera = true
@@ -67,16 +67,17 @@ struct GroupView: View {
 
                     RankingRows(rows: rows, me: data.me) { selectedPlayer = $0 }
 
-                    HStack {
-                        Rectangle().frame(height: 2)
-                        Text("CHAT")
-                            .font(.system(.caption, design: .rounded).weight(.heavy))
-                            .tracking(3)
-                        Rectangle().frame(height: 2)
+                    VStack(alignment: .leading, spacing: 16) {
+                        Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
+                            .font(.system(.headline, design: .rounded).weight(.bold))
+                            .foregroundStyle(.primary)
+                            .accessibilityAddTraits(.isHeader)
+                        FeedView(data: data, onReact: react, onRetake: { showCamera = true })
                     }
-                    .foregroundStyle(Theme.ink.opacity(0.25))
-
-                    FeedView(data: data, onReact: react, onRetake: { showCamera = true })
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color(.systemBackground).opacity(0.55), in: RoundedRectangle(cornerRadius: 26))
+                    .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.10), lineWidth: 1))
 
                     Color.clear.frame(height: 1).id("bottom")
                 }
@@ -87,7 +88,7 @@ struct GroupView: View {
                 withAnimation { proxy.scrollTo("bottom") }
             }
         }
-        .background(PaperBackground())
+        .background(HomeBackground())
         .safeAreaInset(edge: .bottom) { messageBar }
         .navigationTitle("\(data.group.icon) \(data.group.name)")
         .navigationBarTitleDisplayMode(.inline)
@@ -266,7 +267,7 @@ struct GroupView: View {
             }
         }
         .padding(10)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.12), radius: 12, y: 4)
         .padding(.horizontal, 14)
         .padding(.bottom, 6)

@@ -183,7 +183,7 @@ private struct HomeActionButtonStyle: ButtonStyle {
 }
 
 /// A soft blue backdrop for Home, with a subtle pattern inspired by the welcome screen.
-private struct HomeBackground: View {
+struct HomeBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -321,48 +321,16 @@ struct GroupBanner: View {
     let group: HabitGroup
     var height: CGFloat = 140
 
-    @Environment(\.colorScheme) private var colorScheme
     @State private var image: UIImage?
-    @State private var emojiHue: Double?
 
     var body: some View {
-        let bytes = group.id.uuid
-        // The ID provides repeatable variation without changing when the view redraws.
-        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
-        let isDark = colorScheme == .dark
-        let base = Color(hue: hue, saturation: isDark ? 0.19 : 0.12, brightness: isDark ? 0.29 : 0.92)
-        let accent = Color(hue: hue, saturation: isDark ? 0.25 : 0.18, brightness: isDark ? 0.21 : 0.85)
-        let pattern = Int(bytes.1) % 3
-        let angle = Double(Int(bytes.2) % 51 - 25)
-        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
         ZStack {
-            LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
+            GroupEmojiBackground(group: group)
             if let image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
             } else {
-                GeometryReader { geometry in
-                    if pattern == 0 {
-                        Circle()
-                            .fill(.white.opacity(isDark ? 0.05 : 0.35))
-                            .frame(width: height * 1.4, height: height * 1.4)
-                            .position(x: geometry.size.width * position, y: height * 0.25)
-                    } else if pattern == 1 {
-                        RoundedRectangle(cornerRadius: 32)
-                            .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
-                            .frame(width: height * 1.7, height: height * 0.8)
-                            .rotationEffect(.degrees(angle))
-                            .position(x: geometry.size.width * position, y: height * 0.6)
-                    } else {
-                        Capsule()
-                            .fill(.white.opacity(isDark ? 0.05 : 0.30))
-                            .frame(width: height * 1.9, height: height * 0.38)
-                            .rotationEffect(.degrees(angle))
-                            .position(x: geometry.size.width * position, y: height * 0.5)
-                    }
-                }
-                .accessibilityHidden(true)
                 Text(group.icon)
                     .font(.system(size: height * 0.5))
                     .shadow(color: .black.opacity(0.12), radius: 5, y: 3)
@@ -371,9 +339,6 @@ struct GroupBanner: View {
         .frame(height: height)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 22))
-        .task(id: group.icon) {
-            emojiHue = dominantEmojiHue(group.icon)
-        }
         .task(id: group.photoPath) {
             image = nil
             if let path = group.photoPath {
@@ -383,6 +348,51 @@ struct GroupBanner: View {
     }
 }
 
+/// The same stable, emoji-inspired background for the group banner and its task card.
+struct GroupEmojiBackground: View {
+    let group: HabitGroup
+    @Environment(\.colorScheme) private var colorScheme
+    @State private var emojiHue: Double?
+
+    var body: some View {
+        let bytes = group.id.uuid
+        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
+        let isDark = colorScheme == .dark
+        let base = Color(hue: hue, saturation: isDark ? 0.19 : 0.12, brightness: isDark ? 0.29 : 0.92)
+        let accent = Color(hue: hue, saturation: isDark ? 0.25 : 0.18, brightness: isDark ? 0.21 : 0.85)
+        let pattern = Int(bytes.1) % 3
+        let angle = Double(Int(bytes.2) % 51 - 25)
+        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
+
+        GeometryReader { geometry in
+            let height = geometry.size.height
+            ZStack {
+                LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
+                if pattern == 0 {
+                    Circle()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.35))
+                        .frame(width: height * 1.4, height: height * 1.4)
+                        .position(x: geometry.size.width * position, y: height * 0.25)
+                } else if pattern == 1 {
+                    RoundedRectangle(cornerRadius: 32)
+                        .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
+                        .frame(width: height * 1.7, height: height * 0.8)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.6)
+                } else {
+                    Capsule()
+                        .fill(.white.opacity(isDark ? 0.05 : 0.30))
+                        .frame(width: height * 1.9, height: height * 0.38)
+                        .rotationEffect(.degrees(angle))
+                        .position(x: geometry.size.width * position, y: height * 0.5)
+                }
+            }
+            .clipped()
+        }
+        .accessibilityHidden(true)
+        .task(id: group.icon) { emojiHue = dominantEmojiHue(group.icon) }
+    }
+}
 
 /// Find a colorful tone in the rendered emoji; neutral emoji use the group-ID fallback.
 private func dominantEmojiHue(_ emoji: String) -> Double? {

@@ -73,12 +73,12 @@ struct RankingRows: View {
                             .font(.system(.subheadline, design: .rounded).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                     Spacer()
                     if row.streak > 0 {
                         Text("🔥 \(row.streak)")
                             .font(.system(.subheadline, design: .rounded).weight(.bold))
-                            .foregroundStyle(Theme.ink)
+                            .foregroundStyle(.primary)
                     }
                     if onSelect != nil {
                         Image(systemName: "chevron.right")
@@ -88,7 +88,7 @@ struct RankingRows: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(.white, in: RoundedRectangle(cornerRadius: 20))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 20))
                 .shadow(color: .black.opacity(0.05), radius: 6, y: 2)
                 .contentShape(Rectangle())
     }

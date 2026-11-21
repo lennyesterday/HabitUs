@@ -124,7 +124,7 @@ private struct CheckinFeedRow: View {
             }
         }
         .padding(12)
-        .background(.white, in: RoundedRectangle(cornerRadius: 24))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
         .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
     }
 
