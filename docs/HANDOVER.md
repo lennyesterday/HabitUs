@@ -578,6 +578,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `CreateGroupView.swift`, `docs/HANDOVER.md`.
 - How to check: open New Habit and Join Habit in light and dark mode and check the section titles. Not yet visually checked on a device.
 
+**Step 42: Softer group banner colors** (branch `design-interface`)
+- What: groups without a photo get one of five muted blue, violet, warm brown, slate blue or rose gradients and a subtle circle pattern behind their chosen emoji. The group's ID picks a stable color; two groups can occasionally share one. A group photo still replaces the emoji and pattern.
+- Why: Bene wanted group cards to feel varied and fit the app palette instead of using a standard green background.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups without photos and one with a photo in both appearances. The same banner is also used in group info. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

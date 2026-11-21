@@ -324,14 +324,32 @@ struct GroupBanner: View {
     @State private var image: UIImage?
 
     var body: some View {
-        let color = Theme.groupColor(group.id)
+        let palette: [(Color, Color)] = [
+            (Color(red: 0.34, green: 0.42, blue: 0.78), Color(red: 0.18, green: 0.25, blue: 0.57)),
+            (Color(red: 0.56, green: 0.43, blue: 0.72), Color(red: 0.34, green: 0.26, blue: 0.54)),
+            (Color(red: 0.76, green: 0.54, blue: 0.38), Color(red: 0.53, green: 0.34, blue: 0.30)),
+            (Color(red: 0.38, green: 0.57, blue: 0.68), Color(red: 0.20, green: 0.36, blue: 0.52)),
+            (Color(red: 0.71, green: 0.45, blue: 0.51), Color(red: 0.49, green: 0.28, blue: 0.40))
+        ]
+        let colors = palette[Int(group.id.uuid.0) % palette.count]
         ZStack {
-            LinearGradient(colors: [color.opacity(0.75), color], startPoint: .topLeading, endPoint: .bottomTrailing)
+            LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
             if let image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
             } else {
+                GeometryReader { geometry in
+                    Circle()
+                        .fill(.white.opacity(0.08))
+                        .frame(width: height * 1.3, height: height * 1.3)
+                        .position(x: geometry.size.width * 0.16, y: height * 0.2)
+                    Circle()
+                        .strokeBorder(.white.opacity(0.14), lineWidth: 2)
+                        .frame(width: height * 0.9, height: height * 0.9)
+                        .position(x: geometry.size.width * 0.84, y: height * 0.8)
+                }
+                .accessibilityHidden(true)
                 Text(group.icon)
                     .font(.system(size: height * 0.5))
                     .shadow(color: .black.opacity(0.2), radius: 8, y: 6)
