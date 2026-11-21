@@ -560,6 +560,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: open Home in light and dark mode and try both actions. Not yet checked visually or tapped on a device.
 
+**Step 39: Create and join form design** (branch `design-interface`)
+- What: the first New Habit and Join Habit screens use a soft blue background and clean rounded sections instead of the standard grouped form. Existing inputs, validation and navigation remain.
+- Why: Bene wanted the screens opened by the two Home actions to feel cleaner and more distinctive, in light and dark mode.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: open both screens in light and dark mode, try the controls and advance to the contract. Not yet checked visually or tested with a real group.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

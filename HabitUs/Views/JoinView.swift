@@ -17,22 +17,26 @@ struct JoinView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                Section {
-                    TextField("Invite code", text: $code)
-                        .font(.title2.monospaced())
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled()
-                        .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
-                } footer: {
-                    Text("6 characters, from the friend who started the habit.")
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HabitFormSection(title: "Invite code", symbol: "envelope.open.fill") {
+                        TextField("Invite code", text: $code)
+                            .font(.title2.monospaced())
+                            .textInputAutocapitalization(.characters)
+                            .autocorrectionDisabled()
+                            .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
+                        Text("6 characters, from the friend who started the habit.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    if errorMessage != nil {
+                        ErrorText(message: errorMessage)
+                    }
                 }
-                if errorMessage != nil {
-                    ErrorText(message: errorMessage)
-                }
+                .padding(20)
             }
-            .scrollContentBackground(.hidden)
-            .background(PaperBackground())
+            .background(HabitFormBackground())
+            .tint(.primary)
             .navigationTitle("Join a Habit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

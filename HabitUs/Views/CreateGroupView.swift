@@ -24,10 +24,13 @@ struct CreateGroupView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Form {
-                Section("Group") {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HabitFormSection(title: "Group", symbol: "person.2.fill") {
                     TextField("Name, for example Gym Crew", text: $name)
+                    Divider()
                     TextField("Habit, for example Gym", text: $habit)
+                    Divider()
                     Button {
                         showEmojiPicker = true
                     } label: {
@@ -39,16 +42,18 @@ struct CreateGroupView: View {
                     }
                 }
 
-                Section("How often") {
+                HabitFormSection(title: "How often", symbol: "calendar") {
                     Picker("Per", selection: $period) {
                         ForEach(Period.allCases, id: \.self) { Text("per \($0.word)") }
                     }
                     .pickerStyle(.segmented)
+                    Divider()
                     Stepper("\(target) per \(period.word)", value: $target, in: 1...period.maxTarget)
                 }
 
-                Section("End") {
+                HabitFormSection(title: "End", symbol: "flag.fill") {
                     Toggle("End date", isOn: $hasEndDate)
+                    Divider()
                     if hasEndDate {
                         DatePicker("Ends on", selection: $endDate, in: Date()..., displayedComponents: .date)
                         HStack {
@@ -62,18 +67,20 @@ struct CreateGroupView: View {
                     }
                 }
 
-                Section("Rules") {
+                HabitFormSection(title: "Rules", symbol: "text.alignleft") {
                     TextField("Your own rules, for example: the photo must show the gym",
                               text: $rulesText, axis: .vertical)
                         .lineLimit(3...8)
                 }
 
-                if errorMessage != nil {
-                    ErrorText(message: errorMessage)
+                    if errorMessage != nil {
+                        ErrorText(message: errorMessage)
+                    }
                 }
+                .padding(20)
             }
-            .scrollContentBackground(.hidden)
-            .background(PaperBackground())
+            .background(HabitFormBackground())
+            .tint(.primary)
             .navigationTitle("New Habit")
             .navigationBarTitleDisplayMode(.inline)
             .onChange(of: period) { target = min(target, period.maxTarget) }
@@ -131,6 +138,43 @@ struct CreateGroupView: View {
             path.append(.contract)
         } catch {
             errorMessage = error.localizedDescription
+        }
+    }
+}
+
+/// Shared visual treatment for the first create and join screens.
+struct HabitFormBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        LinearGradient(
+            colors: colorScheme == .dark
+                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
+                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .ignoresSafeArea()
+    }
+}
+
+struct HabitFormSection<Content: View>: View {
+    let title: LocalizedStringKey
+    let symbol: String
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Label(title, systemImage: symbol)
+                .font(.system(.headline, design: .rounded).weight(.bold))
+                .foregroundStyle(.primary)
+                .accessibilityAddTraits(.isHeader)
+            VStack(alignment: .leading, spacing: 14) {
+                content
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(18)
+            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
         }
     }
 }
