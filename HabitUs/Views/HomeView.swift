@@ -122,7 +122,7 @@ struct HomeView: View {
                 .font(Theme.title(24))
                 .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .rounded))
+                .font(.system(.subheadline, design: .default))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -159,10 +159,10 @@ private struct HomeActionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                .font(.system(.subheadline, design: .default).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .font(.system(.subheadline, design: .default).weight(.semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -249,7 +249,7 @@ struct GameCardView: View {
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                        .font(.system(.subheadline, design: .default).weight(.bold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -260,7 +260,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .font(.system(.caption, design: .default).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -288,7 +288,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .rounded).bold())
+                    .font(.system(.caption, design: .default).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())

@@ -61,23 +61,23 @@ struct RankingRows: View {
         let color = Theme.rankColor(index)
         return HStack(spacing: 12) {
                     Text("\(index + 1)")
-                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .font(.system(.headline, design: .default).weight(.heavy))
                         .foregroundStyle(.white)
                         .frame(width: 32, height: 32)
                         .background(color, in: Circle())
                     ProfilePicture(name: row.displayName, path: row.photoPath, size: 44)
                     VStack(alignment: .leading, spacing: 0) {
                         Text(row.userId == me ? "\(row.displayName) (you)" : row.displayName)
-                            .font(.system(.headline, design: .rounded).weight(.bold))
+                            .font(.system(.headline, design: .default).weight(.bold))
                         Text("\(row.points) pts")
-                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .font(.system(.subheadline, design: .default).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                     .foregroundStyle(.primary)
                     Spacer()
                     if row.streak > 0 {
                         Text("🔥 \(row.streak)")
-                            .font(.system(.subheadline, design: .rounded).weight(.bold))
+                            .font(.system(.subheadline, design: .default).weight(.bold))
                             .foregroundStyle(.primary)
                     }
                     if onSelect != nil {

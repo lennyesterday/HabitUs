@@ -17,13 +17,13 @@ struct LeaderboardView: View {
                         .font(Theme.title(30))
                         .foregroundStyle(Color.primary)
                     Text("Round \(round) · points so far")
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.system(.subheadline, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                 }
 
                 VStack(alignment: .leading, spacing: 16) {
                     Label("Points over time", systemImage: "chart.line.uptrend.xyaxis")
-                        .font(.system(.headline, design: .rounded).weight(.bold))
+                        .font(.system(.headline, design: .default).weight(.bold))
                     chart.frame(height: 240)
                 }
                 .padding(18)
@@ -31,13 +31,13 @@ struct LeaderboardView: View {
 
                 VStack(alignment: .leading, spacing: 12) {
                     Label("Rankings", systemImage: "trophy.fill")
-                        .font(.system(.headline, design: .rounded).weight(.heavy))
+                        .font(.system(.headline, design: .default).weight(.heavy))
                         .foregroundStyle(.primary)
                     ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
                         playerRow(row, index: index)
                     }
                     Text("Points: 20 per task · +25 % for a full round · +5 % more per round in a row (max +50 %)")
-                        .font(.system(.caption, design: .rounded).weight(.semibold))
+                        .font(.system(.caption, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .frame(maxWidth: .infinity)
@@ -92,7 +92,7 @@ struct LeaderboardView: View {
         let color = Theme.rankColor(index)
         return HStack(spacing: 12) {
             Text("\(index + 1)")
-                .font(.system(.headline, design: .rounded).weight(.heavy))
+                .font(.system(.headline, design: .default).weight(.heavy))
                 .foregroundStyle(.primary)
                 .frame(width: 34, height: 34)
                 .background(color.opacity(0.22), in: Circle())
@@ -101,7 +101,7 @@ struct LeaderboardView: View {
                 HStack(spacing: 6) {
                     if row.userId == me {
                         Text("YOU")
-                            .font(.system(.caption, design: .rounded).weight(.heavy))
+                            .font(.system(.caption, design: .default).weight(.heavy))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
@@ -109,10 +109,10 @@ struct LeaderboardView: View {
                     }
                 }
                 Text(row.displayName)
-                    .font(.system(.title3, design: .rounded).weight(.bold))
+                    .font(.system(.title3, design: .default).weight(.bold))
                     .foregroundStyle(Color.primary)
                 Text("\(row.completeRounds) full round\(row.completeRounds == 1 ? "" : "s") · streak \(row.streak) 🔥 · \(row.pauses) pause\(row.pauses == 1 ? "" : "s")")
-                    .font(.system(.caption, design: .rounded).weight(.bold))
+                    .font(.system(.caption, design: .default).weight(.bold))
                     .foregroundStyle(.secondary)
             }
             Spacer()

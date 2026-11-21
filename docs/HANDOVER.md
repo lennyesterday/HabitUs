@@ -674,6 +674,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare several groups and emoji in both appearances on Home and in their task cards. Not yet visually checked on a device or formally contrast audited.
 
+**Step 58: Classic system typography** (branch `interface-overhaul`)
+- What: changed rounded system fonts in the app views to the standard system typeface, including shared headings. Existing weights, colors and layouts remain.
+- Why: Bene preferred a more classic, less rounded font throughout the app.
+- Files: text styles in `Views/`, `docs/HANDOVER.md`.
+- How to check: inspect text across onboarding, Home, group, chat and settings in both appearances. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

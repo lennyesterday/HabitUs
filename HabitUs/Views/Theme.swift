@@ -13,9 +13,9 @@ enum Theme {
     static let sunshineLedge = Color(red: 0.80, green: 0.58, blue: 0.10)
     static let brandLight = Color(red: 0.36, green: 0.48, blue: 1.0)
 
-    /// Rounded, bold system type for the app's game-inspired headings.
+    /// Bold system type for the app's headings.
     static func title(_ size: CGFloat) -> Font {
-        .system(size: size, weight: .black, design: .rounded)
+        .system(size: size, weight: .black, design: .default)
     }
 
     /// "14 Feb", always the Lisbon calendar day the database means.
@@ -84,7 +84,7 @@ struct ChunkyButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         let ledge: CGFloat = 3
         configuration.label
-            .font(.system(.headline, design: .rounded).weight(.bold))
+            .font(.system(.headline, design: .default).weight(.bold))
             .foregroundStyle(textColor)
             .frame(maxWidth: .infinity, minHeight: 52)
             .background(color, in: RoundedRectangle(cornerRadius: 18))
@@ -188,7 +188,7 @@ struct Pill: View {
             Text(text)
             if !emoji.isEmpty { Text(emoji) }
         }
-        .font(.system(.subheadline, design: .rounded).weight(.bold))
+        .font(.system(.subheadline, design: .default).weight(.bold))
         .foregroundStyle(dark ? .white : Theme.ink)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -247,7 +247,7 @@ struct SettingsRow: View {
                     .foregroundStyle(Theme.ink)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.system(.subheadline, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                 }
