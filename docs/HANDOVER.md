@@ -602,6 +602,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare Home and its group cards in both appearances. The exact Retro font is not included; this uses the system serif font. Not yet checked visually on a device.
 
+**Step 46: Restore Home text styling** (branch `design-interface`)
+- What: reversed the serif font and gold group names from step 45, restoring the previous Home appearance. Emoji-inspired group banners remain.
+- Why: Bene preferred the earlier text styling.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open Home in light and dark mode and check group names and banners. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

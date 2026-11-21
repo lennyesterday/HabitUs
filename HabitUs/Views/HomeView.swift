@@ -60,8 +60,6 @@ struct HomeView: View {
                             .buttonStyle(PressableCardStyle())
                         }
                     }
-                    .fontDesign(.serif)
-                    .fontDesign(.serif)
                     .padding(.horizontal, 18)
                     .padding(.bottom, 30)
                 }
@@ -90,7 +88,7 @@ struct HomeView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 11))
                     .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
                 Text("Habitract")
-                    .font(.system(size: 32, weight: .bold, design: .serif))
+                    .font(Theme.title(32))
                     .foregroundStyle(.primary)
             }
             .accessibilityElement(children: .combine)
@@ -121,20 +119,17 @@ struct HomeView: View {
             Text("🌱")
                 .font(.system(size: 56))
             Text("No habits yet")
-                .font(.system(size: 24, weight: .bold, design: .serif))
+                .font(Theme.title(24))
                 .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .serif))
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .background {
-            RoundedRectangle(cornerRadius: 26)
-                .fill(Color(.secondarySystemBackground))
-                .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
-        }
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
     private func load() async {
@@ -160,10 +155,10 @@ private struct HomeActionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.subheadline, design: .serif).weight(.bold))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .serif).weight(.semibold))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -227,7 +222,6 @@ struct PressableCardStyle: ButtonStyle {
 
 /// One habit group on Home: picture or icon, members, name, status, points and rank.
 struct GameCardView: View {
-    @Environment(\.colorScheme) private var colorScheme
     let card: GameCard
 
     var body: some View {
@@ -247,11 +241,11 @@ struct GameCardView: View {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
-                        .font(.system(size: 24, weight: .bold, design: .serif))
-                        .foregroundStyle(colorScheme == .dark ? Theme.sunshine : Color(red: 0.48, green: 0.31, blue: 0.02))
+                        .font(Theme.title(24))
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .serif).weight(.bold))
+                        .font(.system(.subheadline, design: .rounded).weight(.bold))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -262,7 +256,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .serif).weight(.bold))
+                            .font(.system(.caption, design: .rounded).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -272,11 +266,8 @@ struct GameCardView: View {
             .padding(.bottom, 8)
         }
         .padding(8)
-        .background {
-            RoundedRectangle(cornerRadius: 26)
-                .fill(Color(.secondarySystemBackground))
-                .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
-        }
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
+        .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
         .contentShape(Rectangle())
     }
 
@@ -289,7 +280,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .serif).bold())
+                    .font(.system(.caption, design: .rounded).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())
