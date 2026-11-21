@@ -321,38 +321,48 @@ struct GroupBanner: View {
     let group: HabitGroup
     var height: CGFloat = 140
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var image: UIImage?
 
     var body: some View {
-        let palette: [(Color, Color)] = [
-            (Color(red: 0.34, green: 0.42, blue: 0.78), Color(red: 0.18, green: 0.25, blue: 0.57)),
-            (Color(red: 0.56, green: 0.43, blue: 0.72), Color(red: 0.34, green: 0.26, blue: 0.54)),
-            (Color(red: 0.76, green: 0.54, blue: 0.38), Color(red: 0.53, green: 0.34, blue: 0.30)),
-            (Color(red: 0.38, green: 0.57, blue: 0.68), Color(red: 0.20, green: 0.36, blue: 0.52)),
-            (Color(red: 0.71, green: 0.45, blue: 0.51), Color(red: 0.49, green: 0.28, blue: 0.40))
-        ]
-        let colors = palette[Int(group.id.uuid.0) % palette.count]
+        let bytes = group.id.uuid
+        // The ID provides repeatable variation without changing when the view redraws.
+        let hue = (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
+        let isDark = colorScheme == .dark
+        let base = Color(hue: hue, saturation: isDark ? 0.19 : 0.12, brightness: isDark ? 0.29 : 0.92)
+        let accent = Color(hue: hue, saturation: isDark ? 0.25 : 0.18, brightness: isDark ? 0.21 : 0.85)
+        let pattern = Int(bytes.1) % 3
         ZStack {
-            LinearGradient(colors: [colors.0, colors.1], startPoint: .topLeading, endPoint: .bottomTrailing)
+            LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
             if let image {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
             } else {
                 GeometryReader { geometry in
-                    Circle()
-                        .fill(.white.opacity(0.08))
-                        .frame(width: height * 1.3, height: height * 1.3)
-                        .position(x: geometry.size.width * 0.16, y: height * 0.2)
-                    Circle()
-                        .strokeBorder(.white.opacity(0.14), lineWidth: 2)
-                        .frame(width: height * 0.9, height: height * 0.9)
-                        .position(x: geometry.size.width * 0.84, y: height * 0.8)
+                    if pattern == 0 {
+                        Circle()
+                            .fill(.white.opacity(isDark ? 0.05 : 0.35))
+                            .frame(width: height * 1.4, height: height * 1.4)
+                            .position(x: geometry.size.width * 0.18, y: height * 0.25)
+                    } else if pattern == 1 {
+                        RoundedRectangle(cornerRadius: 32)
+                            .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
+                            .frame(width: height * 1.7, height: height * 0.8)
+                            .rotationEffect(.degrees(-18))
+                            .position(x: geometry.size.width * 0.82, y: height * 0.6)
+                    } else {
+                        Capsule()
+                            .fill(.white.opacity(isDark ? 0.05 : 0.30))
+                            .frame(width: height * 1.9, height: height * 0.38)
+                            .rotationEffect(.degrees(-20))
+                            .position(x: geometry.size.width * 0.2, y: height * 0.5)
+                    }
                 }
                 .accessibilityHidden(true)
                 Text(group.icon)
                     .font(.system(size: height * 0.5))
-                    .shadow(color: .black.opacity(0.2), radius: 8, y: 6)
+                    .shadow(color: .black.opacity(0.12), radius: 5, y: 3)
             }
         }
         .frame(height: height)

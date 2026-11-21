@@ -584,6 +584,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare several groups without photos and one with a photo in both appearances. The same banner is also used in group info. Not yet checked visually on a device.
 
+**Step 43: Subtle varied group banners** (branch `design-interface`)
+- What: emoji banners use a softly tinted gradient and one of three understated shapes, selected from the group ID. Colors adjust to light or dark appearance and remain stable when the app redraws. Photos still fill the banner.
+- Why: Bene wanted less intense color and more variety across groups.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare several groups in both appearances and confirm a group photo still displays. Not yet checked visually on a device; similar groups can still occur by chance.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
