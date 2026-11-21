@@ -518,6 +518,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Problem we had: the port was 448 instead of 465. Supabase then waits until it gives up and answers sign up with 504 after a long time, so the app only showed the spinner. The Supabase logs (Logs → Auth, `POST /auth/v1/signup` with 504) showed it.
 - How to check: sign up with a new email, the code arrives within a minute (also check spam). Supabase `/auth/v1/settings` shows `mailer_autoconfirm: false`.
 
+**Step 32: Password hints only when something is wrong** (branch `login/signup-edits`)
+- What: the password checklist under sign up and "Forgot password?" is gone while everything is fine. As soon as you type, only the rules that are still missing appear in red ("Needs a number"), and each line disappears once it is met. "The passwords are not the same" appears only after you typed something into the second field.
+- Why: a list of six grey lines looked busy before anyone typed anything.
+- How: `PasswordChecklist` in `AuthView.swift` filters `passwordRules` to the missing ones. The rules themselves (HabitCore) did not change.
+- How to check: `AuthView` preview "Password hints" (empty, too simple, not the same, all fine).
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
