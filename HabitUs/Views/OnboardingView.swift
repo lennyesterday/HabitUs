@@ -54,7 +54,7 @@ struct OnboardingView: View {
                     Spacer()
                     if page > 0 && page <= pages.count {
                         Button("Skip") { done() }
-                            .font(.system(.subheadline, design: .default).bold())
+                            .font(.system(.subheadline, design: .rounded).bold())
                             .foregroundStyle(.white.opacity(0.8))
                     }
                 }
@@ -112,7 +112,7 @@ struct OnboardingView: View {
                 .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
             (Text("Build habits ") + Text("together").foregroundStyle(Theme.sunshine).bold()
                 + Text(" with your friends."))
-                .font(.system(.title3, design: .default))
+                .font(.system(.title3, design: .rounded))
                 .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
             Spacer()
@@ -130,7 +130,7 @@ struct OnboardingView: View {
                 .foregroundStyle(.white)
                 .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
             highlighted(page.text, page.highlight)
-                .font(.system(.title3, design: .default))
+                .font(.system(.title3, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(.white.opacity(0.9))
             Spacer()

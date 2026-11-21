@@ -50,7 +50,7 @@ struct CreateGroupView: View {
                                 period = option
                             } label: {
                                 Text("per \(option.word)")
-                                    .font(.system(.subheadline, design: .default).weight(.bold))
+                                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                                     .frame(maxWidth: .infinity, minHeight: 44)
                                     .foregroundStyle(period == option ? Color.white : Color.primary)
                                     .background(period == option ? Theme.brand : Color(.tertiarySystemBackground),
@@ -173,7 +173,7 @@ struct HabitFormIntro: View {
                 .background(Theme.sunshine, in: RoundedRectangle(cornerRadius: 18))
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text(title).font(.system(.title2, design: .default).weight(.heavy))
+                Text(title).font(.system(.title2, design: .rounded).weight(.heavy))
                 Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
             }
         }
@@ -197,7 +197,7 @@ struct HabitFormSection<Content: View>: View {
                     .background(Theme.brand, in: RoundedRectangle(cornerRadius: 12))
                     .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(.headline, design: .default).weight(.heavy))
+                    .font(.system(.headline, design: .rounded).weight(.heavy))
                     .accessibilityAddTraits(.isHeader)
             }
             VStack(alignment: .leading, spacing: 14) {

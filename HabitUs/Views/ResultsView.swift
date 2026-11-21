@@ -11,7 +11,7 @@ struct ResultsView: View {
         ScrollView {
             VStack(spacing: 24) {
                 Text("Challenge finished")
-                    .font(.system(.subheadline, design: .default).weight(.bold))
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .foregroundStyle(Color.primary.opacity(0.7))
 
                 if let winner = rows.first {
@@ -26,7 +26,7 @@ struct ResultsView: View {
                             .font(Theme.title(26))
                             .multilineTextAlignment(.center)
                         Text("\(winner.points) pts")
-                            .font(.system(.headline, design: .default).weight(.semibold))
+                            .font(.system(.headline, design: .rounded).weight(.semibold))
                             .foregroundStyle(.secondary)
                     }
                     .foregroundStyle(Color.primary)

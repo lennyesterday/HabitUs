@@ -20,7 +20,7 @@ struct BonusCard: View {
 
         VStack(spacing: 6) {
             Text("Round \(round)")
-                .font(.system(.subheadline, design: .default).weight(.bold))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .foregroundStyle(.white)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
@@ -29,10 +29,10 @@ struct BonusCard: View {
                 .font(Theme.title(40))
                 .foregroundStyle(.primary)
             Text("round bonus")
-                .font(.system(.subheadline, design: .default).weight(.semibold))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(.secondary)
             Text(message(complete: complete, percent: percent))
-                .font(.system(.subheadline, design: .default).weight(.bold))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .foregroundStyle(colorScheme == .dark ? Color(red: 0.55, green: 0.83, blue: 0.72) : green)
                 .multilineTextAlignment(.center)
                 .padding(.top, 4)

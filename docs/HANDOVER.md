@@ -692,6 +692,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: view group cards on Home in both appearances. Not yet checked visually on a device.
 
+**Step 61: Restore rounded type and group cards** (branch `interface-overhaul`)
+- What: restored rounded system fonts and rounded Home group cards and banners. Group names and status text keep the lighter weights from step 60.
+- Why: Bene preferred the earlier rounded style with thinner group card text.
+- Files: text styles in `Views/`, `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: inspect the Home group cards and typography in both appearances. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

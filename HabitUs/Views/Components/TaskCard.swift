@@ -27,7 +27,7 @@ struct TaskCard: View {
                         Image(systemName: "hourglass")
                         Text(Theme.durationText(left))
                     }
-                    .font(.system(.subheadline, design: .default).weight(.bold))
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .foregroundStyle(left < 24 * 3600 ? .white : Theme.ink)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
@@ -57,7 +57,7 @@ struct TaskCard: View {
                     ProgressView(value: Double(status.done), total: Double(group.target))
                         .tint(.primary)
                     Text("\(status.done) of \(group.target)")
-                        .font(.system(.subheadline, design: .default).bold())
+                        .font(.system(.subheadline, design: .rounded).bold())
                         .foregroundStyle(.primary)
                 }
             }
@@ -76,12 +76,12 @@ struct TaskCard: View {
 
                 if !status.canCheckInToday {
                     Text("Done for today. Come back tomorrow!")
-                        .font(.system(.footnote, design: .default).bold())
+                        .font(.system(.footnote, design: .rounded).bold())
                         .foregroundStyle(.primary)
                 }
             } else {
                 Text("You finished this round. See you next round! 💪")
-                    .font(.system(.headline, design: .default))
+                    .font(.system(.headline, design: .rounded))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.center)
             }
@@ -89,7 +89,7 @@ struct TaskCard: View {
             let others = othersText(now: now)
             if !others.isEmpty {
                 Text(others)
-                    .font(.system(.footnote, design: .default).weight(.semibold))
+                    .font(.system(.footnote, design: .rounded).weight(.semibold))
                     .foregroundStyle(.primary)
             }
         }

@@ -122,7 +122,7 @@ struct HomeView: View {
                 .font(Theme.title(24))
                 .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .default))
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -159,10 +159,10 @@ private struct HomeActionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.subheadline, design: .default).weight(.bold))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .default).weight(.semibold))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -230,7 +230,7 @@ struct GameCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            GroupBanner(group: card.group, height: 112, cornerRadius: 0)
+            GroupBanner(group: card.group, height: 112)
                 .overlay(alignment: .bottomLeading) {
                     memberStack
                         .offset(x: 12, y: 22)
@@ -245,11 +245,11 @@ struct GameCardView: View {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 24, weight: .semibold, design: .rounded))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .default).weight(.medium))
+                        .font(.system(.subheadline, design: .rounded).weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -260,7 +260,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .default).weight(.bold))
+                            .font(.system(.caption, design: .rounded).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -271,11 +271,11 @@ struct GameCardView: View {
         }
         .padding(8)
         .background {
-            Rectangle()
+            RoundedRectangle(cornerRadius: 26)
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
         }
-        .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
+        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
         .contentShape(Rectangle())
     }
 
@@ -288,7 +288,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .default).bold())
+                    .font(.system(.caption, design: .rounded).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())
@@ -328,7 +328,6 @@ struct GameCardView: View {
 struct GroupBanner: View {
     let group: HabitGroup
     var height: CGFloat = 140
-    var cornerRadius: CGFloat = 22
 
     @State private var image: UIImage?
 
@@ -347,7 +346,7 @@ struct GroupBanner: View {
         }
         .frame(height: height)
         .frame(maxWidth: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
+        .clipShape(RoundedRectangle(cornerRadius: 22))
         .task(id: group.photoPath) {
             image = nil
             if let path = group.photoPath {
