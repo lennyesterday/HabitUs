@@ -566,6 +566,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
 - How to check: open both screens in light and dark mode, try the controls and advance to the contract. Not yet checked visually or tested with a real group.
 
+**Step 40: More playful create and join screens** (branch `design-interface`)
+- What: the first create and join screens now have colored icon badges, rounded cards with a subtle raised edge, a prominent yellow Next button and custom period choices. The invite code has its own inset field.
+- Why: Bene wanted a more game-like feel while keeping the forms clean and readable in light and dark mode.
+- Files: `CreateGroupView.swift`, `JoinView.swift`, `docs/HANDOVER.md`.
+- How to check: in both appearances open New Habit and Join Habit, try all inputs and advance using Next. Not yet tested visually or with a real group.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

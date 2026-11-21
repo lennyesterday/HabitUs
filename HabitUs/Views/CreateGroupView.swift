@@ -26,6 +26,7 @@ struct CreateGroupView: View {
         NavigationStack(path: $path) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    HabitFormIntro(title: "Build your habit", subtitle: "Set a goal and invite your friends.", symbol: "sparkles")
                     HabitFormSection(title: "Group", symbol: "person.2.fill") {
                     TextField("Name, for example Gym Crew", text: $name)
                     Divider()
@@ -43,10 +44,22 @@ struct CreateGroupView: View {
                 }
 
                 HabitFormSection(title: "How often", symbol: "calendar") {
-                    Picker("Per", selection: $period) {
-                        ForEach(Period.allCases, id: \.self) { Text("per \($0.word)") }
+                    HStack(spacing: 8) {
+                        ForEach(Period.allCases, id: \.self) { option in
+                            Button {
+                                period = option
+                            } label: {
+                                Text("per \(option.word)")
+                                    .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .foregroundStyle(period == option ? Color.white : Color.primary)
+                                    .background(period == option ? Theme.brand : Color(.tertiarySystemBackground),
+                                                in: RoundedRectangle(cornerRadius: 14))
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityAddTraits(period == option ? .isSelected : [])
+                        }
                     }
-                    .pickerStyle(.segmented)
                     Divider()
                     Stepper("\(target) per \(period.word)", value: $target, in: 1...period.maxTarget)
                 }
@@ -76,6 +89,8 @@ struct CreateGroupView: View {
                     if errorMessage != nil {
                         ErrorText(message: errorMessage)
                     }
+                    Button("Next") { next() }
+                        .buttonStyle(ChunkyButtonStyle())
                 }
                 .padding(20)
             }
@@ -90,9 +105,6 @@ struct CreateGroupView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Next") { next() }
                 }
             }
             .navigationDestination(for: Step.self) { step in
@@ -158,24 +170,58 @@ struct HabitFormBackground: View {
     }
 }
 
+struct HabitFormIntro: View {
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
+    let symbol: String
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: symbol)
+                .font(.title2.bold())
+                .foregroundStyle(.black)
+                .frame(width: 54, height: 54)
+                .background(Theme.sunshine, in: RoundedRectangle(cornerRadius: 18))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title).font(.system(.title2, design: .rounded).weight(.heavy))
+                Text(subtitle).font(.subheadline).foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.vertical, 8)
+    }
+}
+
 struct HabitFormSection<Content: View>: View {
     let title: LocalizedStringKey
     let symbol: String
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label(title, systemImage: symbol)
-                .font(.system(.headline, design: .rounded).weight(.bold))
-                .foregroundStyle(.primary)
-                .accessibilityAddTraits(.isHeader)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 10) {
+                Image(systemName: symbol)
+                    .font(.headline)
+                    .foregroundStyle(.white)
+                    .frame(width: 38, height: 38)
+                    .background(Theme.brand, in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityHidden(true)
+                Text(title)
+                    .font(.system(.headline, design: .rounded).weight(.heavy))
+                    .accessibilityAddTraits(.isHeader)
+            }
             VStack(alignment: .leading, spacing: 14) {
                 content
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(18)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
         }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 24))
+        .overlay(RoundedRectangle(cornerRadius: 24).strokeBorder(Color.primary.opacity(0.08), lineWidth: 1))
+        .shadow(color: .black.opacity(0.10), radius: 0, y: 4)
+        .padding(.bottom, 4)
     }
 }
 

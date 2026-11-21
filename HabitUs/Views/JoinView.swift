@@ -19,9 +19,13 @@ struct JoinView: View {
         NavigationStack(path: $path) {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
+                    HabitFormIntro(title: "Join your friends", subtitle: "Your next habit starts together.", symbol: "person.2.fill")
                     HabitFormSection(title: "Invite code", symbol: "envelope.open.fill") {
                         TextField("Invite code", text: $code)
-                            .font(.title2.monospaced())
+                            .font(.title2.monospaced().weight(.bold))
+                            .padding(14)
+                            .frame(maxWidth: .infinity)
+                            .background(Color(.tertiarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
                             .textInputAutocapitalization(.characters)
                             .autocorrectionDisabled()
                             .onChange(of: code) { code = String(code.uppercased().prefix(6)) }
@@ -32,6 +36,13 @@ struct JoinView: View {
                     if errorMessage != nil {
                         ErrorText(message: errorMessage)
                     }
+                    Button {
+                        Task { await next() }
+                    } label: {
+                        if isWorking { ProgressView().tint(.black) } else { Text("Next") }
+                    }
+                    .buttonStyle(ChunkyButtonStyle())
+                    .disabled(isWorking)
                 }
                 .padding(20)
             }
@@ -42,13 +53,6 @@ struct JoinView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isWorking {
-                        ProgressView()
-                    } else {
-                        Button("Next") { Task { await next() } }
-                    }
                 }
             }
             .navigationDestination(for: Step.self) { step in
