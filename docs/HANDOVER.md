@@ -632,6 +632,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Pictures.swift`, `docs/HANDOVER.md`.
 - How to check: compare players with and without photos on Home and in a group, including overlapping avatars. Not yet checked visually on a device.
 
+**Step 51: Center initials on profile photos** (branch `design-in-group`)
+- What: the initial moves from the edge to the center of the photo, on a dark circular background for readability.
+- Why: Bene wanted the letter clearly readable over any photo.
+- Files: `Pictures.swift`, `docs/HANDOVER.md`.
+- How to check: view profile photos of different sizes and brightness on Home and in a group. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

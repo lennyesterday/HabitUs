@@ -27,15 +27,13 @@ struct ProfilePicture: View {
         }
         .frame(width: size, height: size)
         .clipShape(Circle())
-        .overlay(alignment: .bottomLeading) {
+        .overlay {
             if image != nil {
-                let badgeSize = min(max(size * 0.38, 14), 28)
                 Text(name.prefix(1).uppercased())
-                    .font(.system(size: badgeSize * 0.55, weight: .bold))
+                    .font(.system(size: size * 0.38, weight: .bold))
                     .foregroundStyle(.white)
-                    .frame(width: badgeSize, height: badgeSize)
-                    .background(Theme.ink, in: Circle())
-                    .overlay(Circle().stroke(.white, lineWidth: 1.5))
+                    .frame(width: size * 0.60, height: size * 0.60)
+                    .background(Color.black.opacity(0.72), in: Circle())
             }
         }
         .accessibilityHidden(true)
