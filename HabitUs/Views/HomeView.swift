@@ -2,7 +2,7 @@ import SwiftUI
 import HabitCore
 
 // My habits, New Habit, Join (SPEC section 4, Home). Area A.
-// Light background with one card per habit group: picture or icon on top, members, name, points and rank.
+// One card per habit group: picture or icon on top, members, name, points and rank.
 
 struct HomeView: View {
     @State private var cards: [GameCard] = []
@@ -16,7 +16,7 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                PaperBackground()
+                HomeBackground()
 
                 ScrollView {
                     VStack(spacing: 20) {
@@ -93,7 +93,7 @@ struct HomeView: View {
                     .shadow(color: .black.opacity(0.1), radius: 4, y: 2)
                 Text("Habitract")
                     .font(Theme.title(32))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.isHeader)
@@ -124,7 +124,7 @@ struct HomeView: View {
                 .font(.system(size: 56))
             Text("No habits yet")
                 .font(Theme.title(24))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
                 .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
@@ -132,7 +132,7 @@ struct HomeView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .background(.white, in: RoundedRectangle(cornerRadius: 26))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
         .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 
@@ -147,6 +147,35 @@ struct HomeView: View {
             errorMessage = error.localizedDescription
         }
         isLoading = false
+    }
+}
+
+/// A soft blue backdrop for Home, with a subtle pattern inspired by the welcome screen.
+private struct HomeBackground: View {
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        let isDark = colorScheme == .dark
+        LinearGradient(
+            colors: isDark
+                ? [Color(red: 0.11, green: 0.16, blue: 0.31), Color(red: 0.06, green: 0.08, blue: 0.16)]
+                : [Color(red: 0.80, green: 0.86, blue: 0.99), Color(red: 0.94, green: 0.95, blue: 0.99)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+        .overlay {
+            Canvas { context, size in
+                for x in stride(from: 12.0, through: size.width, by: 30.0) {
+                    for y in stride(from: 12.0, through: size.height, by: 30.0) {
+                        let dot = CGRect(x: x, y: y, width: 3, height: 3)
+                        context.fill(Path(ellipseIn: dot), with: .color(isDark ? .white.opacity(0.07) : .blue.opacity(0.08)))
+                    }
+                }
+            }
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        .ignoresSafeArea()
     }
 }
 
@@ -181,7 +210,7 @@ struct GameCardView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
                         .font(Theme.title(24))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
                         .font(.system(.subheadline, design: .rounded).weight(.bold))
@@ -205,7 +234,7 @@ struct GameCardView: View {
             .padding(.bottom, 8)
         }
         .padding(8)
-        .background(.white, in: RoundedRectangle(cornerRadius: 26))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
         .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
         .contentShape(Rectangle())
     }
@@ -296,9 +325,19 @@ struct GroupBanner: View {
         Member(id: UUID(), userId: UUID(), displayName: $0, photoPath: nil, status: .accepted, signature: "")
     }
     return ZStack {
-        PaperBackground()
+        HomeBackground()
         GameCardView(card: GameCard(group: group, myStatus: .accepted, isOwner: true, acceptedCount: 3,
                                     openRequests: 0, members: members, myPoints: 136, myRank: 2, myDone: 2))
             .padding()
     }
+}
+
+#Preview("Home – Light") {
+    HomeView()
+        .preferredColorScheme(.light)
+}
+
+#Preview("Home – Dark") {
+    HomeView()
+        .preferredColorScheme(.dark)
 }

@@ -542,6 +542,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `AuthView.swift`, `OnboardingView.swift`, `docs/HANDOVER.md`.
 - How to check: open the welcome light and dark previews and the login preview. Visual appearance has not yet been checked on a device.
 
+**Step 36: First Home background design** (branch `design-interface`)
+- What: Home has a soft blue gradient and a subtle dotted texture, with a darker version in dark mode. The title and habit cards use appearance-aware text and card colors.
+- Why: connect Home to the blue introduction while keeping the photos and habit cards easy to see.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: open the Home light and dark previews, and check an empty Home and a Home with habit cards in both appearances. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
