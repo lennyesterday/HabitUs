@@ -20,7 +20,7 @@ struct GroupInfoView: View {
                         .font(Theme.title(30))
                         .foregroundStyle(Color.primary)
                     Text("\(group.icon) \(group.habit) · \(group.target)× per \(group.period.word)")
-                        .font(.system(.headline, design: .default))
+                        .font(.system(.headline, design: .rounded))
                         .foregroundStyle(.secondary)
                 }
 
@@ -56,7 +56,7 @@ struct GroupInfoView: View {
                     • A missed task gives 0, never minus points
                     • Same points: fewer pauses first, then the name
                     """)
-                    .font(.system(.subheadline, design: .default))
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(Color.primary)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(14)
@@ -91,11 +91,11 @@ struct GroupInfoView: View {
                 .foregroundStyle(Theme.brand)
                 .frame(width: 28)
             Text(label)
-                .font(.system(.subheadline, design: .default).weight(.semibold))
+                .font(.system(.subheadline, design: .rounded).weight(.semibold))
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
-                .font(.system(.subheadline, design: .default).weight(.bold))
+                .font(.system(.subheadline, design: .rounded).weight(.bold))
                 .foregroundStyle(Color.primary)
                 .multilineTextAlignment(.trailing)
         }
@@ -113,7 +113,7 @@ struct GroupInfoView: View {
                 .frame(width: 220, height: 1)
             Text(me.signedAt.map { "Signed by \(me.displayName) · \(Theme.signatureDate($0))" }
                  ?? "Signed by \(me.displayName)")
-                .font(.system(.caption, design: .default).weight(.semibold))
+                .font(.system(.caption, design: .rounded).weight(.semibold))
                 .foregroundStyle(.secondary)
         }
         .padding(.leading, 6)

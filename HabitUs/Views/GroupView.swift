@@ -39,7 +39,7 @@ struct GroupView: View {
 
                     VStack(spacing: 0) {
                         Text(roundLabel(round: round, now: now))
-                            .font(.system(.caption, design: .default).weight(.bold))
+                            .font(.system(.caption, design: .rounded).weight(.bold))
                             .tracking(2)
                             .foregroundStyle(.secondary)
                         Text(periodTitle)
@@ -73,7 +73,7 @@ struct GroupView: View {
 
                     VStack(alignment: .leading, spacing: 16) {
                         Label("Chat", systemImage: "bubble.left.and.bubble.right.fill")
-                            .font(.system(.headline, design: .default).weight(.bold))
+                            .font(.system(.headline, design: .rounded).weight(.bold))
                             .foregroundStyle(.primary)
                             .accessibilityAddTraits(.isHeader)
                         FeedView(data: data, onReact: react, onRetake: { showCamera = true })
@@ -175,7 +175,7 @@ struct GroupView: View {
                     Text("🗳️  Vote on photos")
                     if !toVote.isEmpty {
                         Text("\(toVote.count)")
-                            .font(.system(.subheadline, design: .default).weight(.heavy))
+                            .font(.system(.subheadline, design: .rounded).weight(.heavy))
                             .foregroundStyle(.white)
                             .padding(.horizontal, 9)
                             .padding(.vertical, 3)
@@ -227,14 +227,14 @@ struct GroupView: View {
         HStack(spacing: 8) {
             TextField("Message", text: $messageText, axis: .vertical)
                 .lineLimit(1...4)
-                .font(.system(.body, design: .default))
+                .font(.system(.body, design: .rounded))
                 .padding(.leading, 6)
             if messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Button {
                     showGifPicker = true
                 } label: {
                     Text("GIF")
-                        .font(.system(.subheadline, design: .default).weight(.heavy))
+                        .font(.system(.subheadline, design: .rounded).weight(.heavy))
                         .foregroundStyle(.white)
                         .frame(width: 52, height: 38)
                         .ledgeCard(Theme.brand, radius: 12, depth: 3)

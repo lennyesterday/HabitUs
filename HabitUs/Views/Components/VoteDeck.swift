@@ -65,16 +65,16 @@ struct VoteDeck: View {
                 }
 
                 Text("\(deck.count) \(deck.count == 1 ? "photo" : "photos") left to vote on")
-                    .font(.system(.caption, design: .default).weight(.bold))
+                    .font(.system(.caption, design: .rounded).weight(.bold))
                     .foregroundStyle(Theme.ink.opacity(0.6))
             } else {
                 VStack(spacing: 6) {
                     Text("✅").font(.largeTitle)
                     Text("All votes are done")
-                        .font(.system(.headline, design: .default).weight(.heavy))
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
                         .foregroundStyle(Theme.ink)
                     Text("You can still change your votes in the chat.")
-                        .font(.system(.caption, design: .default))
+                        .font(.system(.caption, design: .rounded))
                         .foregroundStyle(Theme.ink.opacity(0.6))
                         .multilineTextAlignment(.center)
                 }
@@ -134,9 +134,9 @@ private struct VoteCard: View {
                 ProfilePicture(name: author?.displayName ?? "?", path: author?.photoPath, size: 36)
                 VStack(alignment: .leading, spacing: 0) {
                     Text(author?.displayName ?? "Former member")
-                        .font(.system(.headline, design: .default).weight(.heavy))
+                        .font(.system(.headline, design: .rounded).weight(.heavy))
                     Text("📸 \(data.group.habit) · \(Theme.timeText(photo.createdAt))")
-                        .font(.system(.caption, design: .default).weight(.bold))
+                        .font(.system(.caption, design: .rounded).weight(.bold))
                 }
                 .foregroundStyle(.white)
             }

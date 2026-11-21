@@ -34,7 +34,7 @@ struct ContractView: View {
                 if let sign {
                     SignaturePad(drawing: $drawing)
                     Text("Date: \(Theme.signatureDate(Date()))")
-                        .font(.system(.footnote, design: .default).weight(.semibold))
+                        .font(.system(.footnote, design: .rounded).weight(.semibold))
                         .foregroundStyle(.secondary)
                     ErrorText(message: errorMessage)
                     Button {

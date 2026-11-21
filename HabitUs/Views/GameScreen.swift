@@ -133,7 +133,7 @@ struct GameScreen: View {
                     .frame(width: 42, height: 42)
                     .background(color, in: RoundedRectangle(cornerRadius: 14))
                 Text(title)
-                    .font(.system(.subheadline, design: .default).weight(.bold))
+                    .font(.system(.subheadline, design: .rounded).weight(.bold))
                     .foregroundStyle(.primary)
                     .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)

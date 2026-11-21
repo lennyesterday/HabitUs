@@ -6,6 +6,7 @@ import SwiftUI
 struct OnboardingView: View {
     let done: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var page: Int
 
     /// `startPage` is only used by the previews.
@@ -43,15 +44,18 @@ struct OnboardingView: View {
 
     var body: some View {
         ZStack {
-            HomeBackground()
+            BrandBackground(
+                top: colorScheme == .dark ? Color(red: 0.12, green: 0.17, blue: 0.42) : Theme.brandLight,
+                bottom: colorScheme == .dark ? Color(red: 0.03, green: 0.06, blue: 0.20) : Theme.brand
+            )
 
             VStack {
                 HStack {
                     Spacer()
                     if page > 0 && page <= pages.count {
                         Button("Skip") { done() }
-                            .font(.system(.subheadline, design: .default).bold())
-                            .foregroundStyle(.secondary)
+                            .font(.system(.subheadline, design: .rounded).bold())
+                            .foregroundStyle(.white.opacity(0.8))
                     }
                 }
                 .frame(height: 30)
@@ -86,18 +90,30 @@ struct OnboardingView: View {
     private var welcome: some View {
         VStack(spacing: 24) {
             Spacer()
-            Image("Logo")
-                .resizable()
-                .frame(width: 150, height: 150)
-                .clipShape(RoundedRectangle(cornerRadius: 34))
-                .frame(height: 340)
+            ZStack {
+                // Soft rays behind the logo, like a sunrise.
+                ForEach(0..<12) { index in
+                    Capsule()
+                        .fill(.white.opacity(0.12))
+                        .frame(width: 18, height: 340)
+                        .rotationEffect(.degrees(Double(index) * 15))
+                }
+                Image("Logo")
+                    .resizable()
+                    .frame(width: 150, height: 150)
+                    .clipShape(RoundedRectangle(cornerRadius: 34))
+                    .shadow(color: .black.opacity(0.25), radius: 20, y: 10)
+            }
+            .frame(height: 340)
             Text("Welcome to\nHabitract")
                 .font(Theme.title(38))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
-            Text("Build habits together with your friends.")
-                .font(.system(.title3, design: .default))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
+            (Text("Build habits ") + Text("together").foregroundStyle(Theme.sunshine).bold()
+                + Text(" with your friends."))
+                .font(.system(.title3, design: .rounded))
+                .foregroundStyle(.white)
                 .multilineTextAlignment(.center)
             Spacer()
         }
@@ -111,21 +127,22 @@ struct OnboardingView: View {
             Text(page.title)
                 .font(Theme.title(32))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
             highlighted(page.text, page.highlight)
-                .font(.system(.title3, design: .default))
+                .font(.system(.title3, design: .rounded))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.white.opacity(0.9))
             Spacer()
         }
         .padding(.horizontal, 32)
     }
 
-    /// Emphasize the key phrase in the description.
+    /// The text with one part in yellow and bold.
     private func highlighted(_ text: String, _ part: String) -> Text {
         guard let range = text.range(of: part) else { return Text(text) }
         return Text(text[..<range.lowerBound])
-            + Text(text[range]).bold()
+            + Text(text[range]).foregroundStyle(Theme.sunshine).bold()
             + Text(text[range.upperBound...])
     }
 
@@ -133,7 +150,7 @@ struct OnboardingView: View {
         HStack(spacing: 8) {
             ForEach(0...pages.count, id: \.self) { index in
                 Capsule()
-                    .fill(Color.primary.opacity(index == page ? 1 : 0.25))
+                    .fill(.white.opacity(index == page ? 1 : 0.35))
                     .frame(width: index == page ? 22 : 8, height: 8)
             }
         }

@@ -38,7 +38,7 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            HomeBackground()
+            BrandBackground()
 
             ScrollView {
                 VStack(spacing: 24) {
@@ -50,11 +50,12 @@ struct AuthView: View {
                             .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
                         Text("Habitract")
                             .font(Theme.title(40))
-                            .foregroundStyle(.primary)
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
                         Text(mode == .logIn ? "Welcome back! Your group is waiting."
                                             : "Create your account and start a streak.")
-                            .font(.system(.body, design: .default))
-                            .foregroundStyle(.secondary)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundStyle(.white.opacity(0.85))
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 40)
@@ -113,7 +114,7 @@ struct AuthView: View {
                                 errorMessage = nil
                                 withAnimation { reset = .askEmail }
                             }
-                            .font(.system(.subheadline, design: .default).weight(.semibold))
+                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         }
                         }
                     }
@@ -138,7 +139,7 @@ struct AuthView: View {
                     withAnimation(.snappy) { mode = option }
                 } label: {
                     Text(option.rawValue)
-                        .font(.system(.subheadline, design: .default).weight(.semibold))
+                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
                         .foregroundStyle(mode == option ? Color.primary : Color.secondary)
                         .frame(maxWidth: .infinity, minHeight: 36)
                         .background {
@@ -209,12 +210,12 @@ struct AuthView: View {
         VStack(spacing: 14) {
             Image(systemName: "envelope.badge.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.brand)
             Text("Check your email")
                 .font(Theme.title(24))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.ink)
             Text("We sent a code to **\(address)**. Enter it here to finish.")
-                .font(.system(.subheadline, design: .default))
+                .font(.system(.subheadline, design: .rounded))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
@@ -242,7 +243,7 @@ struct AuthView: View {
                 }
                 .disabled(isWorking)
             }
-            .font(.system(.subheadline, design: .default).weight(.semibold))
+            .font(.system(.subheadline, design: .rounded).weight(.semibold))
         }
     }
 
@@ -289,15 +290,15 @@ struct AuthView: View {
         VStack(spacing: 14) {
             Image(systemName: "key.fill")
                 .font(.system(size: 40))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Theme.brand)
 
             switch step {
             case .askEmail:
                 Text("Forgot your password?")
                     .font(Theme.title(24))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.ink)
                 Text("Enter your email. We send you a code to set a new password.")
-                    .font(.system(.subheadline, design: .default))
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
@@ -322,9 +323,9 @@ struct AuthView: View {
             case .enterCode(let address):
                 Text("Check your email")
                     .font(Theme.title(24))
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(Theme.ink)
                 Text("If there is an account for **\(address)**, we sent it a code. Enter it and choose a new password.")
-                    .font(.system(.subheadline, design: .default))
+                    .font(.system(.subheadline, design: .rounded))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
@@ -365,7 +366,7 @@ struct AuthView: View {
                     .disabled(isWorking)
                 }
             }
-            .font(.system(.subheadline, design: .default).weight(.semibold))
+            .font(.system(.subheadline, design: .rounded).weight(.semibold))
         }
     }
 
@@ -430,7 +431,7 @@ private struct PasswordChecklist: View {
             Image(systemName: isMet ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isMet ? Color.green : Color.secondary)
         }
-        .font(.system(.footnote, design: .default))
+        .font(.system(.footnote, design: .rounded))
         .foregroundStyle(isMet ? Color.primary : Color.secondary)
         .accessibilityLabel("\(text): \(isMet ? "done" : "missing")")
     }

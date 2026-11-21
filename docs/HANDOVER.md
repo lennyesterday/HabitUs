@@ -656,6 +656,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Theme.swift`, `HomeView.swift`, `CreateGroupView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, text styles in `Views/`, `docs/HANDOVER.md`.
 - How to check: inspect onboarding, login, Home, create/join, groups, contract and profile in both appearances. The exact Retro font is not included; the system serif is an approximation. This is a first pass, not yet visually checked on a device or tested end to end.
 
+**Step 55: Restore the previous app design** (branch `interface-overhaul`)
+- What: reverted the Retro-inspired overall design experiment from step 54, restoring the previous colors, typography and controls.
+- Why: Bene preferred the earlier design.
+- Files: the same `Views/` files changed in step 54 and `docs/HANDOVER.md`.
+- How to check: compare the app with the design before step 54 in light and dark mode. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
