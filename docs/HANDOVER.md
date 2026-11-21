@@ -524,6 +524,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `OnboardingView.swift`, `docs/HANDOVER.md`.
 - How to check: open the Welcome light and dark previews, or change the iPhone appearance while viewing onboarding. The app builds; the appearance has not yet been checked on a device.
 
+**Step 33: A first Retro-inspired login design** (branch `design-startscreen`)
+- What: the login and related account forms use a warm neutral background, a serif title, a simple card and rounded buttons. Colors adapt to light and dark appearance. Login, sign up and password recovery keep their existing behavior.
+- Why: try a calmer visual direction inspired by the Retro photo app, starting with the login screen.
+- Files: `AuthView.swift`, `docs/HANDOVER.md`.
+- How to check: use the light and dark login previews and try login, sign up, confirmation and password recovery in the app. The design has not yet been checked on a device or tested with real accounts.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
