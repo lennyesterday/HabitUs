@@ -686,6 +686,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: inspect group cards with emoji and photos in both appearances. Not yet visually checked on a device.
 
+**Step 60: Lighter group card text** (branch `interface-overhaul`)
+- What: group names and status text on Home use lighter font weights.
+- Why: Bene wanted thinner text, especially for the group names.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: view group cards on Home in both appearances. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

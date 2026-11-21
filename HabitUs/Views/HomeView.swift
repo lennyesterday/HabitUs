@@ -245,11 +245,11 @@ struct GameCardView: View {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
-                        .font(Theme.title(24))
+                        .font(.system(size: 24, weight: .semibold))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .default).weight(.bold))
+                        .font(.system(.subheadline, design: .default).weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
