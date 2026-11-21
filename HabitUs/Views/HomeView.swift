@@ -122,7 +122,7 @@ struct HomeView: View {
                 .font(Theme.title(24))
                 .foregroundStyle(.primary)
             Text("Start a habit with your friends, or join with a code from one of them.")
-                .font(.system(.subheadline, design: .rounded))
+                .font(.system(.subheadline, design: .default))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
@@ -159,17 +159,17 @@ private struct HomeActionLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: symbol)
-                .font(.system(.subheadline, design: .rounded).weight(.bold))
+                .font(.system(.subheadline, design: .default).weight(.bold))
                 .accessibilityHidden(true)
             Text(title)
-                .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                .font(.system(.subheadline, design: .default).weight(.semibold))
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 12)
         .frame(maxWidth: .infinity, minHeight: 54)
-        .foregroundStyle(isPrimary ? Color.white : Color.primary)
+        .foregroundStyle(isPrimary ? Color(.systemBackground) : Color.primary)
     }
 }
 
@@ -177,9 +177,9 @@ private struct HomeActionButtonStyle: ButtonStyle {
     let isPrimary: Bool
 
     func makeBody(configuration: Configuration) -> some View {
-        let shape = RoundedRectangle(cornerRadius: 18)
+        let shape = Capsule()
         configuration.label
-            .background(isPrimary ? Theme.brand : Color(.secondarySystemBackground), in: shape)
+            .background(isPrimary ? Color.primary : Color.clear, in: shape)
             .overlay(shape.strokeBorder(isPrimary ? Color.white.opacity(0.22) : Color.primary.opacity(0.24), lineWidth: 1.5))
             .opacity(configuration.isPressed ? 0.75 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
@@ -191,27 +191,8 @@ struct HomeBackground: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        let isDark = colorScheme == .dark
-        LinearGradient(
-            colors: isDark
-                ? [Color(red: 0.14, green: 0.23, blue: 0.46), Color(red: 0.05, green: 0.08, blue: 0.20)]
-                : [Color(red: 0.64, green: 0.76, blue: 0.98), Color(red: 0.88, green: 0.92, blue: 1.0)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .overlay {
-            Canvas { context, size in
-                for x in stride(from: 12.0, through: size.width, by: 30.0) {
-                    for y in stride(from: 12.0, through: size.height, by: 30.0) {
-                        let dot = CGRect(x: x, y: y, width: 3, height: 3)
-                        context.fill(Path(ellipseIn: dot), with: .color(isDark ? .white.opacity(0.07) : .blue.opacity(0.08)))
-                    }
-                }
-            }
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
-        .ignoresSafeArea()
+        (colorScheme == .dark ? Color.black : Color(red: 0.97, green: 0.97, blue: 0.96))
+            .ignoresSafeArea()
     }
 }
 
@@ -245,11 +226,11 @@ struct GameCardView: View {
             HStack(alignment: .bottom) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(card.group.name)
-                        .font(.system(size: 24, weight: .semibold, design: .rounded))
+                        .font(.system(size: 24, weight: .bold, design: .serif))
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     Text(statusText)
-                        .font(.system(.subheadline, design: .rounded).weight(.medium))
+                        .font(.system(.subheadline, design: .default).weight(.medium))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -260,7 +241,7 @@ struct GameCardView: View {
                     }
                     if let rank = card.myRank {
                         Text("#\(rank) of \(card.members.count)")
-                            .font(.system(.caption, design: .rounded).weight(.bold))
+                            .font(.system(.caption, design: .default).weight(.bold))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -288,7 +269,7 @@ struct GameCardView: View {
             }
             if card.members.count > 6 {
                 Text("+\(card.members.count - 6)")
-                    .font(.system(.caption, design: .rounded).bold())
+                    .font(.system(.caption, design: .default).bold())
                     .foregroundStyle(.white)
                     .frame(width: 44, height: 44)
                     .background(Theme.ink, in: Circle())
@@ -360,57 +341,10 @@ struct GroupBanner: View {
 struct GroupEmojiBackground: View {
     let group: HabitGroup
     @Environment(\.colorScheme) private var colorScheme
-    @State private var emojiHue: Double?
 
     var body: some View {
-        let bytes = group.id.uuid
-        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
-        let isDark = colorScheme == .dark
-        let base = Color(hue: hue, saturation: isDark ? 0.31 : 0.22, brightness: isDark ? 0.29 : 0.92)
-        let accent = Color(hue: hue, saturation: isDark ? 0.38 : 0.29, brightness: isDark ? 0.21 : 0.85)
-        let pattern = Int(bytes.1) % 3
-        let angle = Double(Int(bytes.2) % 51 - 25)
-        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
-
-        GeometryReader { geometry in
-            let height = geometry.size.height
-            ZStack {
-                LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
-                if pattern == 0 {
-                    Circle()
-                        .fill(.white.opacity(isDark ? 0.05 : 0.35))
-                        .frame(width: height * 1.4, height: height * 1.4)
-                        .position(x: geometry.size.width * position, y: height * 0.25)
-                } else if pattern == 1 {
-                    RoundedRectangle(cornerRadius: 32)
-                        .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
-                        .frame(width: height * 1.7, height: height * 0.8)
-                        .rotationEffect(.degrees(angle))
-                        .position(x: geometry.size.width * position, y: height * 0.6)
-                } else {
-                    Capsule()
-                        .fill(.white.opacity(isDark ? 0.05 : 0.30))
-                        .frame(width: height * 1.9, height: height * 0.38)
-                        .rotationEffect(.degrees(angle))
-                        .position(x: geometry.size.width * position, y: height * 0.5)
-                }
-                // Small, stable emoji motifs sit behind the main content.
-                ForEach(0..<12, id: \.self) { index in
-                    let column = index % 4
-                    let row = index / 4
-                    let shift = CGFloat((Int(bytes.4) + index * 37) % 21 - 10) / 100
-                    Text(group.icon)
-                        .font(.system(size: min(max(height * 0.13, 12), 19)))
-                        .rotationEffect(.degrees(Double((Int(bytes.5) + index * 29) % 41 - 20)))
-                        .opacity(isDark ? 0.13 : 0.16)
-                        .position(x: geometry.size.width * (CGFloat(column) + 0.5 + shift) / 4,
-                                  y: height * (CGFloat(row) + 0.5 + shift) / 3)
-                }
-            }
-            .clipped()
-        }
-        .accessibilityHidden(true)
-        .task(id: group.icon) { emojiHue = dominantEmojiHue(group.icon) }
+        (colorScheme == .dark ? Color(white: 0.16) : Color(white: 0.88))
+            .accessibilityHidden(true)
     }
 }
 

@@ -39,7 +39,7 @@ struct JoinView: View {
                     Button {
                         Task { await next() }
                     } label: {
-                        if isWorking { ProgressView().tint(.black) } else { Text("Next") }
+                        if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Next") }
                     }
                     .buttonStyle(ChunkyButtonStyle())
                     .disabled(isWorking)

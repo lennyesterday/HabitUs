@@ -13,9 +13,9 @@ enum Theme {
     static let sunshineLedge = Color(red: 0.80, green: 0.58, blue: 0.10)
     static let brandLight = Color(red: 0.36, green: 0.48, blue: 1.0)
 
-    /// Rounded, bold system type for the app's headings.
+    /// Serif system font for expressive headings.
     static func title(_ size: CGFloat) -> Font {
-        .system(size: size, weight: .black, design: .rounded)
+        .system(size: size, weight: .bold, design: .serif)
     }
 
     /// "14 Feb", always the Lisbon calendar day the database means.
@@ -77,26 +77,17 @@ struct ErrorText: View {
 
 /// A big rounded button with a thin darker edge underneath. It sinks in a little when pressed.
 struct ChunkyButtonStyle: ButtonStyle {
-    var color: Color = Theme.sunshine
+    var color: Color = .primary
     var ledgeColor: Color = Theme.sunshineLedge
-    var textColor: Color = .black
+    var textColor: Color = Color(.systemBackground)
 
     func makeBody(configuration: Configuration) -> some View {
-        let ledge: CGFloat = 3
         configuration.label
-            .font(.system(.headline, design: .rounded).weight(.bold))
+            .font(.system(.headline).weight(.semibold))
             .foregroundStyle(textColor)
             .frame(maxWidth: .infinity, minHeight: 52)
-            .background(color, in: RoundedRectangle(cornerRadius: 18))
-            .overlay(RoundedRectangle(cornerRadius: 18).strokeBorder(.black.opacity(0.12), lineWidth: 1))
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(ledgeColor)
-                    .offset(y: configuration.isPressed ? 0 : ledge)
-            )
-            .offset(y: configuration.isPressed ? ledge : 0)
-            .padding(.bottom, ledge)
-            .animation(.spring(duration: 0.15), value: configuration.isPressed)
+            .background(color, in: Capsule())
+            .opacity(configuration.isPressed ? 0.75 : 1)
     }
 }
 
@@ -188,7 +179,7 @@ struct Pill: View {
             Text(text)
             if !emoji.isEmpty { Text(emoji) }
         }
-        .font(.system(.subheadline, design: .rounded).weight(.bold))
+        .font(.system(.subheadline, design: .default).weight(.bold))
         .foregroundStyle(dark ? .white : Theme.ink)
         .padding(.horizontal, 10)
         .padding(.vertical, 5)
@@ -223,11 +214,11 @@ struct SettingsSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(title)
                 .font(Theme.title(32))
-                .foregroundStyle(.white)
+                .foregroundStyle(.primary)
                 .padding(.leading, 8)
             VStack(spacing: 0) { content }
                 .padding(.vertical, 6)
-                .background(Theme.paper, in: RoundedRectangle(cornerRadius: 28))
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 28))
         }
     }
 }
@@ -244,10 +235,10 @@ struct SettingsRow: View {
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
                     .font(Theme.title(19))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                 if let subtitle {
                     Text(subtitle)
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.system(.subheadline, design: .default).weight(.semibold))
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.leading)
                 }

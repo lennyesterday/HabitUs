@@ -698,6 +698,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: text styles in `Views/`, `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: inspect the Home group cards and typography in both appearances. Not yet checked visually on a device.
 
+**Step 62: Retro-style overall experiment** (branch `interface-overhaul`)
+- What: this experiment uses black/neutral backgrounds, adaptive cards, serif headings, standard body type, and flat pill buttons. Emoji-only group banners use neutral backgrounds, while group photos remain visible. Onboarding, login, Home, group pages and profile follow the neutral palette.
+- Why: Bene requested another overall test closely inspired by the supplied Retro screenshots.
+- Files: `Theme.swift`, `HomeView.swift`, `OnboardingView.swift`, `AuthView.swift`, `ProfileView.swift`, `CreateGroupView.swift`, `JoinView.swift`, other `Views/` typography, and `docs/HANDOVER.md`.
+- How to check: inspect onboarding, login, Home, setup, group and profile in both appearances and test their controls. The system serif approximates the reference font; the exact font is not included. Not yet visually checked on a device or tested end to end.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

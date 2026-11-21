@@ -38,7 +38,7 @@ struct AuthView: View {
 
     var body: some View {
         ZStack {
-            BrandBackground()
+            HomeBackground()
 
             ScrollView {
                 VStack(spacing: 24) {
@@ -50,12 +50,11 @@ struct AuthView: View {
                             .shadow(color: .black.opacity(0.25), radius: 12, y: 6)
                         Text("Habitract")
                             .font(Theme.title(40))
-                            .foregroundStyle(.white)
-                            .shadow(color: .black.opacity(0.2), radius: 0, y: 3)
+                            .foregroundStyle(.primary)
                         Text(mode == .logIn ? "Welcome back! Your group is waiting."
                                             : "Create your account and start a streak.")
-                            .font(.system(.body, design: .rounded))
-                            .foregroundStyle(.white.opacity(0.85))
+                            .font(.system(.body, design: .default))
+                            .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, 40)
@@ -101,7 +100,7 @@ struct AuthView: View {
                             Task { await submit() }
                         } label: {
                             if isWorking {
-                                ProgressView().tint(.black)
+                                ProgressView().tint(Color(.systemBackground))
                             } else {
                                 Text(mode.rawValue)
                             }
@@ -114,7 +113,7 @@ struct AuthView: View {
                                 errorMessage = nil
                                 withAnimation { reset = .askEmail }
                             }
-                            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                            .font(.system(.subheadline, design: .default).weight(.semibold))
                         }
                         }
                     }
@@ -139,7 +138,7 @@ struct AuthView: View {
                     withAnimation(.snappy) { mode = option }
                 } label: {
                     Text(option.rawValue)
-                        .font(.system(.subheadline, design: .rounded).weight(.semibold))
+                        .font(.system(.subheadline, design: .default).weight(.semibold))
                         .foregroundStyle(mode == option ? Color.primary : Color.secondary)
                         .frame(maxWidth: .infinity, minHeight: 36)
                         .background {
@@ -213,9 +212,9 @@ struct AuthView: View {
                 .foregroundStyle(Theme.brand)
             Text("Check your email")
                 .font(Theme.title(24))
-                .foregroundStyle(Theme.ink)
+                .foregroundStyle(.primary)
             Text("We sent a code to **\(address)**. Enter it here to finish.")
-                .font(.system(.subheadline, design: .rounded))
+                .font(.system(.subheadline, design: .default))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
 
@@ -227,7 +226,7 @@ struct AuthView: View {
             Button {
                 Task { await confirm(address) }
             } label: {
-                if isWorking { ProgressView().tint(.black) } else { Text("Confirm") }
+                if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Confirm") }
             }
             .buttonStyle(ChunkyButtonStyle())
             .disabled(isWorking || code.count < 6)
@@ -243,7 +242,7 @@ struct AuthView: View {
                 }
                 .disabled(isWorking)
             }
-            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+            .font(.system(.subheadline, design: .default).weight(.semibold))
         }
     }
 
@@ -296,9 +295,9 @@ struct AuthView: View {
             case .askEmail:
                 Text("Forgot your password?")
                     .font(Theme.title(24))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                 Text("Enter your email. We send you a code to set a new password.")
-                    .font(.system(.subheadline, design: .rounded))
+                    .font(.system(.subheadline, design: .default))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
@@ -315,7 +314,7 @@ struct AuthView: View {
                 Button {
                     Task { await sendResetCode() }
                 } label: {
-                    if isWorking { ProgressView().tint(.black) } else { Text("Send code") }
+                    if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Send code") }
                 }
                 .buttonStyle(ChunkyButtonStyle())
                 .disabled(isWorking)
@@ -323,9 +322,9 @@ struct AuthView: View {
             case .enterCode(let address):
                 Text("Check your email")
                     .font(Theme.title(24))
-                    .foregroundStyle(Theme.ink)
+                    .foregroundStyle(.primary)
                 Text("If there is an account for **\(address)**, we sent it a code. Enter it and choose a new password.")
-                    .font(.system(.subheadline, design: .rounded))
+                    .font(.system(.subheadline, design: .default))
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
 
@@ -346,7 +345,7 @@ struct AuthView: View {
                 Button {
                     Task { await saveNewPassword(address) }
                 } label: {
-                    if isWorking { ProgressView().tint(.black) } else { Text("Save new password") }
+                    if isWorking { ProgressView().tint(Color(.systemBackground)) } else { Text("Save new password") }
                 }
                 .buttonStyle(ChunkyButtonStyle())
                 .disabled(isWorking || code.count < 6)
@@ -366,7 +365,7 @@ struct AuthView: View {
                     .disabled(isWorking)
                 }
             }
-            .font(.system(.subheadline, design: .rounded).weight(.semibold))
+            .font(.system(.subheadline, design: .default).weight(.semibold))
         }
     }
 
@@ -431,7 +430,7 @@ private struct PasswordChecklist: View {
             Image(systemName: isMet ? "checkmark.circle.fill" : "circle")
                 .foregroundStyle(isMet ? Color.green : Color.secondary)
         }
-        .font(.system(.footnote, design: .rounded))
+        .font(.system(.footnote, design: .default))
         .foregroundStyle(isMet ? Color.primary : Color.secondary)
         .accessibilityLabel("\(text): \(isMet ? "done" : "missing")")
     }
