@@ -230,7 +230,7 @@ struct GameCardView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            GroupBanner(group: card.group, height: 112)
+            GroupBanner(group: card.group, height: 112, cornerRadius: 0)
                 .overlay(alignment: .bottomLeading) {
                     memberStack
                         .offset(x: 12, y: 22)
@@ -271,11 +271,11 @@ struct GameCardView: View {
         }
         .padding(8)
         .background {
-            RoundedRectangle(cornerRadius: 26)
+            Rectangle()
                 .fill(Color(.secondarySystemBackground))
                 .shadow(color: .black.opacity(0.12), radius: 0, y: 4)
         }
-        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
+        .overlay(Rectangle().strokeBorder(Color.primary.opacity(0.12), lineWidth: 1))
         .contentShape(Rectangle())
     }
 
@@ -328,6 +328,7 @@ struct GameCardView: View {
 struct GroupBanner: View {
     let group: HabitGroup
     var height: CGFloat = 140
+    var cornerRadius: CGFloat = 22
 
     @State private var image: UIImage?
 
@@ -346,7 +347,7 @@ struct GroupBanner: View {
         }
         .frame(height: height)
         .frame(maxWidth: .infinity)
-        .clipShape(RoundedRectangle(cornerRadius: 22))
+        .clipShape(RoundedRectangle(cornerRadius: cornerRadius))
         .task(id: group.photoPath) {
             image = nil
             if let path = group.photoPath {

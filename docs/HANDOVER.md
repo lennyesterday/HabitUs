@@ -680,6 +680,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: text styles in `Views/`, `docs/HANDOVER.md`.
 - How to check: inspect text across onboarding, Home, group, chat and settings in both appearances. Not yet visually checked on a device.
 
+**Step 59: Square group cards experiment** (branch `interface-overhaul`)
+- What: group cards on Home and their emoji/photo banners have square corners. The group info banner retains its previous shape.
+- Why: Bene wanted to try square group boxes.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: inspect group cards with emoji and photos in both appearances. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
