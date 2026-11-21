@@ -620,6 +620,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `GameScreen.swift`, `GroupView.swift`, `LeaderboardView.swift`, `docs/HANDOVER.md`.
 - How to check: in both appearances open group options as owner and member, check each action and its confirmation, and inspect the leaderboard with different group sizes. Not yet visually checked or tested with a real group.
 
+**Step 49: Put the leaderboard chart back on top** (branch `design-in-group`)
+- What: removed the leaderboard podium and placed the points history chart above the redesigned ranking rows.
+- Why: Bene preferred the graph at the top as before.
+- Files: `LeaderboardView.swift`, `docs/HANDOVER.md`.
+- How to check: open the leaderboard and verify the chart appears above the rankings. Not yet checked visually on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

@@ -21,9 +21,13 @@ struct LeaderboardView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                if !rows.isEmpty {
-                    podium
+                VStack(alignment: .leading, spacing: 16) {
+                    Label("Points over time", systemImage: "chart.line.uptrend.xyaxis")
+                        .font(.system(.headline, design: .rounded).weight(.bold))
+                    chart.frame(height: 240)
                 }
+                .padding(18)
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
 
                 VStack(alignment: .leading, spacing: 12) {
                     Label("Rankings", systemImage: "trophy.fill")
@@ -42,57 +46,13 @@ struct LeaderboardView: View {
                 .padding(16)
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
 
-                VStack(alignment: .leading, spacing: 16) {
-                    Label("Points over time", systemImage: "chart.line.uptrend.xyaxis")
-                        .font(.system(.headline, design: .rounded).weight(.bold))
-                    chart.frame(height: 240)
-                }
-                .padding(18)
-                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 26))
+
             }
             .padding(18)
         }
         .background(HomeBackground())
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-    }
-
-    private var podium: some View {
-        HStack(alignment: .bottom, spacing: 10) {
-            podiumPlace(1)
-            podiumPlace(0)
-            podiumPlace(2)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.top, 8)
-    }
-
-    @ViewBuilder
-    private func podiumPlace(_ index: Int) -> some View {
-        if rows.indices.contains(index) {
-            let row = rows[index]
-            VStack(spacing: 7) {
-                Text(index == 0 ? "👑" : (index == 1 ? "🥈" : "🥉"))
-                    .font(.title2)
-                ProfilePicture(name: row.displayName, path: row.photoPath, size: index == 0 ? 68 : 54)
-                    .overlay(Circle().stroke(Color(.systemBackground), lineWidth: 3))
-                Text(row.displayName)
-                    .font(.system(.subheadline, design: .rounded).weight(.bold))
-                    .lineLimit(1)
-                Text("\(row.points) pts")
-                    .font(.system(.caption, design: .rounded).weight(.bold))
-                    .foregroundStyle(.secondary)
-                Text("\(index + 1)")
-                    .font(Theme.title(26))
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, minHeight: index == 0 ? 64 : 42)
-                    .background(Theme.rankColor(index).opacity(0.22), in: RoundedRectangle(cornerRadius: 18))
-            }
-            .frame(maxWidth: .infinity)
-            .accessibilityElement(children: .combine)
-        } else {
-            Color.clear.frame(maxWidth: .infinity, minHeight: 1)
-        }
     }
 
     /// Points added up round by round, one line per player in their rank color.
