@@ -590,6 +590,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `HomeView.swift`, `docs/HANDOVER.md`.
 - How to check: compare several groups in both appearances and confirm a group photo still displays. Not yet checked visually on a device; similar groups can still occur by chance.
 
+**Step 44: Emoji-inspired group banners** (branch `design-interface`)
+- What: emoji banners derive a muted background hue from colorful pixels in the selected emoji. Neutral or ambiguous emoji use the stable group-ID color. Shape, position and angle vary using the group ID, and both appearances stay muted.
+- Why: Bene wanted the background to relate to the emoji and the decorative shapes to vary too.
+- Files: `HomeView.swift`, `docs/HANDOVER.md`.
+- How to check: compare colorful and neutral emoji in both appearances, then reopen the group to see stable shapes. Group photos should still display. Not yet visually checked on a device.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

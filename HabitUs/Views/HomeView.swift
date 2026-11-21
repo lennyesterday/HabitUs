@@ -323,15 +323,18 @@ struct GroupBanner: View {
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var image: UIImage?
+    @State private var emojiHue: Double?
 
     var body: some View {
         let bytes = group.id.uuid
         // The ID provides repeatable variation without changing when the view redraws.
-        let hue = (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
+        let hue = emojiHue ?? (Double(bytes.0) / 255.0 * 0.22 + 0.52).truncatingRemainder(dividingBy: 1)
         let isDark = colorScheme == .dark
         let base = Color(hue: hue, saturation: isDark ? 0.19 : 0.12, brightness: isDark ? 0.29 : 0.92)
         let accent = Color(hue: hue, saturation: isDark ? 0.25 : 0.18, brightness: isDark ? 0.21 : 0.85)
         let pattern = Int(bytes.1) % 3
+        let angle = Double(Int(bytes.2) % 51 - 25)
+        let position = 0.12 + CGFloat(bytes.3) / 255 * 0.76
         ZStack {
             LinearGradient(colors: [base, accent], startPoint: .topLeading, endPoint: .bottomTrailing)
             if let image {
@@ -344,19 +347,19 @@ struct GroupBanner: View {
                         Circle()
                             .fill(.white.opacity(isDark ? 0.05 : 0.35))
                             .frame(width: height * 1.4, height: height * 1.4)
-                            .position(x: geometry.size.width * 0.18, y: height * 0.25)
+                            .position(x: geometry.size.width * position, y: height * 0.25)
                     } else if pattern == 1 {
                         RoundedRectangle(cornerRadius: 32)
                             .strokeBorder(.white.opacity(isDark ? 0.10 : 0.45), lineWidth: 2)
                             .frame(width: height * 1.7, height: height * 0.8)
-                            .rotationEffect(.degrees(-18))
-                            .position(x: geometry.size.width * 0.82, y: height * 0.6)
+                            .rotationEffect(.degrees(angle))
+                            .position(x: geometry.size.width * position, y: height * 0.6)
                     } else {
                         Capsule()
                             .fill(.white.opacity(isDark ? 0.05 : 0.30))
                             .frame(width: height * 1.9, height: height * 0.38)
-                            .rotationEffect(.degrees(-20))
-                            .position(x: geometry.size.width * 0.2, y: height * 0.5)
+                            .rotationEffect(.degrees(angle))
+                            .position(x: geometry.size.width * position, y: height * 0.5)
                     }
                 }
                 .accessibilityHidden(true)
@@ -368,6 +371,9 @@ struct GroupBanner: View {
         .frame(height: height)
         .frame(maxWidth: .infinity)
         .clipShape(RoundedRectangle(cornerRadius: 22))
+        .task(id: group.icon) {
+            emojiHue = dominantEmojiHue(group.icon)
+        }
         .task(id: group.photoPath) {
             image = nil
             if let path = group.photoPath {
@@ -375,6 +381,60 @@ struct GroupBanner: View {
             }
         }
     }
+}
+
+
+/// Find a colorful tone in the rendered emoji; neutral emoji use the group-ID fallback.
+private func dominantEmojiHue(_ emoji: String) -> Double? {
+    let size = 48
+    let renderer = UIGraphicsImageRenderer(size: CGSize(width: size, height: size))
+    let image = renderer.image { _ in
+        let font = UIFont.systemFont(ofSize: 38)
+        let text = emoji as NSString
+        let attributes: [NSAttributedString.Key: Any] = [.font: font]
+        let textSize = text.size(withAttributes: attributes)
+        text.draw(at: CGPoint(x: (CGFloat(size) - textSize.width) / 2,
+                              y: (CGFloat(size) - textSize.height) / 2), withAttributes: attributes)
+    }
+    guard let cgImage = image.cgImage else { return nil }
+    let width = cgImage.width
+    let height = cgImage.height
+    var pixels = [UInt8](repeating: 0, count: width * height * 4)
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let drewImage = pixels.withUnsafeMutableBytes { buffer -> Bool in
+        guard let context = CGContext(data: buffer.baseAddress, width: width, height: height,
+                                      bitsPerComponent: 8, bytesPerRow: width * 4, space: colorSpace,
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue |
+                                          CGBitmapInfo.byteOrder32Big.rawValue) else { return false }
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        return true
+    }
+    guard drewImage else { return nil }
+
+    // Hue wraps around at red, so average it as points on a circle.
+    var x = 0.0
+    var y = 0.0
+    var total = 0.0
+    for index in stride(from: 0, to: pixels.count, by: 4) {
+        let alpha = Double(pixels[index + 3]) / 255
+        guard alpha > 0.5 else { continue }
+        let red = min(Double(pixels[index]) / 255 / alpha, 1)
+        let green = min(Double(pixels[index + 1]) / 255 / alpha, 1)
+        let blue = min(Double(pixels[index + 2]) / 255 / alpha, 1)
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        UIColor(red: red, green: green, blue: blue, alpha: 1)
+            .getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: nil)
+        guard saturation > 0.25, brightness > 0.2 else { continue }
+        let weight = Double(saturation) * alpha
+        x += cos(Double(hue) * 2 * .pi) * weight
+        y += sin(Double(hue) * 2 * .pi) * weight
+        total += weight
+    }
+    guard total > 20, hypot(x, y) / total > 0.2 else { return nil }
+    let hue = atan2(y, x) / (2 * .pi)
+    return hue < 0 ? hue + 1 : hue
 }
 
 #Preview("Card") {
