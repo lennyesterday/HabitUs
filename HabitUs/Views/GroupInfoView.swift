@@ -83,7 +83,7 @@ struct GroupInfoView: View {
                 Text(code)
                     .font(.system(size: 34, weight: .heavy, design: .monospaced))
                     .tracking(6)
-                    .foregroundStyle(isOver ? .secondary : Theme.ink)
+                    .foregroundStyle(isOver ? Color.secondary : Color.primary)   // dark in light mode, white in dark mode
                     .textSelection(.enabled)
                     .accessibilityLabel("Invite code \(code.map(String.init).joined(separator: " "))")
                 if isOver {
