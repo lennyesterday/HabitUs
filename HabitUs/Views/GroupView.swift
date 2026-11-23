@@ -11,6 +11,7 @@ struct GroupView: View {
 
     @State private var showCamera = false
     @State private var showGifPicker = false
+    @State private var showPauseSheet = false
     @State private var selectedPlayer: UUID?
     @State private var showGroupInfo = false
     @State private var isUploading = false
@@ -60,9 +61,8 @@ struct GroupView: View {
                         requestsCard
                     }
 
-                    TaskCard(data: data, now: now, isUploading: isUploading) {
-                        showCamera = true
-                    }
+                    TaskCard(data: data, now: now, isUploading: isUploading,
+                             checkIn: { showCamera = true }, pause: { showPauseSheet = true })
 
                     if let errorMessage {
                         ErrorText(message: errorMessage)
@@ -135,6 +135,15 @@ struct GroupView: View {
                 showGifPicker = false
                 Task { await run { try await ChatService.postGif(groupId: data.group.id, gif: gif) } }
             }
+        }
+        .sheet(isPresented: $showPauseSheet) {
+            // R18: the sheet shows its own errors, then closes once the pause is posted.
+            PauseSheet(habit: data.group.habit) { reason in
+                try await CheckinService.addPause(groupId: data.group.id, reason: reason)
+                errorMessage = nil
+                await reload()
+            }
+            .presentationDetents([.medium, .large])
         }
         .refreshable { await reload() }
         .task {
