@@ -1,8 +1,10 @@
 # Habitract (repo: HabitUs): what has been built so far
 
-Written by Lenny for Bene and Vincent, 19 Nov 2026. Read it once, then open the files it points to.
-Everything here describes the code on branch `test-run-1` / PR #10 ("Initial version of HabitUs").
-Where the code and `SPEC.md` disagree, section 8 lists it on purpose.
+Presentation handover for Lenny, Bene and Vincent. The current overview was checked against `main`
+at commit `311d53b` (23 Nov 2026), including PR #22. The numbered log in section 14 is a history:
+later entries can replace earlier experiments. Section 15 is the short guide for the presentation.
+Actual Supabase settings, applied migrations, real-device behavior and demo data were not independently
+verified for this update. Where the code and `SPEC.md` disagree, section 8 lists the differences.
 
 ---
 
@@ -18,39 +20,31 @@ streak bonus, and a leaderboard shows who delivers.
 
 ## 2. Status
 
-### Built (the app builds, the 72 rule tests are green)
+**Code checked on 23 Nov:** the current `main` contains onboarding, login and email confirmation,
+password reset, groups and contracts, photo check-ins, reactions, text and GIF chat, points,
+leaderboard, profile pictures and the design work through PR #22. `HabitCore` has **92 XCTest
+cases**, run successfully on 23 Nov without a Supabase connection. This is evidence for the rules,
+not proof that the camera, database policies or the whole demo work on real phones.
 
-Tried in the simulator against our Supabase project: onboarding, sign up, log in, Home, the GIF search.
-**Not yet tried end to end with three real accounts:** create → join → accept → start → check in →
-leave / delete, profile and group pictures. Do this together once before the feature freeze.
+**Before the presentation:** rehearse create → join → accept → start → photo → reactions →
+leaderboard using three accounts and real phones. Verify camera permission, network, emails,
+Supabase access policies and the deployed database migrations. This update did not run that live demo.
 
-
-| Area | What you can do |
+| Area | Current behavior and where to look |
 |---|---|
-| Start | Onboarding pages (shown whenever nobody is logged in), sign up, log in, log out |
-| Home | One card per habit group: picture or emoji, member pictures, status, my points and rank |
-| Create | Name, habit, emoji icon (all emojis, with search), how often, end date or open end, own rules |
-| Contract | Read the rules, sign with the finger, get a 6 character invite code |
-| Join | Enter code, read the contract first, sign, wait for the owner |
-| Lobby | Owner accepts or declines requests, starts the session with at least 3 members |
-| Group screen | Task card with countdown, camera check-in (test photo in the simulator), bonus card, podium, rankings, chat with text and GIFs, refresh every 10 s |
-| Leaderboard | Tap the podium: line chart of points per round, all players with full rounds, streak, pauses |
-| Player profile | Tap a player under the podium: grade A to D, stats, history round by round with photos, pauses and missed tasks |
-| Group info | Tap the member pictures at the top of the group screen: picture, facts (how often, round length, start, end, current round, owner), contract and own rules with my own signature under it, how points work |
-| End | Owner can finish the challenge, results screen with the champion |
-| Groups | Everyone can leave any time, the owner can delete the group for everyone |
-| Profile | Profile picture, group picture and icon (owner), settings, "How it works" |
+| Account | Onboarding, sign up, confirmation code, login, password reset and logout: `AuthView.swift`, `AuthService.swift` |
+| Home and appearance | Group cards, profile pictures, New Habit and Join Habit; light/dark surfaces and emoji-based banners: `HomeView.swift`, `Theme.swift`, `Components/Pictures.swift` |
+| Groups | Create or join using a code, sign the contract, owner accepts/declines and starts: `CreateGroupView.swift`, `JoinView.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupService.swift` |
+| Running group | Task card, photo check-in, vote deck, leaderboard, text/GIF chat and periodic refresh: `GroupView.swift`, `Components/TaskCard.swift`, `Components/FeedView.swift` |
+| Late join and hold | An accepted late joiner starts next round; a running group with fewer than three accepted players is on hold. Rules: `Rounds.swift`, `Tasks.swift`, `Scoring.swift`; database: migrations 006 and 007 |
+| Leaderboard | Tap the podium: points history chart, rankings and the round bonus below them: `LeaderboardView.swift`, `Components/BonusCard.swift` |
+| Group and player information | Tap member photos for group info and invite code; tap a ranking row for player history: `GroupInfoView.swift`, `PlayerProfileView.swift` |
+| Help and pictures | Profile/settings and choosing profile pictures: `ProfileView.swift`; group look: `GroupLookView.swift` |
 
-### Not built yet (Milestone 2, needed before the feature freeze on Friday)
-
-| Missing | Why it matters | Where |
-|---|---|---|
-| **Like and X buttons** on proofs | The demo story (SPEC §14) is "the other two press X, the photo turns invalid". The rule exists and is tested, only the button and the service are missing | `CheckinService.setReaction`, `FeedView` |
-| **Pause with a reason** | R18 | `CheckinService.addPause`, a sheet in `GroupView` |
-| RLS manual check with screenshots (S5) | Evidence for the security criterion | `docs/` |
-| README names and student numbers, `DECISIONS.md`, `seed.sql` | Hand-in requirements | repo root, `supabase/` |
-
-Both missing services are stubs that throw "This part is not built yet."
+**Still incomplete:** `CheckinService.addPause` is a stub that throws "This part is not built yet";
+the pause creation flow is not finished. The thumbs-up and thumbs-down reaction UI and
+`CheckinService.setReaction` **are implemented**, but were not exercised against the live backend
+as part of this documentation update. Check hand-in materials and the manual RLS evidence yourselves.
 
 ---
 
@@ -64,7 +58,7 @@ Both missing services are stubs that throw "This part is not built yet."
    │ uses for every rule
    ▼
  HabitCore/        the game rules as pure Swift functions. No SwiftUI, no Supabase, no internet.
-                   Tested with `cd HabitCore && swift test` (72 tests, about 0.01 s).
+                   Tested with `cd HabitCore && swift test` (92 tests passed on 23 Nov 2026).
 
  supabase/migrations/   the database: tables, access rules (RLS), database functions
 ```
@@ -99,8 +93,8 @@ Follow this once in Xcode. It is the best way to understand the whole app.
 4. **HabitCore:** `Tasks.swift` → `taskStatus` uses `Rounds.swift` (which round is today?) and
    `Votes.swift` (`isValid`: more than half X?).
 5. **Database:** `001_schema.sql` → policy `"checkins insert"`: only allowed if you are the author,
-   an accepted member (`is_accepted`) and the session is running (`is_active`). Even a hacked app
-   cannot post into another group.
+   an accepted member (`is_accepted`) and the session is running (`is_active`). This is the intended
+   access restriction; verify the deployed policy with a two-account manual check.
 6. Back in the view, `reload()` loads everything again and HabitCore recomputes points, rank, bonus.
 
 ---
@@ -110,11 +104,11 @@ Follow this once in Xcode. It is the best way to understand the whole app.
 | File | Main functions | Rules | Tests |
 |---|---|---|---|
 | `Models.swift` | plain data: `HabitGroup`, `Member`, `Checkin`, `Reaction`, `TaskStatus`, `LeaderboardRow`, `RuleError` | – | – |
-| `Rounds.swift` | `phase`, `currentRound`, `round(of:in:)`, `timeLeft`, `canStart`, `localDay`, `roundCount` | R8, R9, R14 | 14 |
-| `Tasks.swift` | `taskStatus` (done, failed, open, canCheckInToday) | R10 to R12, R19 | 10 |
-| `Votes.swift` | `xThresholdReached`, `isValid` | R15 to R18 | 6 |
-| `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard`, `grade` (A to D) | R20 to R24 | 19 |
-| `Validation.swift` | `validateSignUp`, `validateGroup`, `validateGroupIcon`, `validateSignatureImage`, `validateMessage`, `validatePauseReason`, `validateGifURL` | R1, R4, R18, R26 | 20 |
+| `Rounds.swift` | `phase`, `currentRound`, `round(of:in:)`, `timeLeft`, `canStart`, `localDay`, `isOnHold`, `firstRound` | R8, R9, R14, R29, R30 | 17 |
+| `Tasks.swift` | `taskStatus` (done, failed, open, canCheckInToday) | R10 to R12, R19, R29, R30 | 12 |
+| `Votes.swift` | `xThresholdReached`, `isValid`, `canReact` | R15 to R19 | 11 |
+| `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard`, `grade` (A to D) | R20 to R24, R29 | 22 |
+| `Validation.swift` | `validateSignUp`, `validatePassword`, `validateGroup`, `validateSignatureImage`, `validateMessage`, `validatePauseReason`, `validateGifURL` | R1, R4, R18, R26 | 27 |
 | `InviteCode.swift` | `InviteCode.generate()` (6 characters, no 0/O/1/I, `SystemRandomNumberGenerator`) | R4, S9 | 3 |
 
 Test names say which rule they check, e.g. `testR17PhotoInvalidWhenMoreThanHalfX`.
@@ -138,7 +132,9 @@ types from the SPEC: 1035, 940 and 480 points over 12 rounds.
 
 ## 6. The database (Supabase)
 
-Migrations are run once, in order, in the Supabase SQL editor. All five are already applied to our project.
+Database changes are recorded in `supabase/migrations/`. The repository contains migrations 001–007.
+These files describe intended database changes; their deployment to the shared project was not checked
+in this documentation update. Confirm the actual migration state with the team before the demo.
 
 | File | What it adds |
 |---|---|
@@ -147,6 +143,8 @@ Migrations are run once, in order, in the Supabase SQL editor. All five are alre
 | `003_chat_gifs.sql` | `messages.gif_url`, only links to GIPHY's GIF servers allowed |
 | `004_leave_delete_signature.sql` | `leave_group` (owner role moves to the member who joined first, last one out deletes the group), owner may delete the group, signature size limit |
 | `005_icons_and_pictures.sql` | `groups.icon`, `groups.photo_path`, `profiles.photo_path`, private bucket `pictures` with policies |
+| `006_leave_messages.sql` | Updates `leave_group`, adds system messages for departures and the on-hold notice |
+| `007_late_join.sql` | Adds `memberships.first_round`; updates joining, contract preview and acceptance for active groups |
 
 **Who may do what (RLS):**
 
@@ -177,9 +175,9 @@ We need it in three places, and each one checks itself what is allowed:
 |---|---|
 | `SupabaseClient.swift` | the one client, reads URL and key from `Info.plist`; `readable { }` turns every error into a readable text |
 | `Rows.swift` | how database rows look (snake_case) and how they turn into HabitCore models; Lisbon day format |
-| `AuthService.swift` | sign up, log in (same error for unknown email and wrong password, R3), log out, profile, profile picture |
+| `AuthService.swift` | sign up, confirmation codes, password reset, log in, log out, profile and profile picture |
 | `GroupService.swift` | create, preview, join, accept/decline, start, finish, leave, delete, change look, Home cards, `load` (everything for one group) |
-| `CheckinService.swift` | photo check-in, feed (**pause and like/X are stubs**) |
+| `CheckinService.swift` | photo check-in, reactions and feed; **creating a pause is still a stub** |
 | `PhotoService.swift` | proof photos: resize, JPEG, upload, load with cache, delete all |
 | `PictureService.swift` | profile and group pictures (square 400 px) |
 | `ChatService.swift` | text messages and GIF messages |
@@ -207,27 +205,28 @@ The only external package is `supabase-swift`, pinned to exactly 2.55.7 (`Packag
 
 ## 8. Where we changed the SPEC (and why)
 
-We decided these on purpose. The SPEC text still needs updating (sections 1, 3, 7).
+The following summarizes changes and remaining differences. The SPEC now includes late joining and
+on-hold behavior as R29 and R30, but older sections can still contain conflicting descriptions.
 
 | Change | SPEC said | Why we changed it | Watch out |
 |---|---|---|---|
-| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | the chat says "X left the group."; below 3 players a running challenge is on hold until someone joins (steps 33, 34); fewer members means fewer X are needed, also for older photos |
+| Leave a group any time | "Later" / contract binding | Contracts are a fun element, people must be able to leave | the chat says "X left the group."; below 3 players a running challenge is on hold until someone joins (steps 68, 69); fewer members means fewer X are needed, also for older photos |
 | Signature drawn with the finger | typed name | feels more like a real contract | stored as a small PNG (max 40 KB) in `memberships.signature` |
 | GIFs in the chat (GIPHY) | text only | fun | third party service: search terms and IP go to GIPHY; the GIPHY key is in the app |
 | Group icon (emoji), profile and group pictures | avatar emoji | looks better, closer to the design references | pictures may come from the photo library, proofs still only from the camera |
-| Onboarding pages and new design | – | explain the app, make it fun | inspired by PlayUs, but toned down on purpose: it is a habit app, not a game ("New Habit", not "New Game") |
+| Onboarding and current design | – | explain the app and make the screens readable | PR #22 uses a neutral, Retro-inspired design with light/dark variants and emoji-based group banners; it uses a system serif approximation, not Retro's original font |
 | Email confirmation, forgot password, password rules | no email verification, 8 characters | real accounts: a 6 digit code from the email, a way back in, the usual password rules (steps 27, 29, 30, 31) | emails go through Resend with our own domain `habitractapp.com` (about 10 € a year, paid by Lenny); if Resend or the SMTP settings break, nobody can sign up |
 
 ---
 
 ## 9. Known limits (say them yourselves in the walkthrough)
 
-- Game rules run in the app, access rules in the database. A hacked app could break a game rule *inside its own group* (e.g. two photos a day), but never get into another group.
+- Many game rules run in the app; RLS and selected database functions enforce access and some transitions. A modified client may bypass client-only game rules. Cross-group access is intended to be blocked by RLS, but the deployed policies need a real two-account manual check.
 - No account deletion. Email verification and password reset exist since steps 27 and 29.
 - The password rules are checked in the app. The server only checks them if they are also set in Supabase (step 30).
 - A photo of a screen can fake a "live" photo. That is exactly why the group can press X.
 - No push notifications, no live updates (the group screen reloads every 10 seconds).
-- Not tested automatically: RLS and the database functions, camera, layout. RLS is checked by hand (S5).
+- Not tested automatically: deployed RLS and database functions, camera, layout and the full multi-user journey. A manual RLS check (S5) is required; this update did not verify its result.
 - GIPHY sees search terms and IP addresses.
 
 ---
@@ -252,15 +251,15 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 
 ---
 
-## 11. Proposed split for the rest
+## 11. Presentation preparation
 
-| Who | Task | Area | Files |
-|---|---|---|---|
-| Bene | 👍 and 👎 buttons on photos and pauses (R15, R16, R17, R19; "X" in the SPEC and code = 👎 in the app) | B | `CheckinService.setReaction`, `Components/FeedView.swift` |
-| Vincent | Pause with reason (R18) | B | `CheckinService.addPause`, new pause sheet, `TaskCard` |
-| Vincent | RLS manual check S5 with two accounts in two groups, screenshots | A | `docs/` |
-| Lenny | README (names, student numbers), `DECISIONS.md`, SPEC update, `seed.sql`, demo setup | C | repo root, `supabase/` |
-| All | Security checklist S1–S13, teach-back on Saturday, demo rehearsal on the phones | – | SPEC §11 |
+- **Together:** rehearse the full demo on three real phones and confirm camera permissions, network,
+  login, group membership, photo upload, reactions and leaderboard refresh.
+- **Database:** confirm migrations 001–007 are applied and perform the two-account RLS check. Do not
+  run migrations or change shared data just to prepare this handover.
+- **Hand-in:** verify the current README, names and student numbers, decisions, demonstration data,
+  and any course-specific URL requirement with the team and course instructions.
+- **Known missing feature:** creating a pause is not implemented. Do not present it as complete.
 
 ---
 
@@ -269,7 +268,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 | Question | Short answer |
 |---|---|
 | Your key is in the app. Is that safe? | It is the public anon key. Every table and bucket has RLS, so the key alone shows nothing. The service role key is never in the app. |
-| Can I see another group's photos? | No. The storage policy checks membership of the group folder in the database. |
+| Can I see another group's photos? | The intended storage policy checks group membership. A two-account manual test is needed to verify the deployed policy. |
 | Why are points not stored? | They cannot get out of sync. An invalid photo needs no correction. |
 | How do you test rules about weeks without waiting? | Time is a parameter. Tests pass any `now`. |
 | Why a separate HabitCore package? | Rules testable in seconds without phone, internet or database. Clear for the walkthrough. |
@@ -278,7 +277,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 | How do you stop fake photos? | Camera only, database timestamp, and the group can press X. No AI detection on purpose. |
 | How are passwords stored? | Only Supabase Auth, as a bcrypt hash. Our tables never see them. |
 | What is not tested? | RLS, camera, layout, two people tapping at the same second. See section 9. |
-| What would you do next? | Like/X live updates with Supabase Realtime, push notifications, game rules as database functions, account deletion. |
+| What would you do next? | Implement pause creation, add live updates and push notifications, enforce more game rules in the database, and add account deletion. |
 
 ---
 
@@ -755,6 +754,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `GroupInfoView.swift` (`inviteSection`).
 - How to check: preview of `GroupInfoView`.
 
+**Step 71: Refresh the presentation handover** (branch `presentation-handover`)
+- What: updated the current status, file map, test counts, database migration list and known limitations; added a presentation guide based on `main` at `311d53b`.
+- Why: Bene wanted the team to understand our combined changes and be ready to explain the code and storage.
+- Files: `docs/HANDOVER.md` only.
+- How to check: compare section 15 with the linked source files. `swift test` completed with 92 tests and 0 failures on 23 Nov; live Supabase, camera and the full demo were not checked for this update.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
@@ -762,3 +767,96 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files:
 - How to check:
 -->
+
+
+## 15. Presentation cheat sheet: current `main`
+
+This section describes repository commit `311d53b`, not every experiment in the history above.
+The experiments in steps 32–66 were merged through PR #22; later steps in that history describe
+what survived. The actual shared database and three-phone flow still need to be checked separately.
+
+### A 30-second explanation
+
+"Habitract helps friends keep a habit together. They create a group, agree on a contract, and
+check in with live photos. Other members can react, and the app calculates points and a ranking.
+The iPhone app is built with SwiftUI; Supabase provides login, a Postgres database and private file
+storage. We separated the game calculations into HabitCore so we can test them without the internet."
+
+### Where to find what we built
+
+All app source paths below start at `HabitUs/` in the repository.
+
+- **App startup:** `HabitUsApp.swift` → `RootView` decides between the setup hint, onboarding,
+  login and Home. Login changes come from `AuthService.userChanges()`.
+- **Onboarding and sign-in:** `Views/OnboardingView.swift` explains the app; `Views/AuthView.swift`
+  contains login, sign-up, email confirmation and password-reset screens. `Services/AuthService.swift`
+  calls Supabase Auth; `HabitCore/Sources/HabitCore/Validation.swift` checks input.
+- **Group collection:** `Views/HomeView.swift` shows New Habit, Join Habit and group cards.
+  `GroupBanner` shows a group photo or emoji; `GroupEmojiBackground` derives a muted color from
+  the emoji when possible and falls back to a stable group-ID color. The small emoji pattern and
+  the task card reuse this presentation. This visual calculation does not change stored group data.
+- **Light and dark appearance:** `HomeBackground` in `HomeView.swift`, shared colors and fonts in
+  `Views/Theme.swift`, and system colors such as `secondarySystemBackground` determine the look.
+  Large headings use the iOS system serif font; it is an approximation, not Retro's original font.
+- **Create, join and sign:** `Views/CreateGroupView.swift`, `Views/JoinView.swift` and
+  `Views/ContractView.swift` display the forms and contract. `Components/SignaturePad.swift` captures
+  a signature. `Services/GroupService.swift` writes and reads the group and membership.
+- **Inside a group:** `Views/GameScreen.swift` selects lobby, active group or results;
+  `Views/GroupView.swift` assembles tasks, voting, rankings and chat.
+  `Components/TaskCard.swift` shows progress and the camera action;
+  `Components/CameraView.swift` opens the iPhone camera. The simulator offers a generated test photo.
+- **Chat and reactions:** `Components/FeedView.swift` renders messages and photo check-ins;
+  `Components/VoteDeck.swift` provides the photo voting shortcut. `Services/ChatService.swift` saves
+  messages; `Services/CheckinService.swift` saves reactions. `GroupView` reloads every 10 seconds
+  while open, and supports pull-to-refresh; this is polling, not push notifications.
+- **Ranking:** `Views/LeaderboardView.swift` shows the points chart, ranking and round bonus;
+  `Components/BonusCard.swift` draws the bonus, and `HabitCore/Sources/HabitCore/Scoring.swift`
+  computes the actual points. `Views/PlayerProfileView.swift` shows a player's history.
+- **Group and profile pictures:** `Views/Components/Pictures.swift` loads pictures through
+  `Services/PictureService.swift`. A profile photo is shown without a letter over it; if no photo
+  loads, the first letter is shown. `Views/ProfileView.swift` and `Views/GroupLookView.swift`
+  provide the relevant choices.
+
+### Where the information is stored
+
+- **Accounts and sessions:** Supabase Auth handles sign-up and login; the app observes auth state.
+  The Supabase SDK retains the session on the device. App tables do not store the user's password.
+- **Database:** `profiles`, `groups`, `memberships`, `checkins`, `reactions`, and `messages` are
+  Postgres tables. Their definitions and RLS policies are in `supabase/migrations/001_schema.sql`;
+  migrations 002–007 add features and change functions. The SQL files are versioned code, not a
+  guarantee that the team's hosted database currently has the same state.
+- **Files:** proof images are uploaded to the private `proofs` bucket by `Services/PhotoService.swift`;
+  profile and group pictures use the private `pictures` bucket via `Services/PictureService.swift`.
+  Database rows contain paths to the files. GIPHY messages store a GIF URL, not the GIF itself.
+- **Signature:** the drawn signature is converted to a PNG and encoded into the membership's
+  `signature` field; `SignaturePad.swift` and migration 004 explain the format and size limit.
+- **Configuration:** `Config/Base.xcconfig` includes local configuration. Each developer keeps
+  Supabase URL, public anon/publishable key and GIPHY key in their ignored `Config/Secrets.xcconfig`;
+  personal signing values belong in ignored `Config/Local.xcconfig`. Never share a service-role key.
+- **Points:** scores are computed from check-ins and reactions by HabitCore; they are not saved as
+  a points column. A rejected photo can therefore change the next calculation.
+
+### Questions the team can practice
+
+1. **What happens when someone taps the camera button?** `TaskCard` calls `GroupView`, which opens
+   `CameraView`. After a photo, `CheckinService.addPhoto` checks `taskStatus`, `PhotoService` uploads
+   a resized JPEG to `proofs`, and the service inserts a `checkins` row. The database provides the
+   timestamp/day. An upload or permission error must still be checked on a real phone.
+2. **How does a photo become invalid?** `FeedView` or `VoteDeck` calls `setReaction`; `Votes.swift`
+   checks whether more than half of the other accepted members gave thumbs down. The author cannot
+   vote on their own photo. The current code recomputes validity using the current accepted member
+   count, so departures can change the threshold.
+3. **How are points calculated?** A done task is 20 points; a full round gets +25%, increasing by
+   5 percentage points per consecutive full round, up to a total bonus of +50%. `Scoring.swift`
+   performs the calculation; `LeaderboardView.swift` displays it.
+4. **What if somebody joins late or leaves?** `007_late_join.sql` sets `first_round` to the next
+   round when a late joiner is accepted. `Scoring.swift` gives them earlier rounds' group averages,
+   rounded down. Below three accepted players the challenge is on hold, but calendar rounds continue.
+   This catch-up rule can be exploited by rejoining; it is a known limitation.
+5. **What protects private data?** The migrations define RLS policies and private storage buckets.
+   The app's public key identifies the project; it does not replace RLS. We must verify the deployed
+   policies with separate accounts; a successful local rule test does not prove database security.
+6. **What is tested and what is not?** 92 HabitCore tests passed on 23 Nov. These cover local rules,
+   not the hosted database, RLS, camera, visual layout or a real multi-user end-to-end session.
+   The pause creation service remains unfinished. Never claim the live demo was tested unless the
+   team has actually rehearsed it.
