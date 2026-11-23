@@ -9,6 +9,8 @@ struct TaskCard: View {
     let now: Date
     let isUploading: Bool
     let checkIn: () -> Void
+    /// Opens the pause sheet (R18).
+    let pause: () -> Void
 
     /// Why the camera button is grey: on hold (R30), not my first round yet (R29), or done for today.
     private func waitingText(now: Date) -> String {
@@ -89,6 +91,17 @@ struct TaskCard: View {
                     Text(waitingText(now: now))
                         .font(.system(.footnote, design: .default).bold())
                         .foregroundStyle(.primary)
+                }
+
+                // R18: a pause with a reason instead of a photo.
+                if data.canPause(now: now) {
+                    Button(action: pause) {
+                        Label("Can't today? Take a pause", systemImage: "pause.circle")
+                            .font(.system(.subheadline, design: .default).weight(.semibold))
+                            .foregroundStyle(.primary)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
                 }
             } else {
                 Text("You finished this round. See you next round! 💪")

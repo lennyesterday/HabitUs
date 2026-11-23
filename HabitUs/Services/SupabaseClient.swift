@@ -33,9 +33,6 @@ let supabase: SupabaseClient = {
     )
 }()
 
-/// Thrown by service functions that nobody has built yet.
-let notBuiltYet = RuleError("This part is not built yet.")
-
 /// Runs a Supabase call and turns every error into a RuleError with a text the view can show.
 @discardableResult
 func readable<T>(_ work: () async throws -> T) async throws -> T {

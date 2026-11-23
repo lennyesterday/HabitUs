@@ -82,6 +82,15 @@ struct GroupData {
     /// R29: my first round, later than the current one right after I joined a running challenge.
     var myFirstRound: Int { myMembership?.firstRound ?? 1 }
 
+    /// R18: a pause needs a running challenge that is not on hold (R30), my first round
+    /// must have started (R29), and I need an open task. Unlike a photo, the day does not matter.
+    func canPause(now: Date) -> Bool {
+        phase(of: group, now: now) == .active
+            && !isOnHold(now: now)
+            && currentRound(of: group, now: now) >= myFirstRound
+            && taskStatus(of: me, now: now).open > 0
+    }
+
     func leaderboard(now: Date) -> [LeaderboardRow] {
         HabitCore.leaderboard(group: group, members: members, checkins: checkins,
                               reactions: reactions, now: now)
