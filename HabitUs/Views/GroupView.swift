@@ -48,6 +48,9 @@ struct GroupView: View {
                     }
                     .foregroundStyle(.primary)
 
+                    if data.photoToRetake(now: now) != nil {
+                        retakeCard(now: now)
+                    }
                     if data.isOnHold(now: now) {
                         onHoldCard
                     }
@@ -321,6 +324,27 @@ struct GroupView: View {
 
     // MARK: - Joining later (R29) and on hold (R30)
 
+    /// R17: my photo was rejected. Shown at the top until I took a new one or the round ended.
+    private func retakeCard(now: Date) -> some View {
+        let left = Theme.durationText(timeLeft(in: data.group, now: now))
+        let canToday = data.taskStatus(of: data.me, now: now).canCheckInToday
+        return NoticeCard(emoji: "📸", title: "Your photo was rejected by the group",
+                          text: canToday
+                            ? "Take a new one before the round ends · \(left) left. After that the task is missed."
+                            : "You already have a photo today. Take the new one tomorrow · \(left) left in this round.",
+                          tint: .red) {
+            if canToday {
+                Button {
+                    showCamera = true
+                } label: {
+                    Label("Retake photo", systemImage: "camera.fill")
+                }
+                .buttonStyle(ChunkyButtonStyle())
+                .disabled(isUploading)
+            }
+        }
+    }
+
     /// Fewer than 3 players: nobody can check in until someone new is accepted.
     private var onHoldCard: some View {
         NoticeCard(emoji: "⏸️", title: "The game is on hold",
@@ -416,6 +440,18 @@ extension GroupData {
     }
 }
 
+#Preview("My photo was rejected") {
+    var data = GroupData.preview
+    let photo = Checkin(id: UUID(), groupId: data.group.id, userId: data.me, kind: .photo, photoPath: nil,
+                        text: "", day: Date(), createdAt: Date())
+    data.checkins.append(photo)
+    data.reactions += data.accepted.filter { $0.userId != data.me }
+        .map { Reaction(checkinId: photo.id, userId: $0.userId, kind: .x) }
+    return NavigationStack {
+        GroupView(data: data) { }
+    }
+}
+
 #Preview("On hold, with a join request") {
     var data = GroupData.preview
     data.members.removeLast()
@@ -426,11 +462,13 @@ extension GroupData {
     }
 }
 
-/// A white card with an emoji, a title, a text and optional buttons under it.
+/// A card with an emoji, a title, a text and optional buttons under it.
+/// Light and dark mode; `tint` gives it a colored border, for example red for a rejected photo.
 private struct NoticeCard<Actions: View>: View {
     let emoji: String
     let title: String
     let text: String
+    var tint: Color? = nil
     @ViewBuilder let actions: () -> Actions
 
     var body: some View {
@@ -440,7 +478,7 @@ private struct NoticeCard<Actions: View>: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
                         .font(.system(.headline, design: .rounded).weight(.heavy))
-                        .foregroundStyle(Theme.ink)
+                        .foregroundStyle(tint ?? Color.primary)
                     Text(text)
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(.secondary)
@@ -451,7 +489,12 @@ private struct NoticeCard<Actions: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.white, in: RoundedRectangle(cornerRadius: 22))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 22))
+        .overlay {
+            if let tint {
+                RoundedRectangle(cornerRadius: 22).strokeBorder(tint.opacity(0.6), lineWidth: 2)
+            }
+        }
         .shadow(color: .black.opacity(0.07), radius: 10, y: 4)
     }
 }

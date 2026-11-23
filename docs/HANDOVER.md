@@ -785,7 +785,27 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
 - Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
 
-**Step 73: Pauses in the vote deck, so nobody overlooks them** (branch `pause-update`, on top of `pause-the-streak`, rule R18)
+**Step 73: Retake a rejected photo, shown at the top** (branch `retake-photo-update`, rule R17)
+- What: when more than half of the others press 👎 on my photo, a red card appears at the top of the group screen: "Your photo was rejected by the group. Take a new one before the round ends · 3 days 7 h left. After that the task is missed." with a "Retake photo" button that opens the camera. If I already have a valid photo today (weekly and monthly: one photo per day), it says to take the new one tomorrow. The card disappears as soon as I took a new photo, or when the round ended (then the task is missed).
+- Why: the rule existed (R17), but the only retake button was hidden under the photo in the chat, so people did not notice the rejection or how much time was left.
+- How: HabitCore `photoToRetake(user:group:checkins:reactions:memberCount:firstRound:now:)`: my newest photo of the current round, if it is invalid, the round still runs and I still have an open task. 3 new tests (101 in total after merging the pause feature). `GroupData.photoToRetake(now:)`, `GroupView.retakeCard`. `NoticeCard` now also works in dark mode and can have a colored border (`tint`).
+- Files: `Tasks.swift`, `TasksTests.swift`, `GroupService.swift`, `GroupView.swift` (with the preview "My photo was rejected").
+- How to check: the preview "My photo was rejected" in `GroupView.swift`, light and dark.
+
+**Step 74: Invite code readable in dark mode** (branch `invite-code-design-update`)
+- What: the invite code in the group info was almost invisible in dark mode (dark grey on a dark card). It is now dark in light mode and white in dark mode.
+- How: `Color.primary` instead of the fixed `Theme.ink` in `GroupInfoView.inviteSection`.
+- How to check: preview of `GroupInfoView` with Color Scheme "Dark Appearance", or the phone in dark mode.
+
+**Step 75: Home sorted by the newest activity, like WhatsApp** (branch `homepage-update`)
+- What: on Home the group with the newest message, GIF, photo or pause is now on top. Before, the cards were sorted by when I signed up for the group. A group without any activity yet (lobby, pending request) counts with the time I signed.
+- Why: Vincent: like in a chat app, you should see at once where something happened.
+- How: `GroupService.myGames` now also loads `signed_at`, asks for the newest message of each group where I am accepted (one small query per group, run at the same time, so a quiet group is not pushed out by a busy one), and takes the newest check-in from the check-ins it already loads. `GameCard.lastActivity` is the newest of these three; the cards are sorted by it. RLS only lets me read messages of groups where I am accepted, so for a pending request the signing time counts.
+- Files: `GroupService.swift`.
+- How to check: open Home with two groups, send a GIF in the lower one, go back to Home: it is now on top. `swift test` unchanged (no HabitCore change).
+- Not tested: only built, not tried in the app or on a phone yet. Home still reloads only when it appears or on pull to refresh, not live.
+
+**Step 76: Pauses in the vote deck, so nobody overlooks them** (branch `pause-update`, on top of `pause-the-streak`, rule R18)
 - What: the button under the task card is now **"Vote on photos & pauses"**. The red number counts both, and when a pause waits for my vote a red line says "⏸ 1 pause waits for your vote". The deck shows open pauses **first** (their 48 hours run out), then the photos of this round. A pause card is blue with ⏸, "Pause instead of Gym", the reason in big letters and "Can be rejected until Wed 16:00". Swipe right 👍, left 👎, like photos.
 - Which pauses: the ones I can still vote on (not my own, still accepted, inside the 48 hours, `canReact`) and have not voted on yet. A pause from the last round is still in the deck if its 48 hours are not over.
 - Why: Vincent: a pause is easy to miss in the chat, but the group only has 48 hours to reject it.
@@ -794,7 +814,7 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How to check: the "Pause card" preview in `VoteDeck.swift` (checked, renders). In the app: A takes a pause, B sees the red line on the button and the pause card first in the deck. `swift test` unchanged (98 green, no HabitCore change).
 - Not tested: the button with the second line was only checked by building, the `GroupView` preview did not start. Not tried on phones.
 
-**Step 74: Photo validation with 👍/👎, vote deck and retake** (branch `picture-validation`, PR #17, Vincent, added to the log afterwards)
+**Step 77: Photo validation with 👍/👎, vote deck and retake** (branch `picture-validation`, PR #17, Vincent, added to the log afterwards)
 - Note: this was merged on 20 Nov, but its log entry was on a branch that was never merged. Added here so the story is complete.
 - What: 👍 and 👎 under every photo and pause in the chat, with a red bar "1 of 2 👎 to invalidate" once someone gave a 👎. A "Vote on photos" button opens a Tinder style deck (swipe right 👍, left 👎, a big thumb appears while dragging, "All votes are done" when empty). When more than half of the other members gave a 👎 the photo is INVALID, the task opens again and the author sees "Retake photo".
 - How: HabitCore `canReact` (not on your own proof, not once invalid, only while the round runs) with 5 tests written first. `CheckinService.setReaction(groupId:checkinId:kind:)` saves, replaces (upsert) or deletes my reaction; the signature got `groupId`. No database change, the reactions policies in `001_schema.sql` already cover it.

@@ -94,4 +94,29 @@ final class TasksTests: XCTestCase {
                                 firstRound: 2, now: time(2026, 1, 12, 10))   // round 2
         XCTAssertTrue(onTime.canCheckInToday)
     }
+
+    // MARK: R17 retake a rejected photo, only until the round ends
+
+    func retake(_ checkins: [Checkin], _ reactions: [Reaction], now: Date) -> Checkin? {
+        photoToRetake(user: owner, group: makeGroup(), checkins: checkins, reactions: reactions,
+                      memberCount: 3, now: now)
+    }
+
+    func testR17RejectedPhotoAsksForARetakeWhileTheRoundRuns() {
+        let photo = makeCheckin(owner, on: start)
+        XCTAssertEqual(retake([photo], xs(on: photo, by: [alice, bob]), now: time(2026, 1, 7, 10))?.id, photo.id)
+        XCTAssertNil(retake([photo], xs(on: photo, by: [alice]), now: time(2026, 1, 7, 10)), "still valid")
+    }
+
+    func testR17NoRetakeOnceANewPhotoWasTaken() {
+        let rejected = makeCheckin(owner, on: start)
+        let new = makeCheckin(owner, on: addDays(1, to: start))
+        XCTAssertNil(retake([rejected, new], xs(on: rejected, by: [alice, bob]), now: time(2026, 1, 7, 10)))
+    }
+
+    func testR17NoRetakeAfterTheRoundEnded() {
+        let photo = makeCheckin(owner, on: start)
+        XCTAssertNil(retake([photo], xs(on: photo, by: [alice, bob]), now: time(2026, 1, 12, 10)),
+                     "round 2: the task of round 1 is missed")
+    }
 }
