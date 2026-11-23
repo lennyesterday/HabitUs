@@ -17,6 +17,9 @@ struct GameCard: Identifiable {
     var myPoints: Int?
     var myRank: Int?
     var myDone: Int?
+    /// The newest message, GIF, photo or pause in the group, or when I signed up for it.
+    /// Home shows the group with the newest activity on top, like a chat app.
+    var lastActivity: Date = .distantPast
 
     var id: UUID { group.id }
 }
@@ -182,7 +185,13 @@ private struct CardMemberRow: Decodable {
 
 private struct MyMembershipRow: Decodable {
     let status: String
+    let signed_at: Date
     let groups: GroupRow
+}
+
+/// Only the time of a message, to sort Home by the newest activity.
+private struct MessageTimeRow: Decodable {
+    let created_at: Date
 }
 
 /// The hand-drawn signature is saved as text: "data:image/png;base64,...".
@@ -361,12 +370,13 @@ enum GroupService {
         }
     }
 
-    /// All games I created or asked to join, newest first.
+    /// All games I created or asked to join. The group with the newest message, GIF, photo or
+    /// pause comes first, like in a chat app. Without any activity, the time I signed counts.
     static func myGames() async throws -> [GameCard] {
         let me = try requireUser()
         return try await readable {
             let mine: [MyMembershipRow] = try await supabase.from("memberships")
-                .select("status, groups(*)")
+                .select("status, signed_at, groups(*)")
                 .eq("user_id", value: me)
                 .order("signed_at", ascending: false)
                 .execute()
@@ -392,7 +402,29 @@ enum GroupService {
             let checkins = checkinRows.map(\.model)
             let reactions = checkinRows.flatMap { $0.reactions.compactMap(\.model) }
 
-            return mine.map { row in
+            // The newest message of each group where I am accepted (RLS hides the others).
+            // One small query per group, so a quiet group is not pushed out by a busy one.
+            let acceptedIds = mine.filter { $0.status == "accepted" }.map(\.groups.id)
+            var lastMessage: [UUID: Date] = [:]
+            try await withThrowingTaskGroup(of: (UUID, Date?).self) { tasks in
+                for id in acceptedIds {
+                    tasks.addTask {
+                        let rows: [MessageTimeRow] = try await supabase.from("messages")
+                            .select("created_at")
+                            .eq("group_id", value: id)
+                            .order("created_at", ascending: false)
+                            .limit(1)
+                            .execute()
+                            .value
+                        return (id, rows.first?.created_at)
+                    }
+                }
+                for try await (id, date) in tasks {
+                    lastMessage[id] = date
+                }
+            }
+
+            let cards = mine.map { row in
                 let group = row.groups.model
                 let ofGroup = all.filter { $0.group_id == group.id }
                 let members = ofGroup.map(\.model)
@@ -414,8 +446,13 @@ enum GroupService {
                                                        reactions: reactions,
                                                        memberCount: card.acceptedCount, now: now).done
                 }
+                let lastCheckin = checkins.filter { $0.groupId == group.id }.map(\.createdAt).max()
+                card.lastActivity = [row.signed_at, lastMessage[group.id], lastCheckin]
+                    .compactMap { $0 }
+                    .max() ?? row.signed_at
                 return card
             }
+            return cards.sorted { $0.lastActivity > $1.lastActivity }
         }
     }
 
