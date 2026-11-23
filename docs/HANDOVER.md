@@ -785,6 +785,14 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
 - Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
 
+**Step 75: Home sorted by the newest activity, like WhatsApp** (branch `homepage-update`)
+- What: on Home the group with the newest message, GIF, photo or pause is now on top. Before, the cards were sorted by when I signed up for the group. A group without any activity yet (lobby, pending request) counts with the time I signed.
+- Why: Vincent: like in a chat app, you should see at once where something happened.
+- How: `GroupService.myGames` now also loads `signed_at`, asks for the newest message of each group where I am accepted (one small query per group, run at the same time, so a quiet group is not pushed out by a busy one), and takes the newest check-in from the check-ins it already loads. `GameCard.lastActivity` is the newest of these three; the cards are sorted by it. RLS only lets me read messages of groups where I am accepted, so for a pending request the signing time counts.
+- Files: `GroupService.swift`.
+- How to check: open Home with two groups, send a GIF in the lower one, go back to Home: it is now on top. `swift test` unchanged (no HabitCore change).
+- Not tested: only built, not tried in the app or on a phone yet. Home still reloads only when it appears or on pull to refresh, not live.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
