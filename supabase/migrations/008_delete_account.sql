@@ -54,3 +54,11 @@ $$;
 
 revoke execute on function delete_my_account() from public, anon;
 grant execute on function delete_my_account() to authenticated;
+
+-- The app calls this first, before it deletes any files. If this migration was not run yet,
+-- the call fails and nothing at all is deleted.
+create or replace function account_deletion_ready() returns boolean
+language sql stable as $$ select true $$;
+
+revoke execute on function account_deletion_ready() from public, anon;
+grant execute on function account_deletion_ready() to authenticated;

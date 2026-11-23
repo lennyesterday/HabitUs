@@ -126,6 +126,16 @@ enum AuthService {
         try validateAccountDeletion(confirmation)
         let me = try requireUser()
 
+        // First make sure the server can delete accounts (migration 008), so no file is
+        // deleted while the account itself would stay.
+        do {
+            try await supabase.rpc("account_deletion_ready").execute()
+        } catch is URLError {
+            throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch {
+            throw RuleError("Deleting accounts is not set up on the server yet. Nothing was deleted.")
+        }
+
         // Groups that disappear because I am the last player: their photos and pictures first,
         // like GroupService.leave does.
         for card in try await GroupService.myGames() where card.isOwner && card.acceptedCount <= 1 {

@@ -835,7 +835,8 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Storage: the app deletes the files first (Supabase only allows that through its API). New policy "proofs delete own" (008): you may delete proof photos you uploaded yourself (`owner_id`), also in groups you do not own.
 - HabitCore: `validateAccountDeletion` (DELETE, case and spaces do not matter) with 1 test written first (5 checks).
 - Files: `008_delete_account.sql` (new), `Validation.swift`, `ValidationTests.swift`, `AuthService.swift` (`deleteAccount`), `ProfileView.swift`, `SPEC.md` (R31, known limits).
-- **Supabase: run `008_delete_account.sql` in the SQL editor.** Before that, the button shows an error and nothing is deleted.
+- **Supabase: run `008_delete_account.sql` in the SQL editor.** Before that, the button says "Deleting accounts is not set up on the server yet. Nothing was deleted."
+- Fixed after the first try on Vincent's phone: the first version deleted the files (profile picture, photos) *before* calling the database function, so without migration 008 the picture could be gone while the account stayed. Now the app first calls `account_deletion_ready()` (also in 008) and stops if it is missing.
 - How to check: `swift test` → 102 green. The `ProfileView` preview shows the new row. For real (after running 008): make a test account, join a group, post a photo and a message, delete the account → you are logged out; the others see "… left the group.", your photo and message are gone, logging in with the old email fails.
 - Not tested: migration 008 was not run on our Supabase project (AGENTS.md: database read only unless the task says so), so the whole flow was only built, not tried. Whether `owner_id` exists on `storage.objects` depends on the Supabase version (new projects have it); if the policy fails, the account is still deleted, only the photo files stay.
 
