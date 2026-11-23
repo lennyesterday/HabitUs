@@ -189,19 +189,34 @@ struct GroupView: View {
     /// The photos are still in the chat as well, and voting works in both places.
     private func voteSection(now: Date) -> some View {
         let current = currentRound(of: data.group, now: now)
+        // Photos of this round and pauses inside their 48 hours (R18) that still wait for my vote.
+        // Pauses first, because their time runs out; then the newest first.
         let toVote = data.checkins
             .filter {
-                $0.kind == .photo && HabitCore.round(of: $0.day, in: data.group) == current
+                ($0.kind == .pause || HabitCore.round(of: $0.day, in: data.group) == current)
                     && data.canReact(to: $0, now: now) && data.myReaction(on: $0) == nil
             }
-            .sorted { $0.createdAt > $1.createdAt }
+            .sorted { a, b in
+                if a.kind != b.kind { return a.kind == .pause }
+                return a.createdAt > b.createdAt
+            }
+        let pausesWaiting = toVote.filter { $0.kind == .pause }.count
 
         return VStack(spacing: 16) {
             Button {
                 withAnimation(.spring(duration: 0.35)) { showVoteDeck.toggle() }
             } label: {
                 HStack {
-                    Text("🗳️  Vote on photos")
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("🗳️  Vote on photos & pauses")
+                        // So nobody overlooks a pause: its 48 hours run out (R18).
+                        if pausesWaiting > 0 {
+                            Text("⏸ \(pausesWaiting) \(pausesWaiting == 1 ? "pause waits" : "pauses wait") for your vote")
+                                .font(.system(.caption, design: .default).weight(.bold))
+                                .foregroundStyle(Theme.rankColor(0))
+                                .textCase(nil)
+                        }
+                    }
                     if !toVote.isEmpty {
                         Text("\(toVote.count)")
                             .font(.system(.subheadline, design: .default).weight(.heavy))
@@ -220,8 +235,8 @@ struct GroupView: View {
                                            textColor: Theme.brand))
 
             if showVoteDeck {
-                VoteDeck(data: data, photos: toVote) { photo, kind in
-                    react(photo, kind)
+                VoteDeck(data: data, checkins: toVote) { checkin, kind in
+                    react(checkin, kind)
                 }
                 .transition(.move(edge: .top).combined(with: .opacity))
             }

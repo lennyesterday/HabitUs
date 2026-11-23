@@ -35,7 +35,7 @@ Supabase access policies and the deployed database migrations. This update did n
 | Account | Onboarding, sign up, confirmation code, login, password reset and logout: `AuthView.swift`, `AuthService.swift` |
 | Home and appearance | Group cards, profile pictures, New Habit and Join Habit; light/dark surfaces and emoji-based banners: `HomeView.swift`, `Theme.swift`, `Components/Pictures.swift` |
 | Groups | Create or join using a code, sign the contract, owner accepts/declines and starts: `CreateGroupView.swift`, `JoinView.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupService.swift` |
-| Running group | Task card, photo check-in, vote deck, leaderboard, text/GIF chat and periodic refresh: `GroupView.swift`, `Components/TaskCard.swift`, `Components/FeedView.swift` |
+| Running group | Task card, photo check-in, pause with a reason, vote deck for photos and pauses, leaderboard, text/GIF chat and periodic refresh: `GroupView.swift`, `Components/TaskCard.swift`, `Components/PauseSheet.swift`, `Components/VoteDeck.swift`, `Components/FeedView.swift` |
 | Late join and hold | An accepted late joiner starts next round; a running group with fewer than three accepted players is on hold. Rules: `Rounds.swift`, `Tasks.swift`, `Scoring.swift`; database: migrations 006 and 007 |
 | Leaderboard | Tap the podium: points history chart, rankings and the round bonus below them: `LeaderboardView.swift`, `Components/BonusCard.swift` |
 | Group and player information | Tap member photos for group info and invite code; tap a ranking row for player history: `GroupInfoView.swift`, `PlayerProfileView.swift` |
@@ -797,31 +797,6 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How: `Color.primary` instead of the fixed `Theme.ink` in `GroupInfoView.inviteSection`.
 - How to check: preview of `GroupInfoView` with Color Scheme "Dark Appearance", or the phone in dark mode.
 
-**Step 72: Pause with a reason** (branch `pause-the-streak`, PR #25, rule R18)
-- What: under the camera button on the task card there is now **"Can't today? Take a pause"**. It opens a sheet:
-  - a text field for the reason (1 to 200 characters, with a counter)
-  - a short explanation: the pause counts as done with full points, but if more than half of the others press 👎 within 48 hours, the points are gone
-  - "Post pause" and Cancel. Errors show in red in the sheet
-  - the pause appears in the chat as "⏸ Pause · ACCEPTED" with 👍/👎 and **"Can be rejected until Tue 18:40"**
-- The rule (R18, updated in `SPEC.md`):
-  - accepted by default, counts like a valid photo
-  - the others have **48 hours after posting** to reject it with 👎. This window does not depend on the round: a pause on the last day of a round can still be rejected in the next round
-  - if more than half of the others press 👎 in time, the pause is rejected and that task has failed for its round. It cannot be redone
-  - **retroactive:** a rejection after the round ended takes the points away afterwards, also the round bonus and the streak. Nothing extra was needed for that: points are computed from check-ins, never stored
-  - after 48 hours the pause is final. Photos keep the old rule: votes only while their round runs (R19)
-  - not limited to one per day (unlike photos). Only while the challenge runs, not on hold (R30), and from my first round on (R29)
-- How:
-  - HabitCore `Votes.swift`: `pauseVotingWindow` (48 h), `pauseVotingEnds(_:)`, and `canReact` now has two cases: a pause while `now < pauseVotingEnds`, a photo while its round is the current one. 6 new tests, written first (98 in total): pause rejectable in round 2 within 48 h, not after 48 h, not by the author, rejection in round 2 takes round 1 points (25 → 0) and the streak away, photos still freeze at the end of their round.
-  - Service: `CheckinService.addPause` was a stub. It checks the reason with `validatePauseReason`, checks `canPause`, then inserts a `checkins` row with kind "pause" and the trimmed reason. The database sets time and day, like for photos.
-  - `GroupData.canPause(now:)` in `GroupService.swift`: challenge active, not on hold, my first round has started, and I have an open task.
-  - The unused `notBuiltYet` constant was removed from `SupabaseClient.swift`.
-  - Database: no change. `checkins` already has kind 'pause' and `text`, and RLS already allows it.
-- Why: R18 was the last missing must-have from SPEC section 7. The 48 hours give the group a fair chance to react to a pause posted late in a round.
-- Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `SupabaseClient.swift`, `TaskCard.swift`, `PauseSheet.swift` (new), `GroupView.swift`, `FeedView.swift`, `SPEC.md` (R18, and R19 now says "photo check-ins" so it does not contradict R18).
-- How to check: `cd HabitCore && swift test` → 98 green. The `PauseSheet` preview renders. With three accounts: A takes a pause → it shows in the chat with "Can be rejected until …"; B and C press 👎 → REJECTED, A's task shows ✗ and the points drop.
-- Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
-- Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
-
 **Step 75: Home sorted by the newest activity, like WhatsApp** (branch `homepage-update`)
 - What: on Home the group with the newest message, GIF, photo or pause is now on top. Before, the cards were sorted by when I signed up for the group. A group without any activity yet (lobby, pending request) counts with the time I signed.
 - Why: Vincent: like in a chat app, you should see at once where something happened.
@@ -829,6 +804,22 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `GroupService.swift`.
 - How to check: open Home with two groups, send a GIF in the lower one, go back to Home: it is now on top. `swift test` unchanged (no HabitCore change).
 - Not tested: only built, not tried in the app or on a phone yet. Home still reloads only when it appears or on pull to refresh, not live.
+
+**Step 76: Pauses in the vote deck, so nobody overlooks them** (branch `pause-update`, on top of `pause-the-streak`, rule R18)
+- What: the button under the task card is now **"Vote on photos & pauses"**. The red number counts both, and when a pause waits for my vote a red line says "⏸ 1 pause waits for your vote". The deck shows open pauses **first** (their 48 hours run out), then the photos of this round. A pause card is blue with ⏸, "Pause instead of Gym", the reason in big letters and "Can be rejected until Wed 16:00". Swipe right 👍, left 👎, like photos.
+- Which pauses: the ones I can still vote on (not my own, still accepted, inside the 48 hours, `canReact`) and have not voted on yet. A pause from the last round is still in the deck if its 48 hours are not over.
+- Why: Vincent: a pause is easy to miss in the chat, but the group only has 48 hours to reject it.
+- How: no new rule. `GroupView.voteSection` now picks pauses too and sorts pauses first; `VoteDeck` takes `checkins` instead of `photos`, and `VoteCard` shows the reason instead of a photo for a pause. New preview "Pause card" in `VoteDeck.swift`.
+- Files: `VoteDeck.swift`, `GroupView.swift`.
+- How to check: the "Pause card" preview in `VoteDeck.swift` (checked, renders). In the app: A takes a pause, B sees the red line on the button and the pause card first in the deck. `swift test` unchanged (98 green, no HabitCore change).
+- Not tested: the button with the second line was only checked by building, the `GroupView` preview did not start. Not tried on phones.
+
+**Step 77: Photo validation with 👍/👎, vote deck and retake** (branch `picture-validation`, PR #17, Vincent, added to the log afterwards)
+- Note: this was merged on 20 Nov, but its log entry was on a branch that was never merged. Added here so the story is complete.
+- What: 👍 and 👎 under every photo and pause in the chat, with a red bar "1 of 2 👎 to invalidate" once someone gave a 👎. A "Vote on photos" button opens a Tinder style deck (swipe right 👍, left 👎, a big thumb appears while dragging, "All votes are done" when empty). When more than half of the other members gave a 👎 the photo is INVALID, the task opens again and the author sees "Retake photo".
+- How: HabitCore `canReact` (not on your own proof, not once invalid, only while the round runs) with 5 tests written first. `CheckinService.setReaction(groupId:checkinId:kind:)` saves, replaces (upsert) or deletes my reaction; the signature got `groupId`. No database change, the reactions policies in `001_schema.sql` already cover it.
+- Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `FeedView.swift`, `VoteDeck.swift` (new), `GroupView.swift`.
+- How to check: with 3 accounts, A posts a photo, B and C give 👎 → INVALID, A's points drop, A sees "Retake photo". Vincent tried the deck in the app; not tried end to end on three phones.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
@@ -873,10 +864,11 @@ All app source paths below start at `HabitUs/` in the repository.
   a signature. `Services/GroupService.swift` writes and reads the group and membership.
 - **Inside a group:** `Views/GameScreen.swift` selects lobby, active group or results;
   `Views/GroupView.swift` assembles tasks, voting, rankings and chat.
-  `Components/TaskCard.swift` shows progress and the camera action;
+  `Components/TaskCard.swift` shows progress, the camera action and "Can't today? Take a pause";
   `Components/CameraView.swift` opens the iPhone camera. The simulator offers a generated test photo.
-- **Chat and reactions:** `Components/FeedView.swift` renders messages and photo check-ins;
-  `Components/VoteDeck.swift` provides the photo voting shortcut. `Services/ChatService.swift` saves
+  `Components/PauseSheet.swift` asks for the reason of a pause (R18).
+- **Chat and reactions:** `Components/FeedView.swift` renders messages, photo check-ins and pauses;
+  `Components/VoteDeck.swift` is the Tinder style shortcut for voting on photos and open pauses. `Services/ChatService.swift` saves
   messages; `Services/CheckinService.swift` saves reactions. `GroupView` reloads every 10 seconds
   while open, and supports pull-to-refresh; this is polling, not push notifications.
 - **Ranking:** `Views/LeaderboardView.swift` shows the points chart, ranking and round bonus;
@@ -916,6 +908,12 @@ All app source paths below start at `HabitUs/` in the repository.
    checks whether more than half of the other accepted members gave thumbs down. The author cannot
    vote on their own photo. The current code recomputes validity using the current accepted member
    count, so departures can change the threshold.
+2b. **What is a pause and who decides about it?** `TaskCard` opens `PauseSheet`; `CheckinService.addPause`
+   checks the reason (`validatePauseReason`) and `canPause`, then inserts a `checkins` row with kind
+   "pause". It counts as a done task at once. The others have 48 hours after posting to reject it
+   with 👎 (`pauseVotingEnds` in `Votes.swift`), even after the round ended. If more than half reject
+   it, the task fails and the points of that round, its bonus and the streak disappear afterwards,
+   because points are always recomputed. Photos can only be voted on while their round runs.
 3. **How are points calculated?** A done task is 20 points; a full round gets +25%, increasing by
    5 percentage points per consecutive full round, up to a total bonus of +50%. `Scoring.swift`
    performs the calculation; `LeaderboardView.swift` displays it.
