@@ -760,6 +760,13 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `docs/HANDOVER.md` only.
 - How to check: compare section 15 with the linked source files. `swift test` completed with 92 tests and 0 failures on 23 Nov; live Supabase, camera and the full demo were not checked for this update.
 
+**Step 37: Retake a rejected photo, shown at the top** (branch `retake-photo-update`, rule R17)
+- What: when more than half of the others press 👎 on my photo, a red card appears at the top of the group screen: "Your photo was rejected by the group. Take a new one before the round ends · 3 days 7 h left. After that the task is missed." with a "Retake photo" button that opens the camera. If I already have a valid photo today (weekly and monthly: one photo per day), it says to take the new one tomorrow. The card disappears as soon as I took a new photo, or when the round ended (then the task is missed).
+- Why: the rule existed (R17), but the only retake button was hidden under the photo in the chat, so people did not notice the rejection or how much time was left.
+- How: HabitCore `photoToRetake(user:group:checkins:reactions:memberCount:firstRound:now:)`: my newest photo of the current round, if it is invalid, the round still runs and I still have an open task. 3 new tests (95 in total). `GroupData.photoToRetake(now:)`, `GroupView.retakeCard`. `NoticeCard` now also works in dark mode and can have a colored border (`tint`).
+- Files: `Tasks.swift`, `TasksTests.swift`, `GroupService.swift`, `GroupView.swift` (with the preview "My photo was rejected").
+- How to check: the preview "My photo was rejected" in `GroupView.swift`, light and dark.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
