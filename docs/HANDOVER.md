@@ -861,6 +861,11 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How to check: built once without `Config/Secrets.xcconfig`: the app still had the URL and both keys.
 - Files: `Config/Public.xcconfig`, `Config/Base.xcconfig`, `Config/Secrets.example.xcconfig`, `README.md`, `AGENTS.md`, `SPEC.md`, `DECISIONS.md`.
 
+**Step 82: SPEC brought up to date for the hand-in** (branch `spec-final`)
+- What: SPEC.md now matches the code on 23 Nov. Status note at the top, what we did instead of a public URL, the features added during the project, R5 and R7 (the code works while a challenge runs, the start no longer declines requests), S9 (code dead only after the end), S11 (no `seed.sql`, the professor account was created by hand), S5 marked as not documented yet, the columns and functions added by migrations 003 to 008, the known limits (email codes and reset exist; public keys in the repo; the late join average can be gamed), the hand-in checklist (repo, commits, README ticked; fresh clone checked) and the test table (R17 retake, R18 48 hours, R29, R30, R31, password rules).
+- Why: the professor reviews the repo without us, and the SPEC is our "single source of truth".
+- Files: `SPEC.md`.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:

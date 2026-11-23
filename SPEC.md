@@ -7,10 +7,12 @@ Official rules and grading: [[Gruppenprojekt]] and [[Course Wiki Guides]], sourc
 > [!info] Rewritten for Swift on 2026-11-17
 > After the [[Professor Call 2026-11-17]]: native iPhone app in **Swift and SwiftUI**, backend is **Supabase** (login, database, photo storage). No own server. The game rules (section 3) are the same as before. The old Python and Streamlit version is in [[Habit App Spec (Python, old)]].
 > **Status 17.11.:** no code yet. The timeline in section 8 starts tonight.
+> **Status 23.11. (hand-in):** the app is called **Habitract** (the repo and Xcode project keep the name HabitUs). Everything in this spec is built, including the rules added during the project (R29 to R31). 102 HabitCore tests pass on `main`. The step by step log is `docs/HANDOVER.md`, our decisions are in `DECISIONS.md`.
 
 > [!warning] Biggest risk: the wiki requires a public URL
 > The course wiki says: the app is **deployed at a public URL**, the README contains that URL, and the live demo runs **at the deployed URL**. **Slides and recorded videos are not accepted as a replacement.** A native iPhone app has no URL. The professor allowed Swift in the call, but did not talk about the URL.
 > **Before writing code:** get a written OK through the helpdesk form (or Moodle message) that a live demo from our iPhones replaces the public URL, and ask what goes into the README instead. If the answer is no, we switch to Python + Streamlit + Supabase (see [[Habit App Spec (Python, old)]], storage moved to Supabase).
+> **What we did instead of a URL:** the README section "For the teaching team" explains how to run the app on a Mac (iPhone simulator) or on an own iPhone right after cloning (the public keys are committed in `Config/Public.xcconfig`), and a prepared professor account with a demo group is in the Moodle submission.
 
 This file is the single source of truth for what we build, who builds it and how we get graded. If the code and this file disagree, we fix one of them on purpose and say which.
 
@@ -33,10 +35,12 @@ Friends form a group around one habit, for example "gym three times a week". Eve
 - Points, round bonus, streak bonus, leaderboard, countdown to the end of the round
 - Group chat with text messages
 
+Added during the project (details in `docs/HANDOVER.md` and `DECISIONS.md`): email confirmation with a 6 digit code, forgot password, password rules, hand-drawn signature, emoji icon and pictures for groups and profiles, GIFs in the chat, vote deck, retake card for a rejected photo, pause with a 48 hour rejection window, leaving and deleting groups, joining a running challenge (R29), on hold below 3 players (R30), deleting the account (R31), light and dark mode.
+
 ### Deliberately out of scope
 
 - No automatic fake detection (no GPS, no image analysis). The group checks, not an algorithm
-- No uploads from the photo library
+- No proof photos from the photo library (profile and group pictures may come from the library, proofs only from the live camera)
 - No rule changes once a session runs. Late joining is possible since 20 Nov (R29)
 - No public feed. Photos are visible to the group only
 - **No push notifications for this deadline.** Real iPhone push needs a paid Apple Developer account, APNs and a server that sends them. See "Later" in section 7
@@ -108,9 +112,9 @@ Each rule has an id. Tests name the rule they check, for example `testR17PhotoIn
 ### Groups and contract
 
 - **R4** Create a group: name, habit (short, for example "Gym"), frequency, end, free rules text. Frequency is two fields: **per what** (day, week, month) and **how often**. How often goes from 1 up to the most that the period allows: 1 to 10 per day, 1 to 7 per week, 1 to 28 per month. End is either **open end** or an **end date** picked from a calendar, with shortcuts for 4 weeks, 3 months and 6 months. The creator is the owner, signs the contract and gets an invite code (6 characters, no 0, O, 1 or I).
-- **R5** Join: enter the code, read the contract, sign it. This creates a pending request. The code only works while the group is in the lobby.
+- **R5** Join: enter the code, read the contract, sign it. This creates a pending request. The code works until the challenge is over, also while it runs (R29).
 - **R6** Only the owner can accept or decline a request. Declined is final.
-- **R7** Only the owner can start the session, and only with at least 3 accepted members including the owner. Starting sets the start day to today, declines all open requests and disables the code.
+- **R7** Only the owner can start the session, and only with at least 3 accepted members including the owner. Starting sets the start day to today. Open requests stay open and the code keeps working: people accepted later start in the next round (R29).
 - **R8** The contract cannot be changed after the start, the end date included. The owner can finish the challenge at any time with "Finish challenge" and a confirmation. For an open end challenge this is the only way it ends.
 
 ### Rounds and tasks
@@ -326,6 +330,8 @@ create table messages (
 );
 ```
 
+Added later by migrations 003 to 008 (the files in `supabase/migrations/` are the truth): `messages.gif_url` (GIPHY link) and `messages.system` (notes like "X left the group", written only by the database), `profiles.photo_path`, `groups.icon` and `groups.photo_path`, `memberships.first_round` (R29). `memberships.signature` holds the hand-drawn signature as a small PNG. Database functions: `join_by_code`, `preview_group_by_code`, `leave_group`, `current_round`, `delete_my_account`, plus a trigger that sets `first_round` and writes "X joined" when the owner accepts.
+
 Photos go into a **private** storage bucket `proofs`, path `<group_id>/<random uuid>.jpg`. The app loads them with the logged-in session. There are no public links.
 
 **Access rules (RLS)**, all in `supabase/migrations/001_schema.sql`. Two helper functions, `is_accepted(group_id)` and `is_owner(group_id)`, keep the policies short.
@@ -408,7 +414,7 @@ These signatures are the agreement between the three areas. We create them as em
 
 **Should have**, in this order, only when every must have works on the phones: live chat with Supabase Realtime instead of the 10 second refresh, results screen, look and feel polish, drawn signature with PencilKit, HabitCore tests running on GitHub Actions for every push.
 
-**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, badges, reminders, password reset.
+**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, badges, reminders, money stakes per round (see `DECISIONS.md`).
 
 ### Four things to try tonight before we rely on them
 
@@ -511,9 +517,9 @@ Hand-in requirements from the teaching team:
 
 - [ ] Idea approved by the teaching team
 - [ ] **Written OK from the teaching team:** native iPhone app demoed live from our phones instead of a public URL, and what goes into the README instead of the URL (see the warning at the top)
-- [ ] Repo public, final code on `main`
-- [ ] Every member has commits under their own account
-- [ ] `README.md` with names and student numbers, how to build (open in Xcode, copy `Secrets.example.xcconfig`, run on a phone), how to set up Supabase (`schema.sql`), how to run the tests (`cd HabitCore && swift test`). Followed once on a fresh clone to check it works
+- [x] Repo public, final code on `main`
+- [x] Every member has commits under their own account
+- [x] `README.md` with names and student numbers, how to build (Mac simulator or own iPhone, keys already in `Config/Public.xcconfig`), how to set up Supabase (migrations 001 to 008), how to run the tests (`cd HabitCore && swift test`). Checked on 23 Nov: a fresh clone builds and contains the keys
 - [ ] One person submitted the repo link on Moodle (if the field is closed, the professor opens it)
 - [ ] Only what is committed by Mon 23, 23:59 counts. Later fixes do not, security fixes included
 
@@ -527,20 +533,23 @@ Check every line on Sat 21. Each line has an owner who can explain it.
 | S2 | Same error for unknown email and wrong password | Nobody can find out who has an account | A |
 | S3 | Session stored in the Keychain by the Supabase package. Every screen except landing needs a logged-in user | No screen without login | A |
 | S4 | RLS turned on for **every** table, with the policies from section 5 | The anon key is inside the app and can be extracted. Without RLS anyone with the key could read everything | A, B |
-| S5 | Manual RLS check with two test accounts in two groups: user 2 cannot read group 1's feed, photos or members, cannot react or check in there. A participant cannot accept or start. Screenshots in `docs/` | Evidence for S4 | A |
+| S5 | Manual RLS check with two test accounts in two groups: user 2 cannot read group 1's feed, photos or members, cannot react or check in there. A participant cannot accept or start. Screenshots in `docs/`. **Status 23 Nov: not documented with screenshots yet** | Evidence for S4 | A |
 | S6 | The service role key is never in the app or the repo | That key ignores RLS | C |
 | S7 | Length limits in the database (`check` constraints) and in HabitCore. SwiftUI `Text` shows user text as plain text | A message cannot break the layout or run anything | B |
 | S8 | Photos only from the camera, resized and saved again as JPEG (no location data), random file name, private bucket, readable only by members | No metadata leaks, no guessing of file names, no public links | B |
-| S9 | Invite code from `SystemRandomNumberGenerator`. A code only creates a request, the owner still has to accept. Dead after the start | A leaked or guessed code does not let anyone in | A |
+| S9 | Invite code from `SystemRandomNumberGenerator`. A code only creates a request, the owner still has to accept. Dead once the challenge is over (it works while it runs, R29) | A leaked or guessed code does not let anyone in | A |
 | S10 | `.gitignore` has `Secrets.xcconfig`, `xcuserdata/`, `DerivedData/` before the first commit. The repo is public. Changed on 23 Nov: the **public** anon key, the project URL and the GIPHY key are committed in `Config/Public.xcconfig`, so the teaching team can run the app without setup. Secret keys (service role, email service) stay out | No secret keys on GitHub | C |
-| S11 | `seed.sql` uses demo accounts created by hand with random passwords. No password in the repo | Public repo | C |
+| S11 | No `seed.sql`: the demo data (a professor account in a demo group with a prepared story) was created by hand in the app. Its password is only in the Moodle submission, never in the repo | Public repo | C |
 | S12 | Only one package (`supabase-swift`), version pinned through `Package.resolved` and committed. Check its GitHub page for known security issues before hand-in | "Minimal, pinned, without known vulnerabilities" is the High criterion | C |
 | S13 | Nothing secret on the projector: close the Supabase dashboard, Xcode with `Secrets.xcconfig` and the agent before the demo | Keys shown on screen are leaked keys | all |
 
 Known limits. We name them ourselves in the walkthrough instead of waiting to be caught:
 
 - **Game rules run in the app, access rules run in the database.** RLS guarantees that only members can see and post. Rules like "one photo per day" or "X locked after invalid" are checked in HabitCore before the app writes. A modified app could break a game rule inside its own group, but never get into another group. A real product would move these checks into database functions
-- No limit on login attempts beyond Supabase's defaults, no email verification, no password reset
+- No limit on login attempts beyond Supabase's defaults. Email verification and password reset exist (6 digit codes through our own mail domain); if the mail service fails, nobody can sign up
+- The password rules (8+, capital, small letter, number, special character) are checked in the app, not by the server, unless they are also set in the Supabase settings
+- The public anon key and the GIPHY key are in the repo on purpose (S10): anyone could create accounts on our server or use our GIPHY quota. After the course both keys can be rotated
+- Late joiners get the group average for the rounds they missed (R29). Someone could join late on purpose to get points without the work
 - A photo of a screen can fake a "live" photo. That is exactly why the group can press X
 - No push notifications, so you only see news when you open the app
 - Account deletion exists since 23 Nov (R31). Photos show people, so for a real launch EU hosting (Supabase region) would come first
@@ -556,6 +565,11 @@ Known limits. We name them ourselves in the walkthrough instead of waiting to be
 | `VotesTests` | R15 to R18. The table in section 3 row by row. The author's own X does not count | B |
 | `TasksTests` | R11, R12, R19. With a weekly period a second photo on the same day is refused, with a daily period and target 2 it works and the third is refused. Allowed again after the first became invalid. Rejected pause blocks the task. No check-in when the session has ended | B |
 | `RoundsTests` | R9, R14 for all three periods. Weekly: day 7 is round 1, day 8 is round 2. Daily: every day is a new round. End date: 3 per week with an end date 24 days after the start has 3 rounds and ends after day 21. Open end: still active after a year, ended once the owner finishes. Start refused if no full round fits. Lisbon time around midnight and the summer time change | C |
+| `ScoringTests` (also) | R29: a late joiner gets the average of the rounds before, streak and grade only count their own rounds, the others do not change | C |
+| `RoundsTests` (also) | R29 first round of a late joiner, R30 on hold below 3 players, not in the lobby or after the end | C |
+| `TasksTests` (also) | R17 retake card only while the round runs and until a new photo was taken, R29 no check-in before the first round, R30 no check-in while on hold | B |
+| `VotesTests` (also) | R18 a pause can be rejected for 48 hours, also after its round ended, and then loses its points | B |
+| `ValidationTests` (also) | Email, password rules and "typed twice", email code, R31 delete confirmation | A |
 | `ScoringTests` | R20 to R24. The worked example gives 75, 78, 40, 75. The three player types give 1035, 940 and 480. Total bonus stops at +50 %. For 1 per day, 3 per week and 7 per week the bonus share of a perfect player is between 25 % and 35 %. An invalid photo lowers the score | C |
 
 Not tested automatically, and why:
