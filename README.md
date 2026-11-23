@@ -4,6 +4,48 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
 
 The app is called **Habitract**. The Xcode project, target and folders are still named `HabitUs` on purpose (renaming them would break every checkout).
 
+## Team
+
+| Name | Student number |
+|---|---|
+| Vincent Kaya Göv | 80562 |
+| Benedict Louis Fuchs | 78394 |
+| Lennart Werner | 80487 |
+
+Our decisions and why: [DECISIONS.md](DECISIONS.md). What was built step by step: [docs/HANDOVER.md](docs/HANDOVER.md).
+
+## For the teaching team: run the app in 10 minutes
+
+Habitract is a native iPhone app, so it has no public URL. We demo it live on our phones. To try it yourself you need a Mac with **Xcode 16 or newer** (we use Xcode 27). No Apple developer account is needed for the simulator.
+
+1. **Get the code**
+   ```
+   git clone https://github.com/lennyesterday/HabitUs.git
+   cd HabitUs
+   ```
+2. **Connect it to our server.** The app needs two values: the address of our Supabase project and its public (anon) key. They are not in the repo on purpose; you find them in our Moodle submission. Then:
+   ```
+   cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
+   open -e Config/Secrets.xcconfig
+   ```
+   Replace the two placeholders and save. Keep the odd `/$()/` in the URL, because `//` starts a comment in this file type:
+   ```
+   SUPABASE_URL = https:/$()/<project-id>.supabase.co
+   SUPABASE_ANON_KEY = <anon key from the submission>
+   ```
+   `GIPHY_API_KEY` is optional. Without it everything works except the GIF search in the chat.
+3. **Open and run.** Double click `HabitUs.xcodeproj`. Wait until Xcode has loaded the Swift package (`supabase-swift`, a few seconds). Next to the ▶ button at the top pick an **iPhone simulator** (for example iPhone 17), then press **▶**.
+4. **Try it.** Sign up with a real email address: you get a 6 digit code by email (check spam). A habit only starts with **3 members**, so the easiest way to see a running group is one of our demo accounts (also in the submission), or three simulators/accounts of your own.
+   - The simulator has no camera. There the camera offers a generated test photo instead, only in simulator builds.
+5. **Run the tests** (the game rules, no phone or internet needed):
+   ```
+   cd HabitCore && swift test
+   ```
+
+**Alternative: your own server.** Create a free project on supabase.com, run the files `supabase/migrations/001` to `008` in order in its SQL editor (see "Supabase setup" below), and put that project's URL and anon key into `Config/Secrets.xcconfig` instead.
+
+**On a real iPhone** (optional): plug it in, turn on Settings → Privacy & Security → Developer Mode, pick your Apple ID under Target → Signing & Capabilities, and press ▶. With a free Apple ID the app runs for 7 days.
+
 ## Setup (once per Mac)
 
 1. Clone: `git clone https://github.com/lennyesterday/HabitUs.git`
@@ -26,7 +68,10 @@ The app is called **Habitract**. The Xcode project, target and folders are still
    - `003_chat_gifs.sql`: GIFs from GIPHY in the chat
    - `004_leave_delete_signature.sql`: leave and delete groups, hand-drawn signatures
    - `005_icons_and_pictures.sql`: group icon, profile and group pictures
-2. Turn off email confirmation: Authentication → Sign In / Providers → Email → "Confirm email" off. We have no email verification (SPEC section 11, known limits).
+   - `006_leave_messages.sql`: "X left the group" in the chat, on hold below 3 players
+   - `007_late_join.sql`: join a running challenge
+   - `008_delete_account.sql`: delete your own account
+2. Emails: our project sends the sign up and password reset codes through Resend (custom SMTP, see `docs/HANDOVER.md` step 31). For a quick test project without email, turn off Authentication → Sign In / Providers → Email → "Confirm email".
 
 The simulator has no camera. There the camera sheet offers a generated test photo, only in simulator builds.
 

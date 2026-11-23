@@ -848,6 +848,12 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How to check: `git status` no longer lists `project.pbxproj`. Xcode's build settings show the team and `com.habitus.app.vincent` (checked). A tip for everyone is in section 10, step 5.
 - Files: `docs/HANDOVER.md` only (`Config/Local.xcconfig` is not in git).
 
+**Step 80: README for the hand-in, DECISIONS.md** (branch `readme-handin`)
+- What: the README now has our names and student numbers, a section "For the teaching team: run the app in 10 minutes" (clone, put the Supabase URL and anon key from the Moodle submission into `Config/Secrets.xcconfig`, pick a simulator, ▶, run the tests), the alternative with an own Supabase project, and the full list of migrations 001 to 008. New `DECISIONS.md` with our main decisions, the trade-offs and what we would do next (push notifications, money stakes per round).
+- Why: hand-in requirements (README with names and numbers, how to build and test) and so the professor can run the app without searching.
+- Note: the URL and anon key are **not** in the repo. Put them (and the demo accounts) into the Moodle submission text.
+- Files: `README.md`, `DECISIONS.md`.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
