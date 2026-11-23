@@ -4,6 +4,23 @@ iOS app (SwiftUI, iOS 17+) for our Introduction to Programming group project. Fu
 
 The app is called **Habitract**. The Xcode project, target and folders are still named `HabitUs` on purpose (renaming them would break every checkout).
 
+## What Habitract is
+
+Habitract (**habit** + **contract**) is an iPhone app for building a habit together with friends. A group agrees on one habit, for example "Gym, 3 times per week", and everyone signs a contract by hand. Every round (a day, a week or 28 days) each member proves every task with a **live photo** from the camera. The photos appear in the group chat, and the group itself decides: if more than half of the others press 👎, the photo does not count and has to be retaken before the round ends.
+
+### Objectives
+
+- **Accountability through friends:** not an app that trusts you, but a group that checks your proof.
+- **Motivation through a fair game:** points for every task, a bonus for full rounds, a streak bonus, a podium and a leaderboard with grades A to D.
+- **Flexible, but honest:** a pause with a reason for real exceptions (sick, travelling), which the group can reject within 48 hours.
+- **Safe by design:** login with email code, access rules in the database (only members see a group), proof photos only from the live camera in a private storage.
+
+### Main features
+
+Sign up with email code and password rules, forgot password · create a habit with an emoji or picture and sign the contract · join with a 6 character invite code, also while a challenge runs (the newcomer gets the group average for the rounds before) · live photo check-ins · 👍/👎 votes in the chat and in a Tinder style vote deck · retake a rejected photo · pause with a reason · podium, leaderboard with a points chart, player profiles with grade and history · chat with text and GIFs · leave a group, delete a group, delete your account · light and dark mode.
+
+Tech: Swift and SwiftUI (iOS 17+), Supabase (login, Postgres database with row level security, photo storage), the game rules as a tested Swift package (`HabitCore`, 100+ tests).
+
 ## Team
 
 | Name | Student number |
@@ -11,6 +28,16 @@ The app is called **Habitract**. The Xcode project, target and folders are still
 | Vincent Kaya Göv | 80562 |
 | Benedict Louis Fuchs | 78394 |
 | Lennart Werner | 80487 |
+
+### Who did what
+
+Every feature was built on its own branch and merged through a pull request that a teammate reviewed (see the pull requests on GitHub and `docs/HANDOVER.md`, which logs every step with its branch).
+
+| Member | Main contributions |
+|---|---|
+| Lennart Werner | Project setup, Supabase schema and access rules (migrations 001 to 007), the game rules in `HabitCore` with tests, login with email code, forgot password and password rules, creating and joining groups, contract with signature, chat with GIFs, profile and group pictures, joining a running challenge, "on hold" below 3 players, retake card, README and DECISIONS |
+| Vincent Kaya Göv | Photo validation with 👍/👎 and the vote deck, pause with a reason and the 48 hour window, delete account (migration 008), Home sorted by newest activity, reviewing and merging the pull requests |
+| Benedict Louis Fuchs | Interface redesign (onboarding, login, habit setup, group cards, chat, leaderboard) with light and dark mode, presentation handover |
 
 Our decisions and why: [DECISIONS.md](DECISIONS.md). What was built step by step: [docs/HANDOVER.md](docs/HANDOVER.md).
 
