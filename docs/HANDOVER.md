@@ -785,6 +785,15 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
 - Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
 
+**Step 73: Pauses in the vote deck, so nobody overlooks them** (branch `pause-update`, on top of `pause-the-streak`, rule R18)
+- What: the button under the task card is now **"Vote on photos & pauses"**. The red number counts both, and when a pause waits for my vote a red line says "⏸ 1 pause waits for your vote". The deck shows open pauses **first** (their 48 hours run out), then the photos of this round. A pause card is blue with ⏸, "Pause instead of Gym", the reason in big letters and "Can be rejected until Wed 16:00". Swipe right 👍, left 👎, like photos.
+- Which pauses: the ones I can still vote on (not my own, still accepted, inside the 48 hours, `canReact`) and have not voted on yet. A pause from the last round is still in the deck if its 48 hours are not over.
+- Why: Vincent: a pause is easy to miss in the chat, but the group only has 48 hours to reject it.
+- How: no new rule. `GroupView.voteSection` now picks pauses too and sorts pauses first; `VoteDeck` takes `checkins` instead of `photos`, and `VoteCard` shows the reason instead of a photo for a pause. New preview "Pause card" in `VoteDeck.swift`.
+- Files: `VoteDeck.swift`, `GroupView.swift`.
+- How to check: the "Pause card" preview in `VoteDeck.swift` (checked, renders). In the app: A takes a pause, B sees the red line on the button and the pause card first in the deck. `swift test` unchanged (98 green, no HabitCore change).
+- Not tested: the button with the second line was only checked by building, the `GroupView` preview did not start. Not tried on phones.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
