@@ -130,6 +130,12 @@ private struct CheckinFeedRow: View {
                     .font(.system(.callout, design: .default))
             }
             reactionBar(valid: valid, now: now)
+            // R18: a pause can be rejected for 48 hours, then it is final.
+            if checkin.kind == .pause && valid && now < pauseVotingEnds(checkin) {
+                Label("Can be rejected until \(Theme.timeText(pauseVotingEnds(checkin)))", systemImage: "clock")
+                    .font(.system(.caption, design: .default).weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
             if !valid && checkin.kind == .photo && checkin.userId == data.me
                 && data.taskStatus(of: data.me, now: now).canCheckInToday {
                 Button {

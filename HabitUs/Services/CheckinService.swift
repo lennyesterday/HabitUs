@@ -62,9 +62,20 @@ enum CheckinService {
         }
     }
 
-    /// R18: a pause with a reason of up to 200 characters.
+    /// R18: a pause with a reason of 1 to 200 characters. It counts as a done task until more
+    /// than half of the others reject it within 48 hours. Not limited to one per day.
     static func addPause(groupId: UUID, reason: String) async throws {
-        throw notBuiltYet
+        try validatePauseReason(reason)
+        let data = try await GroupService.load(groupId: groupId)
+        guard data.canPause(now: Date()) else {
+            throw RuleError("You cannot take a pause right now.")
+        }
+        try await readable {
+            try await supabase.from("checkins")
+                .insert(NewCheckin(group_id: groupId, kind: "pause", photo_path: nil,
+                                   text: reason.trimmingCharacters(in: .whitespacesAndNewlines)))
+                .execute()
+        }
     }
 
     /// R15: `.like`, `.x`, or nil to remove my reaction. HabitCore decides if a reaction is

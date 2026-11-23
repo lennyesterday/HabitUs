@@ -41,9 +41,9 @@ Supabase access policies and the deployed database migrations. This update did n
 | Group and player information | Tap member photos for group info and invite code; tap a ranking row for player history: `GroupInfoView.swift`, `PlayerProfileView.swift` |
 | Help and pictures | Profile/settings and choosing profile pictures: `ProfileView.swift`; group look: `GroupLookView.swift` |
 
-**Still incomplete:** `CheckinService.addPause` is a stub that throws "This part is not built yet";
-the pause creation flow is not finished. The thumbs-up and thumbs-down reaction UI and
-`CheckinService.setReaction` **are implemented**, but were not exercised against the live backend
+**Pause with a reason (R18)** is built (step 72): "Can't today? Take a pause" on the task card,
+the 48 hour 👎 window and the retroactive point loss. The thumbs-up and thumbs-down reaction UI,
+`CheckinService.setReaction` and `addPause` were not exercised against the live backend
 as part of this documentation update. Check hand-in materials and the manual RLS evidence yourselves.
 
 ---
@@ -58,7 +58,7 @@ as part of this documentation update. Check hand-in materials and the manual RLS
    │ uses for every rule
    ▼
  HabitCore/        the game rules as pure Swift functions. No SwiftUI, no Supabase, no internet.
-                   Tested with `cd HabitCore && swift test` (92 tests passed on 23 Nov 2026).
+                   Tested with `cd HabitCore && swift test` (98 tests passed on 23 Nov 2026).
 
  supabase/migrations/   the database: tables, access rules (RLS), database functions
 ```
@@ -106,7 +106,7 @@ Follow this once in Xcode. It is the best way to understand the whole app.
 | `Models.swift` | plain data: `HabitGroup`, `Member`, `Checkin`, `Reaction`, `TaskStatus`, `LeaderboardRow`, `RuleError` | – | – |
 | `Rounds.swift` | `phase`, `currentRound`, `round(of:in:)`, `timeLeft`, `canStart`, `localDay`, `isOnHold`, `firstRound` | R8, R9, R14, R29, R30 | 17 |
 | `Tasks.swift` | `taskStatus` (done, failed, open, canCheckInToday) | R10 to R12, R19, R29, R30 | 12 |
-| `Votes.swift` | `xThresholdReached`, `isValid`, `canReact` | R15 to R19 | 11 |
+| `Votes.swift` | `xThresholdReached`, `isValid`, `canReact`, `pauseVotingWindow`, `pauseVotingEnds` | R15 to R19 | 17 |
 | `Scoring.swift` | `scoreRounds`, `roundBonusPercent`, `leaderboard`, `grade` (A to D) | R20 to R24, R29 | 22 |
 | `Validation.swift` | `validateSignUp`, `validatePassword`, `validateGroup`, `validateSignatureImage`, `validateMessage`, `validatePauseReason`, `validateGifURL` | R1, R4, R18, R26 | 27 |
 | `InviteCode.swift` | `InviteCode.generate()` (6 characters, no 0/O/1/I, `SystemRandomNumberGenerator`) | R4, S9 | 3 |
@@ -177,7 +177,7 @@ We need it in three places, and each one checks itself what is allowed:
 | `Rows.swift` | how database rows look (snake_case) and how they turn into HabitCore models; Lisbon day format |
 | `AuthService.swift` | sign up, confirmation codes, password reset, log in, log out, profile and profile picture |
 | `GroupService.swift` | create, preview, join, accept/decline, start, finish, leave, delete, change look, Home cards, `load` (everything for one group) |
-| `CheckinService.swift` | photo check-in, reactions and feed; **creating a pause is still a stub** |
+| `CheckinService.swift` | photo check-in, pause with a reason (R18), reactions and feed |
 | `PhotoService.swift` | proof photos: resize, JPEG, upload, load with cache, delete all |
 | `PictureService.swift` | profile and group pictures (square 400 px) |
 | `ChatService.swift` | text messages and GIF messages |
@@ -236,7 +236,7 @@ on-hold behavior as R29 and R30, but older sections can still contain conflictin
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 92 tests green.
+4. `cd HabitCore && swift test` → 98 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
 
@@ -259,7 +259,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
   run migrations or change shared data just to prepare this handover.
 - **Hand-in:** verify the current README, names and student numbers, decisions, demonstration data,
   and any course-specific URL requirement with the team and course instructions.
-- **Known missing feature:** creating a pause is not implemented. Do not present it as complete.
+- **Pause:** built in step 72, but not yet tried with three accounts. Try it once before the demo.
 
 ---
 
@@ -277,7 +277,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 | How do you stop fake photos? | Camera only, database timestamp, and the group can press X. No AI detection on purpose. |
 | How are passwords stored? | Only Supabase Auth, as a bcrypt hash. Our tables never see them. |
 | What is not tested? | RLS, camera, layout, two people tapping at the same second. See section 9. |
-| What would you do next? | Implement pause creation, add live updates and push notifications, enforce more game rules in the database, and add account deletion. |
+| What would you do next? | Add live updates and push notifications, enforce more game rules in the database, and add account deletion. |
 
 ---
 
@@ -760,6 +760,31 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `docs/HANDOVER.md` only.
 - How to check: compare section 15 with the linked source files. `swift test` completed with 92 tests and 0 failures on 23 Nov; live Supabase, camera and the full demo were not checked for this update.
 
+**Step 72: Pause with a reason** (branch `pause-the-streak`, PR #25, rule R18)
+- What: under the camera button on the task card there is now **"Can't today? Take a pause"**. It opens a sheet:
+  - a text field for the reason (1 to 200 characters, with a counter)
+  - a short explanation: the pause counts as done with full points, but if more than half of the others press 👎 within 48 hours, the points are gone
+  - "Post pause" and Cancel. Errors show in red in the sheet
+  - the pause appears in the chat as "⏸ Pause · ACCEPTED" with 👍/👎 and **"Can be rejected until Tue 18:40"**
+- The rule (R18, updated in `SPEC.md`):
+  - accepted by default, counts like a valid photo
+  - the others have **48 hours after posting** to reject it with 👎. This window does not depend on the round: a pause on the last day of a round can still be rejected in the next round
+  - if more than half of the others press 👎 in time, the pause is rejected and that task has failed for its round. It cannot be redone
+  - **retroactive:** a rejection after the round ended takes the points away afterwards, also the round bonus and the streak. Nothing extra was needed for that: points are computed from check-ins, never stored
+  - after 48 hours the pause is final. Photos keep the old rule: votes only while their round runs (R19)
+  - not limited to one per day (unlike photos). Only while the challenge runs, not on hold (R30), and from my first round on (R29)
+- How:
+  - HabitCore `Votes.swift`: `pauseVotingWindow` (48 h), `pauseVotingEnds(_:)`, and `canReact` now has two cases: a pause while `now < pauseVotingEnds`, a photo while its round is the current one. 6 new tests, written first (98 in total): pause rejectable in round 2 within 48 h, not after 48 h, not by the author, rejection in round 2 takes round 1 points (25 → 0) and the streak away, photos still freeze at the end of their round.
+  - Service: `CheckinService.addPause` was a stub. It checks the reason with `validatePauseReason`, checks `canPause`, then inserts a `checkins` row with kind "pause" and the trimmed reason. The database sets time and day, like for photos.
+  - `GroupData.canPause(now:)` in `GroupService.swift`: challenge active, not on hold, my first round has started, and I have an open task.
+  - The unused `notBuiltYet` constant was removed from `SupabaseClient.swift`.
+  - Database: no change. `checkins` already has kind 'pause' and `text`, and RLS already allows it.
+- Why: R18 was the last missing must-have from SPEC section 7. The 48 hours give the group a fair chance to react to a pause posted late in a round.
+- Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `SupabaseClient.swift`, `TaskCard.swift`, `PauseSheet.swift` (new), `GroupView.swift`, `FeedView.swift`, `SPEC.md` (R18, and R19 now says "photo check-ins" so it does not contradict R18).
+- How to check: `cd HabitCore && swift test` → 98 green. The `PauseSheet` preview renders. With three accounts: A takes a pause → it shows in the chat with "Can be rejected until …"; B and C press 👎 → REJECTED, A's task shows ✗ and the points drop.
+- Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
+- Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
@@ -856,7 +881,7 @@ All app source paths below start at `HabitUs/` in the repository.
 5. **What protects private data?** The migrations define RLS policies and private storage buckets.
    The app's public key identifies the project; it does not replace RLS. We must verify the deployed
    policies with separate accounts; a successful local rule test does not prove database security.
-6. **What is tested and what is not?** 92 HabitCore tests passed on 23 Nov. These cover local rules,
+6. **What is tested and what is not?** 98 HabitCore tests passed on 23 Nov. These cover local rules,
    not the hosted database, RLS, camera, visual layout or a real multi-user end-to-end session.
-   The pause creation service remains unfinished. Never claim the live demo was tested unless the
+   Pause with a reason is built (step 72), the 48 hour window is tested in HabitCore. Never claim the live demo was tested unless the
    team has actually rehearsed it.
