@@ -760,7 +760,39 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `docs/HANDOVER.md` only.
 - How to check: compare section 15 with the linked source files. `swift test` completed with 92 tests and 0 failures on 23 Nov; live Supabase, camera and the full demo were not checked for this update.
 
-**Step 36: Invite code readable in dark mode** (branch `invite-code-design-update`)
+**Step 72: Pause with a reason** (branch `pause-the-streak`, PR #25, rule R18)
+- What: under the camera button on the task card there is now **"Can't today? Take a pause"**. It opens a sheet:
+  - a text field for the reason (1 to 200 characters, with a counter)
+  - a short explanation: the pause counts as done with full points, but if more than half of the others press 👎 within 48 hours, the points are gone
+  - "Post pause" and Cancel. Errors show in red in the sheet
+  - the pause appears in the chat as "⏸ Pause · ACCEPTED" with 👍/👎 and **"Can be rejected until Tue 18:40"**
+- The rule (R18, updated in `SPEC.md`):
+  - accepted by default, counts like a valid photo
+  - the others have **48 hours after posting** to reject it with 👎. This window does not depend on the round: a pause on the last day of a round can still be rejected in the next round
+  - if more than half of the others press 👎 in time, the pause is rejected and that task has failed for its round. It cannot be redone
+  - **retroactive:** a rejection after the round ended takes the points away afterwards, also the round bonus and the streak. Nothing extra was needed for that: points are computed from check-ins, never stored
+  - after 48 hours the pause is final. Photos keep the old rule: votes only while their round runs (R19)
+  - not limited to one per day (unlike photos). Only while the challenge runs, not on hold (R30), and from my first round on (R29)
+- How:
+  - HabitCore `Votes.swift`: `pauseVotingWindow` (48 h), `pauseVotingEnds(_:)`, and `canReact` now has two cases: a pause while `now < pauseVotingEnds`, a photo while its round is the current one. 6 new tests, written first (98 in total): pause rejectable in round 2 within 48 h, not after 48 h, not by the author, rejection in round 2 takes round 1 points (25 → 0) and the streak away, photos still freeze at the end of their round.
+  - Service: `CheckinService.addPause` was a stub. It checks the reason with `validatePauseReason`, checks `canPause`, then inserts a `checkins` row with kind "pause" and the trimmed reason. The database sets time and day, like for photos.
+  - `GroupData.canPause(now:)` in `GroupService.swift`: challenge active, not on hold, my first round has started, and I have an open task.
+  - The unused `notBuiltYet` constant was removed from `SupabaseClient.swift`.
+  - Database: no change. `checkins` already has kind 'pause' and `text`, and RLS already allows it.
+- Why: R18 was the last missing must-have from SPEC section 7. The 48 hours give the group a fair chance to react to a pause posted late in a round.
+- Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `SupabaseClient.swift`, `TaskCard.swift`, `PauseSheet.swift` (new), `GroupView.swift`, `FeedView.swift`, `SPEC.md` (R18, and R19 now says "photo check-ins" so it does not contradict R18).
+- How to check: `cd HabitCore && swift test` → 98 green. The `PauseSheet` preview renders. With three accounts: A takes a pause → it shows in the chat with "Can be rejected until …"; B and C press 👎 → REJECTED, A's task shows ✗ and the points drop.
+- Not tested: the `GroupView` preview did not start (the simulator timed out launching the app), so the new button on the task card was only checked by building, not on screen. Not tried against the live Supabase project or on real phones yet.
+- Known limit: like the other game rules, the 48 hours are checked in the app (HabitCore), not in the database. A modified app could still vote later.
+
+**Step 73: Retake a rejected photo, shown at the top** (branch `retake-photo-update`, rule R17)
+- What: when more than half of the others press 👎 on my photo, a red card appears at the top of the group screen: "Your photo was rejected by the group. Take a new one before the round ends · 3 days 7 h left. After that the task is missed." with a "Retake photo" button that opens the camera. If I already have a valid photo today (weekly and monthly: one photo per day), it says to take the new one tomorrow. The card disappears as soon as I took a new photo, or when the round ended (then the task is missed).
+- Why: the rule existed (R17), but the only retake button was hidden under the photo in the chat, so people did not notice the rejection or how much time was left.
+- How: HabitCore `photoToRetake(user:group:checkins:reactions:memberCount:firstRound:now:)`: my newest photo of the current round, if it is invalid, the round still runs and I still have an open task. 3 new tests (101 in total after merging the pause feature). `GroupData.photoToRetake(now:)`, `GroupView.retakeCard`. `NoticeCard` now also works in dark mode and can have a colored border (`tint`).
+- Files: `Tasks.swift`, `TasksTests.swift`, `GroupService.swift`, `GroupView.swift` (with the preview "My photo was rejected").
+- How to check: the preview "My photo was rejected" in `GroupView.swift`, light and dark.
+
+**Step 74: Invite code readable in dark mode** (branch `invite-code-design-update`)
 - What: the invite code in the group info was almost invisible in dark mode (dark grey on a dark card). It is now dark in light mode and white in dark mode.
 - How: `Color.primary` instead of the fixed `Theme.ink` in `GroupInfoView.inviteSection`.
 - How to check: preview of `GroupInfoView` with Color Scheme "Dark Appearance", or the phone in dark mode.

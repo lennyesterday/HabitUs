@@ -31,3 +31,21 @@ public func taskStatus(user: UUID, group: HabitGroup, checkins: [Checkin], react
 
     return TaskStatus(target: target, done: done, failed: failed, open: open, canCheckInToday: canCheckIn)
 }
+
+/// R17: my photo that the group just rejected and that I should take again, or nil.
+/// Only while the round of the photo is still running and I still have an open task in it,
+/// and only if it is my newest photo of the round, so it disappears once I took a new one.
+/// After the round ends the task is simply missed.
+public func photoToRetake(user: UUID, group: HabitGroup, checkins: [Checkin], reactions: [Reaction],
+                          memberCount: Int, firstRound: Int = 1, now: Date) -> Checkin? {
+    guard phase(of: group, now: now) == .active else { return nil }
+    let current = currentRound(of: group, now: now)
+    let newest = checkins
+        .filter { $0.userId == user && $0.kind == .photo && round(of: $0.day, in: group) == current }
+        .max { $0.createdAt < $1.createdAt }
+    guard let newest, !isValid(newest, reactions: reactions, memberCount: memberCount) else { return nil }
+    let status = taskStatus(user: user, group: group, checkins: checkins, reactions: reactions,
+                            memberCount: memberCount, firstRound: firstRound, now: now)
+    return status.open > 0 ? newest : nil
+}
+

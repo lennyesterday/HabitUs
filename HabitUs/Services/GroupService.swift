@@ -77,6 +77,12 @@ struct GroupData {
                              memberCount: accepted.count, firstRound: member(user)?.firstRound ?? 1, now: now)
     }
 
+    /// R17: my rejected photo that I can still take again in this round, or nil.
+    func photoToRetake(now: Date) -> Checkin? {
+        HabitCore.photoToRetake(user: me, group: group, checkins: checkins, reactions: reactions,
+                                memberCount: accepted.count, firstRound: myFirstRound, now: now)
+    }
+
     /// R30: fewer than 3 players in a running challenge.
     func isOnHold(now: Date) -> Bool {
         HabitCore.isOnHold(group, acceptedCount: accepted.count, now: now)
