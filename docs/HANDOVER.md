@@ -760,7 +760,7 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `docs/HANDOVER.md` only.
 - How to check: compare section 15 with the linked source files. `swift test` completed with 92 tests and 0 failures on 23 Nov; live Supabase, camera and the full demo were not checked for this update.
 
-**Step 72: Pause with a reason** (branch `pause-the-streak`, rule R18)
+**Step 72: Pause with a reason** (branch `pause-the-streak`, PR #25, rule R18)
 - What: under the camera button on the task card there is now **"Can't today? Take a pause"**. It opens a sheet:
   - a text field for the reason (1 to 200 characters, with a counter)
   - a short explanation: the pause counts as done with full points, but if more than half of the others press 👎 within 48 hours, the points are gone
