@@ -62,7 +62,7 @@ Habitract is a native iPhone app, so it has no public URL. We demo it live on ou
    ```
    `GIPHY_API_KEY` is optional. Without it everything works except the GIF search in the chat.
 3. **Open and run.** Double click `HabitUs.xcodeproj`. Wait until Xcode has loaded the Swift package (`supabase-swift`, a few seconds). Next to the ▶ button at the top pick an **iPhone simulator** (for example iPhone 17), then press **▶**.
-4. **Try it.** Sign up with a real email address: you get a 6 digit code by email (check spam). A habit only starts with **3 members**, so the easiest way to see a running group is one of our demo accounts (also in the submission), or three simulators/accounts of your own.
+4. **Try it.** The easiest way: log in with the **professor account** from our Moodle submission. It is already a member of a running group that we prepared, so you can see check-ins, votes, the leaderboard and the chat right away. You can also sign up with your own email address (you get a 6 digit code by email, check spam), but a new habit only starts with **3 members**.
    - The simulator has no camera. There the camera offers a generated test photo instead, only in simulator builds.
 5. **Run the tests** (the game rules, no phone or internet needed):
    ```
