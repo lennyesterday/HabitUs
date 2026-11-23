@@ -58,7 +58,7 @@ as part of this documentation update. Check hand-in materials and the manual RLS
    │ uses for every rule
    ▼
  HabitCore/        the game rules as pure Swift functions. No SwiftUI, no Supabase, no internet.
-                   Tested with `cd HabitCore && swift test` (98 tests passed on 23 Nov 2026).
+                   Tested with `cd HabitCore && swift test` (102 tests passed on 23 Nov 2026).
 
  supabase/migrations/   the database: tables, access rules (RLS), database functions
 ```
@@ -132,7 +132,7 @@ types from the SPEC: 1035, 940 and 480 points over 12 rounds.
 
 ## 6. The database (Supabase)
 
-Database changes are recorded in `supabase/migrations/`. The repository contains migrations 001–007.
+Database changes are recorded in `supabase/migrations/`. The repository contains migrations 001–008.
 These files describe intended database changes; their deployment to the shared project was not checked
 in this documentation update. Confirm the actual migration state with the team before the demo.
 
@@ -145,6 +145,7 @@ in this documentation update. Confirm the actual migration state with the team b
 | `005_icons_and_pictures.sql` | `groups.icon`, `groups.photo_path`, `profiles.photo_path`, private bucket `pictures` with policies |
 | `006_leave_messages.sql` | Updates `leave_group`, adds system messages for departures and the on-hold notice |
 | `007_late_join.sql` | Adds `memberships.first_round`; updates joining, contract preview and acceptance for active groups |
+| `008_delete_account.sql` | `delete_my_account()` (R31): leave every group, delete my rows and my login; policy "proofs delete own" |
 
 **Who may do what (RLS):**
 
@@ -156,13 +157,14 @@ in this documentation update. Confirm the actual migration state with the team b
 | checkins | accepted members | you, as accepted member, while the session runs |
 | reactions | accepted members | your own, never on your own check-in |
 | messages | accepted members | you, as accepted member |
-| storage `proofs` | accepted members of the group folder | upload: accepted members. Delete: owner |
+| storage `proofs` | accepted members of the group folder | upload: accepted members. Delete: owner, and your own uploads (008) |
 | storage `pictures` | profile pictures: everyone logged in. Group pictures: members | only your own folder / owner for the group |
 
 **`security definer`** means a database function runs with the rights of its creator and skips RLS.
-We need it in three places, and each one checks itself what is allowed:
+We need it in four places, and each one checks itself what is allowed:
 - `join_by_code`: a joiner is not a member yet, so RLS would hide the group
 - `leave_group`: changes the owner in one safe step
+- `delete_my_account`: deleting a login is not possible with the public key; it only deletes the caller's own account
 - `is_accepted` / `is_owner`: policies on `memberships` cannot read `memberships` through RLS without going in circles
 
 ---
@@ -222,7 +224,7 @@ on-hold behavior as R29 and R30, but older sections can still contain conflictin
 ## 9. Known limits (say them yourselves in the walkthrough)
 
 - Many game rules run in the app; RLS and selected database functions enforce access and some transitions. A modified client may bypass client-only game rules. Cross-group access is intended to be blocked by RLS, but the deployed policies need a real two-account manual check.
-- No account deletion. Email verification and password reset exist since steps 27 and 29.
+- Account deletion exists since step 78 (needs migration 008 on Supabase). Email verification and password reset exist since steps 27 and 29.
 - The password rules are checked in the app. The server only checks them if they are also set in Supabase (step 30).
 - A photo of a screen can fake a "live" photo. That is exactly why the group can press X.
 - No push notifications, no live updates (the group screen reloads every 10 seconds).
@@ -236,7 +238,7 @@ on-hold behavior as R29 and R30, but older sections can still contain conflictin
 1. `git clone https://github.com/lennyesterday/HabitUs.git` and open `HabitUs.xcodeproj`.
 2. Copy `Config/Local.example.xcconfig` → `Config/Local.xcconfig`, set your team and a suffix (README).
 3. Copy `Config/Secrets.example.xcconfig` → `Config/Secrets.xcconfig`, ask Lenny for the three values.
-4. `cd HabitCore && swift test` → 98 tests green.
+4. `cd HabitCore && swift test` → 102 tests green.
 5. Run in the simulator, sign up with your own email, join Lenny's test game with the code.
 6. Read in this order: `HabitCore/Sources/HabitCore/Scoring.swift` → `Tasks.swift` → `Services/CheckinService.swift` → `Views/GroupView.swift` → `supabase/migrations/001_schema.sql`.
 
@@ -255,7 +257,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 
 - **Together:** rehearse the full demo on three real phones and confirm camera permissions, network,
   login, group membership, photo upload, reactions and leaderboard refresh.
-- **Database:** confirm migrations 001–007 are applied and perform the two-account RLS check. Do not
+- **Database:** confirm migrations 001–008 are applied and perform the two-account RLS check. Do not
   run migrations or change shared data just to prepare this handover.
 - **Hand-in:** verify the current README, names and student numbers, decisions, demonstration data,
   and any course-specific URL requirement with the team and course instructions.
@@ -277,7 +279,7 @@ Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone 
 | How do you stop fake photos? | Camera only, database timestamp, and the group can press X. No AI detection on purpose. |
 | How are passwords stored? | Only Supabase Auth, as a bcrypt hash. Our tables never see them. |
 | What is not tested? | RLS, camera, layout, two people tapping at the same second. See section 9. |
-| What would you do next? | Add live updates and push notifications, enforce more game rules in the database, and add account deletion. |
+| What would you do next? | Add live updates and push notifications, and enforce more game rules in the database. |
 
 ---
 
@@ -821,6 +823,23 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `FeedView.swift`, `VoteDeck.swift` (new), `GroupView.swift`.
 - How to check: with 3 accounts, A posts a photo, B and C give 👎 → INVALID, A's points drop, A sees "Retake photo". Vincent tried the deck in the app; not tried end to end on three phones.
 
+**Step 78: Delete your account** (branch `deleting-account`, migration 008, rule R31)
+- What: in the profile settings under "Account" there is a red **"Delete account"** row ("Leaves all your groups and deletes your photos, messages and votes."). It asks "Delete your account?" and you have to type **DELETE**. Then the account is gone and the app shows the start screen.
+- What gets deleted:
+  - you leave every group like with "Leave" (R30): the owner role goes to the member who joined first, a group where you were the last player is deleted with its photos, and the chat says "Vincent left the group."
+  - your photos in storage, your check-ins, votes and chat messages in every group, and your profile picture
+  - your profile and your login
+  - the "… left the group." notes stay in the chats; they are moved to the group's owner, because every message needs an author that still exists
+- Why: Vincent. People should be able to leave the app completely; photos show people. The SPEC listed it as a known limit.
+- Why a database function: deleting a login needs the service role key, and that key must never be in the app (AGENTS.md, S6). `delete_my_account()` in `008_delete_account.sql` is `security definer` but only ever deletes the account of the person calling it (`auth.uid()`). It reuses `leave_group` from 006, then deletes my reactions, check-ins and messages, then `auth.users`; "on delete cascade" removes the profile row.
+- Storage: the app deletes the files first (Supabase only allows that through its API). New policy "proofs delete own" (008): you may delete proof photos you uploaded yourself (`owner_id`), also in groups you do not own.
+- HabitCore: `validateAccountDeletion` (DELETE, case and spaces do not matter) with 1 test written first (5 checks).
+- Files: `008_delete_account.sql` (new), `Validation.swift`, `ValidationTests.swift`, `AuthService.swift` (`deleteAccount`), `ProfileView.swift`, `SPEC.md` (R31, known limits).
+- **Supabase: run `008_delete_account.sql` in the SQL editor.** Before that, the button says "Deleting accounts is not set up on the server yet. Nothing was deleted."
+- Fixed after the first try on Vincent's phone: the first version deleted the files (profile picture, photos) *before* calling the database function, so without migration 008 the picture could be gone while the account stayed. Now the app first calls `account_deletion_ready()` (also in 008) and stops if it is missing.
+- How to check: `swift test` → 102 green. The `ProfileView` preview shows the new row. For real (after running 008): make a test account, join a group, post a photo and a message, delete the account → you are logged out; the others see "… left the group.", your photo and message are gone, logging in with the old email fails.
+- Not tested: migration 008 was not run on our Supabase project (AGENTS.md: database read only unless the task says so), so the whole flow was only built, not tried. Whether `owner_id` exists on `storage.objects` depends on the Supabase version (new projects have it); if the policy fails, the account is still deleted, only the photo files stay.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
@@ -885,7 +904,7 @@ All app source paths below start at `HabitUs/` in the repository.
   The Supabase SDK retains the session on the device. App tables do not store the user's password.
 - **Database:** `profiles`, `groups`, `memberships`, `checkins`, `reactions`, and `messages` are
   Postgres tables. Their definitions and RLS policies are in `supabase/migrations/001_schema.sql`;
-  migrations 002–007 add features and change functions. The SQL files are versioned code, not a
+  migrations 002–008 add features and change functions. The SQL files are versioned code, not a
   guarantee that the team's hosted database currently has the same state.
 - **Files:** proof images are uploaded to the private `proofs` bucket by `Services/PhotoService.swift`;
   profile and group pictures use the private `pictures` bucket via `Services/PictureService.swift`.
@@ -924,7 +943,7 @@ All app source paths below start at `HabitUs/` in the repository.
 5. **What protects private data?** The migrations define RLS policies and private storage buckets.
    The app's public key identifies the project; it does not replace RLS. We must verify the deployed
    policies with separate accounts; a successful local rule test does not prove database security.
-6. **What is tested and what is not?** 98 HabitCore tests passed on 23 Nov. These cover local rules,
+6. **What is tested and what is not?** 102 HabitCore tests passed on 23 Nov. These cover local rules,
    not the hosted database, RLS, camera, visual layout or a real multi-user end-to-end session.
    Pause with a reason is built (step 72), the 48 hour window is tested in HabitCore. Never claim the live demo was tested unless the
    team has actually rehearsed it.

@@ -17,6 +17,11 @@ private struct NewProfile: Encodable {
     let avatar: String
 }
 
+/// Only the photo of a check-in, to delete my proof photos with my account (R31).
+private struct PhotoPathRow: Decodable {
+    let photo_path: String?
+}
+
 /// Thrown by `logIn` when the password was right, but the email address was never confirmed.
 /// A new code has been sent, so the view can ask for it.
 struct EmailNotConfirmed: Error {}
@@ -112,6 +117,51 @@ enum AuthService {
         try await readable {
             try await supabase.auth.signOut()
         }
+    }
+
+    /// R31: deletes my account for good, after I typed DELETE. First the files in storage
+    /// (only possible through the API), then `delete_my_account` (008) leaves every group,
+    /// removes my messages, votes and check-ins and deletes the login. Then I am logged out.
+    static func deleteAccount(confirmation: String) async throws {
+        try validateAccountDeletion(confirmation)
+        let me = try requireUser()
+
+        // First make sure the server can delete accounts (migration 008), so no file is
+        // deleted while the account itself would stay.
+        do {
+            try await supabase.rpc("account_deletion_ready").execute()
+        } catch is URLError {
+            throw RuleError("No connection to the server. Please check your internet and try again.")
+        } catch {
+            throw RuleError("Deleting accounts is not set up on the server yet. Nothing was deleted.")
+        }
+
+        // Groups that disappear because I am the last player: their photos and pictures first,
+        // like GroupService.leave does.
+        for card in try await GroupService.myGames() where card.isOwner && card.acceptedCount <= 1 {
+            try await PhotoService.deleteAll(groupId: card.id)
+            await PictureService.deleteAll(groupId: card.id)
+        }
+        // My proof photos in the other groups ("proofs delete own" in 008) and my profile picture.
+        // A file that cannot be deleted only costs space, so errors are ignored here.
+        let photos: [PhotoPathRow] = try await readable {
+            try await supabase.from("checkins")
+                .select("photo_path")
+                .eq("user_id", value: me)
+                .execute()
+                .value
+        }
+        let paths = photos.compactMap(\.photo_path)
+        if !paths.isEmpty {
+            _ = try? await supabase.storage.from("proofs").remove(paths: paths)
+        }
+        await PictureService.deleteQuietly(path: try? await myProfile().photoPath)
+
+        try await readable {
+            try await supabase.rpc("delete_my_account").execute()
+        }
+        // The login is gone on the server; forget the session on this phone too.
+        try? await supabase.auth.signOut(scope: .local)
     }
 
     /// The id of the logged-in user, or nil. The session is kept in the Keychain (R2).
