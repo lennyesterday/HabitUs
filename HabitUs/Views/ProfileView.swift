@@ -1,7 +1,7 @@
 import SwiftUI
 import PhotosUI
 
-// My profile and settings: picture, how it works, log out, info. Area A.
+// My profile and settings: picture, how it works, log out, delete account, info. Area A.
 // Tap the round picture to take a new photo, pick one from the library, or remove it.
 // Big white section cards on the blue background, like the settings of the inspiration.
 
@@ -17,6 +17,8 @@ struct ProfileView: View {
     @State private var showPictureOptions = false
     @State private var showCamera = false
     @State private var showLibrary = false
+    @State private var confirmDelete = false
+    @State private var deleteConfirmation = ""
 
     var body: some View {
         ZStack(alignment: .topLeading) {
@@ -79,6 +81,17 @@ struct ProfileView: View {
                                         color: Theme.rankColor(0))
                         }
                         .buttonStyle(.plain)
+                        Divider().padding(.horizontal, 20)
+                        // R31: delete the account for good, after typing DELETE.
+                        Button {
+                            deleteConfirmation = ""
+                            confirmDelete = true
+                        } label: {
+                            SettingsRow(title: "Delete account",
+                                        subtitle: "Leaves all your groups and deletes your photos, messages and votes.",
+                                        symbol: "trash.fill", color: .red)
+                        }
+                        .buttonStyle(.plain)
                     }
 
                     SettingsSection(title: "Info") {
@@ -105,6 +118,17 @@ struct ProfileView: View {
             Button("Log out", role: .destructive) {
                 Task { try? await AuthService.logOut() }
             }
+        }
+        .alert("Delete your account?", isPresented: $confirmDelete) {
+            TextField("DELETE", text: $deleteConfirmation)
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled()
+            Button("Delete account", role: .destructive) {
+                Task { await deleteAccount() }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("You leave all your groups. Your photos, messages, votes and points are deleted. This cannot be undone. Type DELETE to confirm.")
         }
         .fullScreenCover(isPresented: $showOnboarding) {
             OnboardingView { showOnboarding = false }
@@ -142,6 +166,17 @@ struct ProfileView: View {
 
     private var appVersion: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+    }
+
+    /// R31: after this the login is gone, and the app shows the start screen by itself.
+    private func deleteAccount() async {
+        isWorking = true
+        do {
+            try await AuthService.deleteAccount(confirmation: deleteConfirmation)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+        isWorking = false
     }
 
     private func save(_ image: UIImage?) async {

@@ -181,6 +181,10 @@ One slip costs little. Never fulfilling the contract costs a lot. That is intend
 - **R29** The invite code works until the challenge is over. Someone accepted while it runs plays from the next round. For every round before, they get the average points of the members who played that round (rounded down). Their streak, complete rounds and grade only count their own rounds. The database sets the first round when the owner accepts and writes "X joined the group and starts in round N." into the chat.
 - **R30** When an accepted member leaves, the chat says "X left the group." A running challenge with fewer than 3 players is on hold: nobody can check in until a third player is accepted again. The rounds keep counting, for everyone the same. In the lobby people come and go without notes.
 
+### Deleting the account (added 23 Nov)
+
+- **R31** In the profile settings a user can delete their account. They have to type DELETE to confirm. Deleting leaves every group like R30 (the owner role moves to the member who joined first, an empty group is deleted, the chat says "X left the group."), deletes their own photos, check-ins, votes and messages and their profile picture, and then the login. It cannot be undone. The database function `delete_my_account` (migration 008) only ever deletes the account of the person who calls it.
+
 ## 4. Screens
 
 | Screen | Shows | Actions |
@@ -404,7 +408,7 @@ These signatures are the agreement between the three areas. We create them as em
 
 **Should have**, in this order, only when every must have works on the phones: live chat with Supabase Realtime instead of the 10 second refresh, results screen, look and feel polish, drawn signature with PencilKit, HabitCore tests running on GitHub Actions for every push.
 
-**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, badges, reminders, password reset, account deletion.
+**Later**, not for this deadline: push notifications (paid Apple Developer account, APNs, a Supabase Edge Function that sends them), TestFlight, photo calendar, badges, reminders, password reset.
 
 ### Four things to try tonight before we rely on them
 
@@ -539,7 +543,7 @@ Known limits. We name them ourselves in the walkthrough instead of waiting to be
 - No limit on login attempts beyond Supabase's defaults, no email verification, no password reset
 - A photo of a screen can fake a "live" photo. That is exactly why the group can press X
 - No push notifications, so you only see news when you open the app
-- No account deletion yet. Photos show people, so for a real launch this and EU hosting (Supabase region) would come first
+- Account deletion exists since 23 Nov (R31). Photos show people, so for a real launch EU hosting (Supabase region) would come first
 
 ## 12. Tests
 
@@ -627,4 +631,4 @@ Questions we expect in the walkthrough, with the person who answers first:
 | How are passwords stored | Supabase Auth with bcrypt. Our tables never see them | A |
 | Why are points not stored | See decisions | C |
 | What happens if Supabase is down | Nothing can load or be saved. The app shows a clear error message instead of crashing, and the action can be tried again. Tested by turning on flight mode | B |
-| What would you do next | Push notifications, game rules as database functions, account deletion, TestFlight | anyone |
+| What would you do next | Push notifications, game rules as database functions, TestFlight | anyone |

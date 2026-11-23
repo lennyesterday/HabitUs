@@ -208,4 +208,14 @@ final class ValidationTests: XCTestCase {
         XCTAssertNoThrow(try validatePauseReason(String(repeating: "a", count: 200)))
         XCTAssertThrowsError(try validatePauseReason(String(repeating: "a", count: 201)))
     }
+
+    // MARK: R31 delete account
+
+    func testR31DeleteAccountNeedsTheWordDelete() {
+        XCTAssertNoThrow(try validateAccountDeletion("DELETE"))
+        XCTAssertNoThrow(try validateAccountDeletion("  delete \n"), "case and spaces do not matter")
+        XCTAssertThrowsError(try validateAccountDeletion(""))
+        XCTAssertThrowsError(try validateAccountDeletion("DELET"))
+        XCTAssertThrowsError(try validateAccountDeletion("yes"))
+    }
 }

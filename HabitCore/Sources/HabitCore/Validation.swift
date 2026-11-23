@@ -110,6 +110,14 @@ public func validateMessage(_ text: String) throws {
     }
 }
 
+/// R31: deleting the account cannot be undone, so the user has to type DELETE first.
+/// Upper or lower case and spaces around it do not matter.
+public func validateAccountDeletion(_ confirmation: String) throws {
+    guard trimmed(confirmation).uppercased() == "DELETE" else {
+        throw RuleError("Please type DELETE to confirm.")
+    }
+}
+
 /// R18: a reason of 1 to 200 characters.
 public func validatePauseReason(_ reason: String) throws {
     guard (1...200).contains(trimmed(reason).count) else {
