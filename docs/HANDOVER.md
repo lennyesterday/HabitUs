@@ -788,9 +788,14 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 **Step 73: Retake a rejected photo, shown at the top** (branch `retake-photo-update`, rule R17)
 - What: when more than half of the others press 👎 on my photo, a red card appears at the top of the group screen: "Your photo was rejected by the group. Take a new one before the round ends · 3 days 7 h left. After that the task is missed." with a "Retake photo" button that opens the camera. If I already have a valid photo today (weekly and monthly: one photo per day), it says to take the new one tomorrow. The card disappears as soon as I took a new photo, or when the round ended (then the task is missed).
 - Why: the rule existed (R17), but the only retake button was hidden under the photo in the chat, so people did not notice the rejection or how much time was left.
-- How: HabitCore `photoToRetake(user:group:checkins:reactions:memberCount:firstRound:now:)`: my newest photo of the current round, if it is invalid, the round still runs and I still have an open task. 3 new tests (95 in total). `GroupData.photoToRetake(now:)`, `GroupView.retakeCard`. `NoticeCard` now also works in dark mode and can have a colored border (`tint`).
+- How: HabitCore `photoToRetake(user:group:checkins:reactions:memberCount:firstRound:now:)`: my newest photo of the current round, if it is invalid, the round still runs and I still have an open task. 3 new tests (101 in total after merging the pause feature). `GroupData.photoToRetake(now:)`, `GroupView.retakeCard`. `NoticeCard` now also works in dark mode and can have a colored border (`tint`).
 - Files: `Tasks.swift`, `TasksTests.swift`, `GroupService.swift`, `GroupView.swift` (with the preview "My photo was rejected").
 - How to check: the preview "My photo was rejected" in `GroupView.swift`, light and dark.
+
+**Step 74: Invite code readable in dark mode** (branch `invite-code-design-update`)
+- What: the invite code in the group info was almost invisible in dark mode (dark grey on a dark card). It is now dark in light mode and white in dark mode.
+- How: `Color.primary` instead of the fixed `Theme.ink` in `GroupInfoView.inviteSection`.
+- How to check: preview of `GroupInfoView` with Color Scheme "Dark Appearance", or the phone in dark mode.
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
