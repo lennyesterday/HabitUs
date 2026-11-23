@@ -18,7 +18,8 @@ The most important choices we made, what we did not choose, and why. Rule number
 
 | Decision | Why |
 |---|---|
-| Only the public anon key in the app, never the service role key; keys are not in the repo | The anon key can only do what RLS allows. The service role key would skip all rules |
+| Only the public anon key in the app, never the service role key | The anon key can only do what RLS allows. The service role key would skip all rules |
+| The public anon key, the project URL and the GIPHY key are committed (`Config/Public.xcconfig`) | The teaching team can clone and press ▶ without any setup. These keys are public by design (they ship inside every app anyway). Trade-off: anyone with the repo can create accounts on our server or use our GIPHY quota; after the course we can rotate both keys. Secret keys (service role, email service) are never in the repo |
 | Proof photos only from the live camera, in a private bucket | A photo from the library would make cheating too easy; only group members can load them |
 | Email confirmation with a 6 digit code, password reset by code, password rules (8+, capital, small letter, number, special character) | Real accounts, no fake emails. Codes are easier on a phone than links |
 | Our own email domain `habitractapp.com` through Resend | Supabase's built-in mailer only reaches team members and has a tiny limit |

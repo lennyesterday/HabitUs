@@ -10,7 +10,7 @@
 - Read `SPEC.md` first. Build only what the current task names. Do not build other features or fix other things you notice.
 - Keep the layers: no Supabase calls in `Views/`, no SwiftUI or Supabase in `HabitCore`.
 - Every rule from SPEC section 3 goes into `HabitCore` with a test. Tests first. Never weaken, skip or delete a test to get green.
-- Never put the service role key into the app or the repo. Only the anon key, and only in `Secrets.xcconfig`.
+- Never put the service role key (or any other secret key, for example the email service key) into the app or the repo. Only the public anon key and the GIPHY key, in `Config/Public.xcconfig` (committed on purpose since 23 Nov, so the teaching team can run the app right after cloning) or in your own `Secrets.xcconfig`.
 - The database is the team's Supabase project. Inspect it read only by default. Do not change or delete tables or rows unless the task says so. Save every change to the data structure as a SQL file in `supabase/migrations/`. Tests never use the Supabase project.
 - Every new table gets RLS turned on and a policy in `schema.sql` in the same change.
 - Small changes. Show the diff and explain it in plain words. We are beginners and need to understand roughly what each part does.

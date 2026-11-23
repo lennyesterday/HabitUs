@@ -532,7 +532,7 @@ Check every line on Sat 21. Each line has an owner who can explain it.
 | S7 | Length limits in the database (`check` constraints) and in HabitCore. SwiftUI `Text` shows user text as plain text | A message cannot break the layout or run anything | B |
 | S8 | Photos only from the camera, resized and saved again as JPEG (no location data), random file name, private bucket, readable only by members | No metadata leaks, no guessing of file names, no public links | B |
 | S9 | Invite code from `SystemRandomNumberGenerator`. A code only creates a request, the owner still has to accept. Dead after the start | A leaked or guessed code does not let anyone in | A |
-| S10 | `.gitignore` has `Secrets.xcconfig`, `xcuserdata/`, `DerivedData/` before the first commit. The repo is public | No keys on GitHub | C |
+| S10 | `.gitignore` has `Secrets.xcconfig`, `xcuserdata/`, `DerivedData/` before the first commit. The repo is public. Changed on 23 Nov: the **public** anon key, the project URL and the GIPHY key are committed in `Config/Public.xcconfig`, so the teaching team can run the app without setup. Secret keys (service role, email service) stay out | No secret keys on GitHub | C |
 | S11 | `seed.sql` uses demo accounts created by hand with random passwords. No password in the repo | Public repo | C |
 | S12 | Only one package (`supabase-swift`), version pinned through `Package.resolved` and committed. Check its GitHub page for known security issues before hand-in | "Minimal, pinned, without known vulnerabilities" is the High criterion | C |
 | S13 | Nothing secret on the projector: close the Supabase dashboard, Xcode with `Secrets.xcconfig` and the agent before the demo | Keys shown on screen are leaked keys | all |

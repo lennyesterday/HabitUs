@@ -55,37 +55,76 @@ Every feature was built on its own branch and merged through a pull request that
 
 Our decisions and why: [DECISIONS.md](DECISIONS.md). What was built step by step: [docs/HANDOVER.md](docs/HANDOVER.md).
 
-## For the teaching team: run the app in 10 minutes
+## For the teaching team: how to open and try the app
 
-Habitract is a native iPhone app, so it has no public URL. We demo it live on our phones. To try it yourself you need a Mac with **Xcode 16 or newer** (we use Xcode 27). No Apple developer account is needed for the simulator.
+Habitract is a native iPhone app, so it has no public URL. We demo it live on our phones. You can try it yourself in two ways:
 
-1. **Get the code**
+- **A. On the Mac in the iPhone simulator** (easiest, about 10 minutes, no Apple developer account needed)
+- **B. On your own iPhone** (about 20 minutes the first time, needs a cable and a free Apple ID)
+
+Both need a Mac with **Xcode 16 or newer** (free in the Mac App Store, we use Xcode 27).
+
+**All keys are already in the repo** (`Config/Public.xcconfig`), so the app connects to our server right after cloning. You do not need to type in any key. For reference:
+
+| What | Value |
+|---|---|
+| Supabase project URL | `https://awcuknlajkywifxquhcq.supabase.co` |
+| Supabase anon (publishable) key | `sb_publishable_VjjWWwc7HvycIXOV_xxhaQ_Xg2Wgy1L` |
+| GIPHY API key (GIF search in the chat) | `pVndKDGjCWS89yKhuJfpFOTP8eTM9uqk` |
+
+The Supabase anon key is public by design: it can only do what the access rules (row level security) in our database allow. Secret keys (Supabase service role, the email service) are never in the app or the repo.
+
+**Login:** use the **professor account** from our Moodle submission (email and password are there, not here, because this repo is public). It is already a member of a demo group with a story we prepared, so all features have content right away. You can also sign up with your own email address: you get a 6 digit code by email (check spam).
+
+### A. On the Mac (iPhone simulator)
+
+1. Open the app **Terminal** and get the code:
    ```
    git clone https://github.com/lennyesterday/HabitUs.git
    cd HabitUs
+   open HabitUs.xcodeproj
    ```
-2. **Connect it to our server.** The app needs two values: the address of our Supabase project and its public (anon) key. They are not in the repo on purpose; you find them in our Moodle submission. Then:
-   ```
-   cp Config/Secrets.example.xcconfig Config/Secrets.xcconfig
-   open -e Config/Secrets.xcconfig
-   ```
-   Replace the two placeholders and save. Keep the odd `/$()/` in the URL, because `//` starts a comment in this file type:
-   ```
-   SUPABASE_URL = https:/$()/<project-id>.supabase.co
-   SUPABASE_ANON_KEY = <anon key from the submission>
-   ```
-   `GIPHY_API_KEY` is optional. Without it everything works except the GIF search in the chat.
-3. **Open and run.** Double click `HabitUs.xcodeproj`. Wait until Xcode has loaded the Swift package (`supabase-swift`, a few seconds). Next to the ▶ button at the top pick an **iPhone simulator** (for example iPhone 17), then press **▶**.
-4. **Try it.** The easiest way: log in with the **professor account** from our Moodle submission. It is already a member of a running group that we prepared, so you can see check-ins, votes, the leaderboard and the chat right away. You can also sign up with your own email address (you get a 6 digit code by email, check spam), but a new habit only starts with **3 members**.
-   - The simulator has no camera. There the camera offers a generated test photo instead, only in simulator builds.
-5. **Run the tests** (the game rules, no phone or internet needed):
-   ```
-   cd HabitCore && swift test
-   ```
+   (Or on GitHub: Code → Download ZIP, unzip, double click `HabitUs.xcodeproj`.)
+2. Xcode opens and loads the Swift package `supabase-swift` (bottom left "Resolving packages", a few seconds up to a minute).
+3. At the top of the window, next to the ▶ button, click the device name and pick an **iPhone simulator**, for example "iPhone 17". If there is none: Xcode → Settings → Components → download the iOS simulator.
+4. Press **▶** (or ⌘R). The first build takes about a minute, then the simulator opens with Habitract.
+5. Swipe through the introduction, choose **Log in** and enter the professor account.
+6. The simulator has no camera. When you check in there, the camera offers a generated **test photo** instead.
 
-**Alternative: your own server.** Create a free project on supabase.com, run the files `supabase/migrations/001` to `008` in order in its SQL editor (see "Supabase setup" below), and put that project's URL and anon key into `Config/Secrets.xcconfig` instead.
+### B. On your own iPhone
 
-**On a real iPhone** (optional): plug it in, turn on Settings → Privacy & Security → Developer Mode, pick your Apple ID under Target → Signing & Capabilities, and press ▶. With a free Apple ID the app runs for 7 days.
+1. Do steps 1 and 2 from A.
+2. Connect the iPhone to the Mac with a cable, unlock it and tap **Trust** ("Trust this computer?").
+3. **Turn on Developer Mode on the iPhone:** Settings → Privacy & Security → scroll to the bottom → **Developer Mode** → on → **Restart**. After the restart the iPhone asks again: tap **Turn On** and enter your code. (If the menu is missing: keep the iPhone plugged in, open Xcode → Window → Devices and Simulators once, then look again.)
+4. **Signing in Xcode:** Xcode → Settings → Accounts → **+** → Apple ID → sign in with your normal Apple ID (free). Then copy the signing file and give the app your own ID, so it does not clash with ours:
+   ```
+   cp Config/Local.example.xcconfig Config/Local.xcconfig
+   open -e Config/Local.xcconfig
+   ```
+   Set `BUNDLE_ID_SUFFIX = .professor` and `DEVELOPMENT_TEAM` to your team ID. The easiest way to find the team ID: in Xcode click the blue **HabitUs** project at the top left → target **HabitUs** → **Signing & Capabilities** → Team: pick "(your name) (Personal Team)". You can also leave it there instead of using `Local.xcconfig`.
+5. At the top next to ▶ pick **your iPhone** instead of a simulator and press **▶**. The first time Xcode prepares the iPhone ("Preparing device", "Copying shared cache symbols"): this can take 5 to 15 minutes, keep it plugged in and unlocked.
+6. If the iPhone says **"Untrusted Developer"**: Settings → General → **VPN & Device Management** → your Apple ID → **Trust**. Then press ▶ again.
+7. Habitract is now on the home screen and also works without the cable. With a free Apple ID it opens for **7 days**, after that press ▶ in Xcode again.
+8. On the iPhone the check-in uses the real camera. The first time it asks for permission.
+
+### What to look at
+
+After logging in with the professor account, open the demo group on Home and try:
+
+- **Group screen:** task card with countdown, podium, rankings, chat with photos, pauses, text and GIFs.
+- **Vote on photos & pauses:** the 🗳️ deck, swipe or tap 👍/👎. If more than half of the others press 👎, a photo is invalid and its owner gets a red "Retake photo" card.
+- **Check in:** "Do …" opens the camera (test photo in the simulator). **Pause:** "Can't today? Take a pause" with a reason; the others can reject it for 48 hours.
+- **Leaderboard:** tap the podium. **Player profile with grade A to D:** tap a player. **Group info with invite code and contract:** tap the member pictures at the top.
+- **Profile and settings:** the round picture at the top right of Home (profile photo, "How it works", log out, delete account). The app follows the iPhone's light or dark mode.
+
+### Tests
+
+The game rules run without phone or internet (in Terminal, inside the `HabitUs` folder):
+```
+cd HabitCore && swift test
+```
+
+**Alternative: your own server.** Create a free project on supabase.com, run `supabase/migrations/001` to `008` in order in its SQL editor (see "Supabase setup" below), and put that project's URL and anon key into `Config/Secrets.xcconfig` (copy it from `Config/Secrets.example.xcconfig`). It overrides `Config/Public.xcconfig`.
 
 ## Setup (once per Mac)
 
@@ -95,10 +134,7 @@ Habitract is a native iPhone app, so it has no public URL. We demo it live on ou
    - Copy `Config/Local.example.xcconfig` to `Config/Local.xcconfig` (this file is ignored by Git).
    - Set `BUNDLE_ID_SUFFIX` to your name, e.g. `.vincent`.
    - Set `DEVELOPMENT_TEAM` to your team ID. Easiest way: in Xcode under Target → Signing & Capabilities pick your Apple ID as team, then run `git diff` and copy the `DEVELOPMENT_TEAM = XXXXXXXXXX` value into `Local.xcconfig`. Afterwards undo the project change with `git checkout HabitUs.xcodeproj`.
-4. Supabase access:
-   - Copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (also ignored by Git).
-   - Fill in the project URL and the **anon** key from the Supabase dashboard (Project Settings → API). Never the service role key.
-   - Optional, for GIFs in the chat: create a free app on developers.giphy.com and put its API key into `GIPHY_API_KEY`.
+4. Supabase and GIPHY: nothing to do. `Config/Public.xcconfig` (committed) points to our demo server. Only for another server: copy `Config/Secrets.example.xcconfig` to `Config/Secrets.xcconfig` (ignored by Git) and fill in its URL and **anon** key. Never the service role key.
 5. Pick an iPhone simulator next to the play button and press ▶.
 
 ## Supabase setup (once per project)
