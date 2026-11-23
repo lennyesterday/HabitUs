@@ -19,6 +19,20 @@ Habitract (**habit** + **contract**) is an iPhone app for building a habit toget
 
 Sign up with email code and password rules, forgot password · create a habit with an emoji or picture and sign the contract · join with a 6 character invite code, also while a challenge runs (the newcomer gets the group average for the rounds before) · live photo check-ins · 👍/👎 votes in the chat and in a Tinder style vote deck · retake a rejected photo · pause with a reason · podium, leaderboard with a points chart, player profiles with grade and history · chat with text and GIFs · leave a group, delete a group, delete your account · light and dark mode.
 
+### A pilot, and where we want to take it
+
+This version is a **pilot**. It shows that the idea works: friends sign a contract, prove their habit with live photos and keep each other honest with their votes. Points, streaks and the leaderboard make it a game, but nothing real is at stake yet.
+
+In the future we want to turn Habitract into a **business**: friends play for real money by **putting some money on the line**. The model we have in mind (details in [DECISIONS.md](DECISIONS.md), "What we would do next"):
+
+- Every member puts a small **stake per round** into the pot, for example 5 €.
+- Whoever completes the round gets their stake back and **shares the stakes of those who did not**.
+- Someone who joins later simply pays from their first round, so it stays fair.
+- Habitract earns a **small fee** on every pot.
+- First step without any payment handling: the app only shows who owes whom ("Vincent owes Lenny 5 €") and friends settle it with PayPal or MB Way. Real payments in the app (for example Stripe Connect) come later, once the legal side (licences, App Store rules for real money) is clear.
+
+With money involved, the group votes become more important, so the business version would also need a way to appeal a 👎 and stronger proof checks.
+
 Tech: Swift and SwiftUI (iOS 17+), Supabase (login, Postgres database with row level security, photo storage), the game rules as a tested Swift package (`HabitCore`, 100+ tests).
 
 ## Team
