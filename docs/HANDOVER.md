@@ -247,7 +247,8 @@ on-hold behavior as R29 and R30, but older sections can still contain conflictin
 2. In Xcode pick the iPhone instead of the simulator and press ▶ Run.
 3. If it says "Untrusted Developer": Settings → General → VPN & Device Management → your Apple ID → Trust, then ▶ again.
 4. With a free Apple ID the app stops opening after **7 days**. Install it fresh on 22 or 23 Nov for the presentation on 24 Nov.
-5. Show the screen with QuickTime → New Movie Recording → camera: iPhone. Prepare a running group with 3 accounts, so feed, votes and leaderboard are not empty. Test the internet in the room (hotspot as backup).
+5. **Signing goes into `Config/Local.xcconfig`, never into the project file.** If you pick your team under Signing & Capabilities, Xcode writes `DEVELOPMENT_TEAM` and a bundle id into `HabitUs.xcodeproj/project.pbxproj`. Then `git status` shows that file as changed all the time, and pushing it would break signing for the others. Fix: put your team id (Xcode → Settings → Accounts, or the value Xcode wrote) and a suffix like `.vincent` into `Config/Local.xcconfig`, then undo the project file with `git checkout HabitUs.xcodeproj/project.pbxproj`. Your app is then called `com.habitus.app.<suffix>` on the phone.
+6. Show the screen with QuickTime → New Movie Recording → camera: iPhone. Prepare a running group with 3 accounts, so feed, votes and leaderboard are not empty. Test the internet in the room (hotspot as backup).
 
 Work rules (`AGENTS.md`): a branch per task (`b/x-rule`), pull request, someone else reviews, tests stay green, commit from your own account.
 
@@ -839,6 +840,13 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - Fixed after the first try on Vincent's phone: the first version deleted the files (profile picture, photos) *before* calling the database function, so without migration 008 the picture could be gone while the account stayed. Now the app first calls `account_deletion_ready()` (also in 008) and stops if it is missing.
 - How to check: `swift test` → 102 green. The `ProfileView` preview shows the new row. For real (after running 008): make a test account, join a group, post a photo and a message, delete the account → you are logged out; the others see "… left the group.", your photo and message are gone, logging in with the old email fails.
 - Not tested: migration 008 was not run on our Supabase project (AGENTS.md: database read only unless the task says so), so the whole flow was only built, not tried. Whether `owner_id` exists on `storage.objects` depends on the Supabase version (new projects have it); if the policy fails, the account is still deleted, only the photo files stay.
+
+**Step 79: Signing values out of the project file** (Vincent's Mac, no code change)
+- What: on Vincent's Mac Xcode had written his Apple team and his own bundle id straight into `HabitUs.xcodeproj/project.pbxproj`. That file showed as changed on every branch and was always left out of the commits by hand. Now his values are in `Config/Local.xcconfig` (team `RHAZLAX7MU`, suffix `.vincent`, ignored by git), and the project file is back to the shared version.
+- Why: AGENTS.md says personal signing values belong in `Config/Local.xcconfig`. A pushed team id would break the build on Bene's and Lenny's phones.
+- Effect: Vincent's app is now `com.habitus.app.vincent`. For the iPhone that is a new app: log in once, delete the old one.
+- How to check: `git status` no longer lists `project.pbxproj`. Xcode's build settings show the team and `com.habitus.app.vincent` (checked). A tip for everyone is in section 10, step 5.
+- Files: `docs/HANDOVER.md` only (`Config/Local.xcconfig` is not in git).
 
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
