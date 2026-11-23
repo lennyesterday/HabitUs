@@ -35,7 +35,7 @@ Supabase access policies and the deployed database migrations. This update did n
 | Account | Onboarding, sign up, confirmation code, login, password reset and logout: `AuthView.swift`, `AuthService.swift` |
 | Home and appearance | Group cards, profile pictures, New Habit and Join Habit; light/dark surfaces and emoji-based banners: `HomeView.swift`, `Theme.swift`, `Components/Pictures.swift` |
 | Groups | Create or join using a code, sign the contract, owner accepts/declines and starts: `CreateGroupView.swift`, `JoinView.swift`, `ContractView.swift`, `LobbyView.swift`, `GroupService.swift` |
-| Running group | Task card, photo check-in, vote deck, leaderboard, text/GIF chat and periodic refresh: `GroupView.swift`, `Components/TaskCard.swift`, `Components/FeedView.swift` |
+| Running group | Task card, photo check-in, pause with a reason, vote deck for photos and pauses, leaderboard, text/GIF chat and periodic refresh: `GroupView.swift`, `Components/TaskCard.swift`, `Components/PauseSheet.swift`, `Components/VoteDeck.swift`, `Components/FeedView.swift` |
 | Late join and hold | An accepted late joiner starts next round; a running group with fewer than three accepted players is on hold. Rules: `Rounds.swift`, `Tasks.swift`, `Scoring.swift`; database: migrations 006 and 007 |
 | Leaderboard | Tap the podium: points history chart, rankings and the round bonus below them: `LeaderboardView.swift`, `Components/BonusCard.swift` |
 | Group and player information | Tap member photos for group info and invite code; tap a ranking row for player history: `GroupInfoView.swift`, `PlayerProfileView.swift` |
@@ -794,6 +794,13 @@ Every change gets one entry here, newest at the bottom. Format: **what** was don
 - How to check: the "Pause card" preview in `VoteDeck.swift` (checked, renders). In the app: A takes a pause, B sees the red line on the button and the pause card first in the deck. `swift test` unchanged (98 green, no HabitCore change).
 - Not tested: the button with the second line was only checked by building, the `GroupView` preview did not start. Not tried on phones.
 
+**Step 74: Photo validation with 👍/👎, vote deck and retake** (branch `picture-validation`, PR #17, Vincent, added to the log afterwards)
+- Note: this was merged on 20 Nov, but its log entry was on a branch that was never merged. Added here so the story is complete.
+- What: 👍 and 👎 under every photo and pause in the chat, with a red bar "1 of 2 👎 to invalidate" once someone gave a 👎. A "Vote on photos" button opens a Tinder style deck (swipe right 👍, left 👎, a big thumb appears while dragging, "All votes are done" when empty). When more than half of the other members gave a 👎 the photo is INVALID, the task opens again and the author sees "Retake photo".
+- How: HabitCore `canReact` (not on your own proof, not once invalid, only while the round runs) with 5 tests written first. `CheckinService.setReaction(groupId:checkinId:kind:)` saves, replaces (upsert) or deletes my reaction; the signature got `groupId`. No database change, the reactions policies in `001_schema.sql` already cover it.
+- Files: `Votes.swift`, `VotesTests.swift`, `CheckinService.swift`, `GroupService.swift`, `FeedView.swift`, `VoteDeck.swift` (new), `GroupView.swift`.
+- How to check: with 3 accounts, A posts a photo, B and C give 👎 → INVALID, A's points drop, A sees "Retake photo". Vincent tried the deck in the app; not tried end to end on three phones.
+
 <!-- New entries go below. Template:
 **Step N: Title** (branch `x/name`, PR #N)
 - What:
@@ -837,10 +844,11 @@ All app source paths below start at `HabitUs/` in the repository.
   a signature. `Services/GroupService.swift` writes and reads the group and membership.
 - **Inside a group:** `Views/GameScreen.swift` selects lobby, active group or results;
   `Views/GroupView.swift` assembles tasks, voting, rankings and chat.
-  `Components/TaskCard.swift` shows progress and the camera action;
+  `Components/TaskCard.swift` shows progress, the camera action and "Can't today? Take a pause";
   `Components/CameraView.swift` opens the iPhone camera. The simulator offers a generated test photo.
-- **Chat and reactions:** `Components/FeedView.swift` renders messages and photo check-ins;
-  `Components/VoteDeck.swift` provides the photo voting shortcut. `Services/ChatService.swift` saves
+  `Components/PauseSheet.swift` asks for the reason of a pause (R18).
+- **Chat and reactions:** `Components/FeedView.swift` renders messages, photo check-ins and pauses;
+  `Components/VoteDeck.swift` is the Tinder style shortcut for voting on photos and open pauses. `Services/ChatService.swift` saves
   messages; `Services/CheckinService.swift` saves reactions. `GroupView` reloads every 10 seconds
   while open, and supports pull-to-refresh; this is polling, not push notifications.
 - **Ranking:** `Views/LeaderboardView.swift` shows the points chart, ranking and round bonus;
@@ -880,6 +888,12 @@ All app source paths below start at `HabitUs/` in the repository.
    checks whether more than half of the other accepted members gave thumbs down. The author cannot
    vote on their own photo. The current code recomputes validity using the current accepted member
    count, so departures can change the threshold.
+2b. **What is a pause and who decides about it?** `TaskCard` opens `PauseSheet`; `CheckinService.addPause`
+   checks the reason (`validatePauseReason`) and `canPause`, then inserts a `checkins` row with kind
+   "pause". It counts as a done task at once. The others have 48 hours after posting to reject it
+   with 👎 (`pauseVotingEnds` in `Votes.swift`), even after the round ended. If more than half reject
+   it, the task fails and the points of that round, its bonus and the streak disappear afterwards,
+   because points are always recomputed. Photos can only be voted on while their round runs.
 3. **How are points calculated?** A done task is 20 points; a full round gets +25%, increasing by
    5 percentage points per consecutive full round, up to a total bonus of +50%. `Scoring.swift`
    performs the calculation; `LeaderboardView.swift` displays it.
