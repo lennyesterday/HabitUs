@@ -1,0 +1,10 @@
+// Public values for the demo server, committed on purpose so the app runs right after cloning
+// (decided on 23 Nov for the hand-in, see DECISIONS.md "Security").
+// - The Supabase anon/publishable key is meant to be public: it can only do what the access rules
+//   (RLS) in the database allow. The service role key is NEVER here.
+// - The GIPHY key is a free key that only allows GIF searches.
+// Config/Secrets.xcconfig (not in Git) overrides these values, for example for your own server.
+// "//" starts a comment in xcconfig, so the URL is written with "/$()/".
+SUPABASE_URL = https:/$()/awcuknlajkywifxquhcq.supabase.co
+SUPABASE_ANON_KEY = sb_publishable_VjjWWwc7HvycIXOV_xxhaQ_Xg2Wgy1L
+GIPHY_API_KEY = pVndKDGjCWS89yKhuJfpFOTP8eTM9uqk

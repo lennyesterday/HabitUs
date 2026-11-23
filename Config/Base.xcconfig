@@ -13,4 +13,6 @@ GIPHY_API_KEY =
 INFOPLIST_FILE = Config/Info.plist
 
 #include? "Local.xcconfig"
+// Demo server values, committed (see the file). Secrets.xcconfig below can override them.
+#include? "Public.xcconfig"
 #include? "Secrets.xcconfig"
